@@ -1,0 +1,39 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-02T12:00:00Z" },
+  "title": "Brainrot Stopper Mockups",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 260, "w": 864, "h": 915, "title": "A1 · intro (dark | light)", "is_interactive": true },
+    "A2-Karte-vorne.dc.html": { "x": 944, "y": 260, "w": 864, "h": 915, "title": "A2 · karte vorne", "is_interactive": true },
+    "A3-Karte-hinten.dc.html": { "x": 1888, "y": 260, "w": 864, "h": 915, "title": "A3 · aufdecken + bewerten", "is_interactive": true },
+    "A4-Falsch.dc.html": { "x": 2832, "y": 260, "w": 864, "h": 915, "title": "A4 · nochmal / schwer", "is_interactive": true },
+    "A5-Entsperrt.dc.html": { "x": 3776, "y": 260, "w": 864, "h": 915, "title": "A5 · entsperrt (5/5)", "is_interactive": true },
+    "B1-Apps.dc.html": { "x": 0, "y": 1535, "w": 864, "h": 915, "title": "B1 · apps", "is_interactive": true },
+    "B2-Einstellungen.dc.html": { "x": 944, "y": 1535, "w": 864, "h": 915, "title": "B2 · einstellungen", "is_interactive": true },
+    "B3-Statistik.dc.html": { "x": 1888, "y": 1535, "w": 864, "h": 915, "title": "B3 · statistik", "is_interactive": true }
+  },
+  "order": [
+    "Main.dc.html",
+    "A2-Karte-vorne.dc.html",
+    "A3-Karte-hinten.dc.html",
+    "A4-Falsch.dc.html",
+    "A5-Entsperrt.dc.html",
+    "B1-Apps.dc.html",
+    "B2-Einstellungen.dc.html",
+    "B3-Statistik.dc.html"
+  ],
+  "notes": {
+    "titleA": { "x": 0, "y": 0, "text": "A · sperrbildschirm: 1 intro → 2 karte → 3 bewerten → (4 nochmal) → 5 entsperrt", "kind": "title1", "maxW": 4640 },
+    "titleB": { "x": 0, "y": 1295, "text": "B · haupt-app: apps · einstellungen · statistik", "kind": "title1", "maxW": 2752 },
+    "tokens": {
+      "x": 2832,
+      "y": 1535,
+      "w": 860,
+      "fill": "gray",
+      "text": "design-tokens (compose-theme)\n\nlinks = dark (catppuccin mocha), rechts = light (catppuccin latte, text-farben für kontrast abgedunkelt)\n\nschrift: JetBrains Mono 400 / 500 / 700\ngrößen: 12 label · 13 meta · 14 body · 16 button · 20 karte · 22 titel · 28 hero\nspacing: 4 · 8 · 12 · 16 · 24 · 32 (seitenrand 24)\nradius: 4 · border: 1 · touch-ziel: min 48\n\nDARK\nbg #1e1e2e · bg2 #181825 · fill #313244 · line #45475a · control #7f849c\ntext #cdd6f4 · muted #bac2de · dim #9399b2\naccent #cba6f7 (text darauf #11111b)\nnochmal #f38ba8 · schwer #fab387 · gut #a6e3a1 · leicht #89b4fa\n\nLIGHT\nbg #eff1f5 · bg2 #e6e9ef · fill #dce0e8 · line #bcc0cc · control #7c7f93\ntext #4c4f69 · muted #5c5f77 · dim #646880\naccent #8839ef (text darauf #eff1f5)\nnochmal #d20f39 · schwer #b04a00 · gut #2a7a16 · leicht #1a56d6\n\nbewertung zählt nur bei gut + leicht. farbe nie allein: jede bewertung hat zusätzlich label und taste [1]–[4]."
+    }
+  },
+  "designSystems": []
+}

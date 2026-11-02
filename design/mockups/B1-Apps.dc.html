@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Haupt-App: apps</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 864px; height: 915px; display: flex; gap: 40px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="bs {{t.cls}}">
+<div class="main">
+<div class="t-title"><span class="acc">$</span> apps</div>
+<label class="search"><span class="acc">$ grep</span><input type="text" placeholder="app suchen" aria-label="apps durchsuchen"></label>
+<div class="sep">gesperrt · 4</div>
+<div class="col">
+<label class="row blocked"><span class="ico" aria-hidden="true">ig</span><span class="nm">instagram</span><span class="sw"><input type="checkbox" checked><span></span></span></label>
+<label class="row blocked"><span class="ico" aria-hidden="true">tt</span><span class="nm">tiktok</span><span class="sw"><input type="checkbox" checked><span></span></span></label>
+<label class="row blocked"><span class="ico" aria-hidden="true">yt</span><span class="nm">youtube</span><span class="sw"><input type="checkbox" checked><span></span></span></label>
+<label class="row blocked"><span class="ico" aria-hidden="true">rd</span><span class="nm">reddit</span><span class="sw"><input type="checkbox" checked><span></span></span></label>
+</div>
+<div class="sep">alle apps</div>
+<div class="col">
+<label class="row"><span class="ico" aria-hidden="true">cr</span><span class="nm">chrome</span><span class="sw"><input type="checkbox"><span></span></span></label>
+<label class="row"><span class="ico" aria-hidden="true">wa</span><span class="nm">whatsapp</span><span class="sw"><input type="checkbox"><span></span></span></label>
+<label class="row"><span class="ico" aria-hidden="true">sp</span><span class="nm">spotify</span><span class="sw"><input type="checkbox"><span></span></span></label>
+<label class="row"><span class="ico" aria-hidden="true">ma</span><span class="nm">maps</span><span class="sw"><input type="checkbox"><span></span></span></label>
+</div>
+</div>
+<nav class="nav" aria-label="hauptmenü">
+<a class="on" href="B1-Apps.dc.html">apps</a>
+<a href="B2-Einstellungen.dc.html">einstellungen</a>
+<a href="B3-Statistik.dc.html">statistik</a>
+</nav>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":864,"height":915}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'dark' }, { cls: 'light' }] };
+  }
+}
+</script>
+</body>
+</html>

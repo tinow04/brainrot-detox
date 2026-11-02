@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Sperre: entsperrt</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 864px; height: 915px; display: flex; gap: 40px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="bs {{t.cls}}">
+<div class="scr">
+<div class="hdr"><span>instagram · biologie</span><span class="prog">[█████] 5/5</span></div>
+<div class="grow" style="display: flex; flex-direction: column; justify-content: center; gap: 28px">
+<div class="dim">$ ./unlock instagram</div>
+<div class="t-hero ok">[ OK ] entsperrt</div>
+<p class="t-card">instagram ist für <b>15 min</b> freigegeben.</p>
+<div class="box">
+<span class="lbl">session</span>
+<div class="kv"><span class="dim">karten</span><span>7 (5 richtig)</span></div>
+<div class="kv"><span class="dim">zeit</span><span>02:41</span></div>
+<div class="kv"><span class="dim">streak</span><span>13 tage</span></div>
+</div>
+</div>
+<div class="col" style="gap: 8px">
+<a class="btn primary" href="Main.dc.html">$ ./open instagram<span class="cur" aria-hidden="true"></span></a>
+<button class="btn ghost">schließen</button>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":864,"height":915}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'dark' }, { cls: 'light' }] };
+  }
+}
+</script>
+</body>
+</html>

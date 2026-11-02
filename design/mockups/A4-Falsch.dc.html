@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Sperre: nochmal</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 864px; height: 915px; display: flex; gap: 40px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="bs {{t.cls}}">
+<div class="scr">
+<div class="hdr"><span>instagram · biologie</span><span class="prog">[█░░░░] 1/5</span></div>
+<div class="grow" style="display: flex; flex-direction: column; justify-content: center; gap: 28px">
+<div class="dim">$ ./rate --card 2 --again</div>
+<div class="t-hero fail">[ FAIL ]</div>
+<p class="t-card">kein problem. die karte kommt später nochmal.</p>
+<div class="box">
+<span class="lbl">was zählt</span>
+<div class="kv"><span>[1] nochmal</span><span class="fail">– zählt nicht</span></div>
+<div class="kv"><span>[2] schwer</span><span class="warn">– zählt nicht</span></div>
+<div class="kv"><span>[3] gut</span><span class="ok">+ zählt</span></div>
+<div class="kv"><span>[4] leicht</span><span class="info">+ zählt</span></div>
+</div>
+<p class="muted">fortschritt bleibt bei <b>1/5</b>. noch <b>4</b> richtige bis instagram offen ist.</p>
+</div>
+<a class="btn primary" href="A2-Karte-vorne.dc.html">$ ./weiter<span class="cur" aria-hidden="true"></span></a>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":864,"height":915}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'dark' }, { cls: 'light' }] };
+  }
+}
+</script>
+</body>
+</html>

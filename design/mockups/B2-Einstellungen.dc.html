@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Haupt-App: einstellungen</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 864px; height: 915px; display: flex; gap: 40px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+<div class="bs {{t.cls}}">
+<div class="main" style="gap: 28px">
+<div class="t-title"><span class="acc">$</span> config</div>
+<div class="box">
+<span class="lbl">karten pro entsperrung</span>
+<div class="kv">
+<span class="muted">richtige karten</span>
+<div class="step"><button aria-label="weniger">−</button><span class="v">5</span><button aria-label="mehr">+</button></div>
+</div>
+</div>
+<div class="box">
+<span class="lbl">freigabe-dauer</span>
+<div class="segs">
+<button aria-pressed="false">5 min</button>
+<button aria-pressed="true">15 min</button>
+<button aria-pressed="false">30 min</button>
+<button aria-pressed="false">60 min</button>
+</div>
+</div>
+<div class="box">
+<span class="lbl">anki-deck</span>
+<div class="col">
+<button class="opt" aria-pressed="true"><span class="m">(•)</span><span>Biologie::Zellbiologie</span><span class="n">124 fällig</span></button>
+<button class="opt" aria-pressed="false"><span class="m">( )</span><span>Englisch::Vokabeln</span><span class="n">58 fällig</span></button>
+<button class="opt" aria-pressed="false"><span class="m">( )</span><span>alle decks</span><span class="n">182 fällig</span></button>
+</div>
+</div>
+<div class="box">
+<span class="lbl">ankidroid</span>
+<div><span class="tag ok">[ OK ]</span> ankidroid verbunden</div>
+<div class="dim t-sm" style="margin-top: 4px">api aktiv · 3 decks gefunden</div>
+</div>
+</div>
+<nav class="nav" aria-label="hauptmenü">
+<a href="B1-Apps.dc.html">apps</a>
+<a class="on" href="B2-Einstellungen.dc.html">einstellungen</a>
+<a href="B3-Statistik.dc.html">statistik</a>
+</nav>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":864,"height":915}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'dark' }, { cls: 'light' }] };
+  }
+}
+</script>
+</body>
+</html>
