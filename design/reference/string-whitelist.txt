@@ -1,0 +1,26 @@
+# Mockup strings that need not appear literally in ui/Strings.kt. Format: <exact string> # <reason>. Lines starting with # are comments.
+# Sample data of the mockups (real values come from the system / settings / statistics at runtime):
+ig # app icon letters, derived from the app label
+tt # app icon letters
+yt # app icon letters
+rd # app icon letters
+cr # app icon letters
+wa # app icon letters
+sp # app icon letters
+ma # app icon letters
+instagram # sample app label (runtime: PackageManager label)
+tiktok # sample app label
+youtube # sample app label
+reddit # sample app label
+chrome # sample app label
+whatsapp # sample app label
+spotify # sample app label
+maps # sample app label
+biologie # sample deck name
+Biologie::Zellbiologie # sample deck name
+Englisch::Vokabeln # sample deck name
+instagram · biologie # composed: app label + deck name
+Welches Organell produziert den Großteil des ATP in der Zelle? # sample card text
+Mitochondrium # sample card text
+(innere Membran: oxidative Phosphorylierung) # sample card text
+[ bild: mitochondrium.png ] # sample card media placeholder (format `[ bild: <name> ]` is in Strings.kt)

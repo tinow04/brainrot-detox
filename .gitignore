@@ -14,3 +14,4 @@ captures/
 
 # OS
 .DS_Store
+tools/mockup/out/

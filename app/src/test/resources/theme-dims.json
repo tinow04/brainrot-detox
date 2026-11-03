@@ -1,0 +1,228 @@
+{
+ ".bs": {
+  "width": "412px",
+  "height": "915px",
+  "font-size": "14px"
+ },
+ ".bs :focus-visible": {
+  "outline": "2px solid var(--accent)",
+  "outline-offset": "2px"
+ },
+ ".bs .scr": {
+  "padding": "56px 24px 32px"
+ },
+ ".bs .main": {
+  "padding": "56px 24px 16px",
+  "gap": "16px"
+ },
+ ".bs .t-hero": {
+  "font-size": "28px"
+ },
+ ".bs .t-title": {
+  "font-size": "22px"
+ },
+ ".bs .t-card": {
+  "font-size": "20px"
+ },
+ ".bs .t-sm": {
+  "font-size": "12px"
+ },
+ ".bs .cur": {
+  "margin-left": "3px"
+ },
+ ".bs .hdr": {
+  "min-height": "36px",
+  "padding-bottom": "12px",
+  "border-bottom": "1px solid var(--line)",
+  "font-size": "13px"
+ },
+ ".bs .hdr .prog": {
+  "font-size": "14px"
+ },
+ ".bs .box": {
+  "border": "1px solid var(--line)",
+  "padding": "20px 16px 16px"
+ },
+ ".bs .box > .lbl": {
+  "top": "-11px",
+  "left": "12px",
+  "padding": "0 8px",
+  "font-size": "12px",
+  "line-height": "20px"
+ },
+ ".bs .kv": {
+  "min-height": "30px",
+  "gap": "12px"
+ },
+ ".bs .sep": {
+  "gap": "10px",
+  "font-size": "12px"
+ },
+ ".bs .sep::before, .bs .sep::after": {
+  "border-top": "1px solid var(--line)"
+ },
+ ".bs .btn": {
+  "gap": "8px",
+  "min-height": "52px",
+  "padding": "0 16px",
+  "border": "1px solid var(--ctl)",
+  "border-radius": "4px",
+  "font-size": "16px"
+ },
+ ".bs .btn.ghost": {
+  "min-height": "48px",
+  "font-size": "14px"
+ },
+ ".bs .rate": {
+  "gap": "2px",
+  "min-height": "84px",
+  "padding": "12px 16px",
+  "border": "1px solid var(--c)",
+  "border-radius": "4px"
+ },
+ ".bs .rate .k": {
+  "font-size": "16px"
+ },
+ ".bs .rate .iv": {
+  "font-size": "12px"
+ },
+ ".bs .img": {
+  "height": "96px",
+  "font-size": "12px",
+  "border": "1px dashed var(--ctl)",
+  "background": "repeating-linear-gradient(45deg, transparent 0 8px, var(--fill) 8px 9px)"
+ },
+ ".bs .ico": {
+  "width": "40px",
+  "height": "40px",
+  "border": "1px solid var(--ctl)",
+  "border-radius": "4px",
+  "font-size": "13px"
+ },
+ ".bs .ico.lg": {
+  "width": "64px",
+  "height": "64px",
+  "font-size": "20px"
+ },
+ ".bs .nav": {
+  "border-top": "1px solid var(--line)",
+  "padding-bottom": "16px"
+ },
+ ".bs .nav a": {
+  "min-height": "56px",
+  "border-top": "2px solid transparent",
+  "margin-top": "-1px",
+  "font-size": "13px"
+ },
+ ".bs .row": {
+  "gap": "12px",
+  "min-height": "60px",
+  "padding": "6px 12px",
+  "border-bottom": "1px solid var(--line)"
+ },
+ ".bs .row .nm": {
+  "font-size": "16px"
+ },
+ ".bs .row .st": {
+  "font-size": "12px"
+ },
+ ".bs .sw": {
+  "width": "48px",
+  "height": "28px"
+ },
+ ".bs .sw input": {
+  "border": "1px solid var(--ctl)",
+  "border-radius": "4px"
+ },
+ ".bs .sw span": {
+  "top": "5px",
+  "left": "5px",
+  "width": "16px",
+  "height": "16px",
+  "border-radius": "2px"
+ },
+ ".bs .sw input:checked + span": {
+  "left": "27px"
+ },
+ ".bs .search": {
+  "gap": "10px",
+  "min-height": "48px",
+  "padding": "0 12px",
+  "border": "1px solid var(--ctl)",
+  "border-radius": "4px"
+ },
+ ".bs .search input": {
+  "font-size": "16px"
+ },
+ ".bs .step": {
+  "border": "1px solid var(--ctl)",
+  "border-radius": "4px"
+ },
+ ".bs .step button": {
+  "width": "48px",
+  "height": "48px",
+  "font-size": "20px"
+ },
+ ".bs .step .v": {
+  "min-width": "48px",
+  "font-size": "20px"
+ },
+ ".bs .segs button": {
+  "min-height": "48px",
+  "margin-left": "-1px",
+  "border": "1px solid var(--ctl)"
+ },
+ ".bs .segs button:first-child": {
+  "border-radius": "4px 0 0 4px"
+ },
+ ".bs .segs button:last-child": {
+  "border-radius": "0 4px 4px 0"
+ },
+ ".bs .opt": {
+  "gap": "8px",
+  "min-height": "48px",
+  "padding": "0 4px",
+  "border-bottom": "1px solid var(--line)"
+ },
+ ".bs .opt .m": {
+  "width": "28px"
+ },
+ ".bs .opt .n": {
+  "font-size": "12px"
+ },
+ ".bs .stat": {
+  "border": "1px solid var(--line)",
+  "padding": "10px 12px"
+ },
+ ".bs .stat .v": {
+  "font-size": "22px"
+ },
+ ".bs .stat .l": {
+  "font-size": "12px"
+ },
+ ".bs .chart": {
+  "gap": "8px",
+  "height": "150px"
+ },
+ ".bs .chart .c": {
+  "gap": "4px",
+  "font-size": "12px"
+ },
+ ".bs .chart .bar": {
+  "border-radius": "2px 2px 0 0"
+ },
+ ".bs .rk": {
+  "gap": "10px",
+  "min-height": "34px",
+  "font-size": "13px"
+ },
+ ".bs .rk .n": {
+  "width": "84px"
+ },
+ ".bs .rk .tr": {
+  "height": "10px"
+ },
+ ".bs .rk .c": {
+  "width": "24px"
+ }
+}
