@@ -1,0 +1,5 @@
+# uses-permission entries allowed in the release APK (one per line). Anything else fails scripts/check-manifest.sh.
+com.ichi2.anki.permission.READ_WRITE_DATABASE
+android.permission.INTERNET
+# merged by androidx.core for dynamic receivers (verified by aapt2 on the release APK):
+dev.tinow.brainrotstopper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
