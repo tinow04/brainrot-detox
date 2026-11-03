@@ -131,7 +131,7 @@ object Strings {
 
     // ---- waiting / loading
     const val TAG_WAITING = "[ WAIT ] nächste karte folgt"
-    const val WAITING_TEXT = "lernkarten sind noch nicht fällig. die app prüft alle 15 s."
+    const val WAITING_TEXT = "lernkarten sind noch nicht fällig. die app prüft alle 15\u00A0s." // no-break space: no lone "s." on the last line
     const val LOADING = "\$ ./laden"
 
     // ---- errors (title, text, main action)
@@ -151,6 +151,7 @@ object Strings {
     const val TITLE_PROMPT = "\$"
     const val TITLE_APPS = "apps"
     const val SEARCH_PROMPT = "\$ grep"
+    const val SEARCH_PLACEHOLDER = "app suchen"
     fun sepBlocked(n: Int) = "gesperrt · $n"
     const val SEP_ALL_APPS = "alle apps"
     const val EMPTY_BLOCKED = "noch keine app gesperrt"
