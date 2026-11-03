@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Brainrot Stopper</string>
+    <string name="a11y_description">Erkennt, wenn eine gesperrte App geöffnet wird, und zeigt dann Anki-Karten an. Es werden keine Inhalte anderer Apps gelesen und nichts ins Netz gesendet.</string>
+</resources>

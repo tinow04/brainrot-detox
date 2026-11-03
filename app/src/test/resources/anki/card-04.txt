@@ -1,0 +1,13 @@
+Row: 0 question=Hauptstadt von Frankreich?
+
+[[type:Back]], answer=Hauptstadt von Frankreich?
+
+<hr id=answer>
+
+[[type:Back]], answer_pure=[[type:Back]], question_simple=Hauptstadt von Frankreich?
+
+[[type:Back]], answer_simple=Hauptstadt von Frankreich?
+
+<hr id=answer>
+
+[[type:Back]], card_name=Card 1

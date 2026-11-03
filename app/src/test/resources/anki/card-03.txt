@@ -1,0 +1,4 @@
+Row: 0 question=Die <span class="cloze" data-cloze="Hauptstadt" data-ordinal="1">[...]</span> von Frankreich ist <span class="cloze-inactive" data-ordinal="2">Paris</span>., answer=Die <span class="cloze" data-ordinal="1">Hauptstadt</span> von Frankreich ist <span class="cloze-inactive" data-ordinal="2">Paris</span>.<br>
+Extra-Hinweis, answer_pure=Die <span class="cloze" data-ordinal="1">Hauptstadt</span> von Frankreich ist <span class="cloze-inactive" data-ordinal="2">Paris</span>.<br>
+Extra-Hinweis, question_simple=Die <span class="cloze" data-cloze="Hauptstadt" data-ordinal="1">[...]</span> von Frankreich ist <span class="cloze-inactive" data-ordinal="2">Paris</span>., answer_simple=Die <span class="cloze" data-ordinal="1">Hauptstadt</span> von Frankreich ist <span class="cloze-inactive" data-ordinal="2">Paris</span>.<br>
+Extra-Hinweis, card_name=Cloze

@@ -1,0 +1,9 @@
+Row: 0 question=<b>Fett</b> &amp; <i>kursiv</i><br>Zeile 2 &lt;tag&gt;, answer=<b>Fett</b> &amp; <i>kursiv</i><br>Zeile 2 &lt;tag&gt;
+
+<hr id=answer>
+
+<ul><li>eins</li><li>zwei</li></ul>, answer_pure=<ul><li>eins</li><li>zwei</li></ul>, question_simple=<b>Fett</b> &amp; <i>kursiv</i><br>Zeile 2 &lt;tag&gt;, answer_simple=<b>Fett</b> &amp; <i>kursiv</i><br>Zeile 2 &lt;tag&gt;
+
+<hr id=answer>
+
+<ul><li>eins</li><li>zwei</li></ul>, card_name=Card 1

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">dummy2</string>
+    <string name="dummy_label">dummy2</string>
+    <color name="dummy_bg">#FF00FFFF</color>
+</resources>

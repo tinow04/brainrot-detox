@@ -1,0 +1,9 @@
+Row: 0 question={{c1::kein cloze in basic}} {{Unbekannt}}, answer={{c1::kein cloze in basic}} {{Unbekannt}}
+
+<hr id=answer>
+
+Antwort, answer_pure=Antwort, question_simple={{c1::kein cloze in basic}} {{Unbekannt}}, answer_simple={{c1::kein cloze in basic}} {{Unbekannt}}
+
+<hr id=answer>
+
+Antwort, card_name=Card 1

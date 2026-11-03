@@ -1,0 +1,9 @@
+Row: 0 question=Was zeigt das Bild? <img src="bild ä 1.png">, answer=Was zeigt das Bild? <img src="bild ä 1.png">
+
+<hr id=answer>
+
+Ein rotes Rechteck, answer_pure=Ein rotes Rechteck, question_simple=Was zeigt das Bild? <img src="bild ä 1.png">, answer_simple=Was zeigt das Bild? <img src="bild ä 1.png">
+
+<hr id=answer>
+
+Ein rotes Rechteck, card_name=Card 1

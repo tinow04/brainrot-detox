@@ -1,0 +1,9 @@
+Row: 0 question=Hoere zu [sound:klang.mp3], answer=Hoere zu [sound:klang.mp3]
+
+<hr id=answer>
+
+Ein Ton, answer_pure=Ein Ton, question_simple=Hoere zu [anki:play:q:0], answer_simple=Hoere zu [anki:play:q:0]
+
+<hr id=answer>
+
+Ein Ton, card_name=Card 1

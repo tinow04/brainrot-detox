@@ -1,0 +1,69 @@
+Row: 0 name=Basic, css=.card {
+    font-family: arial;
+    font-size: 20px;
+    line-height: 1.5;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+
+Row: 1 name=Basic (and reversed card), css=.card {
+    font-family: arial;
+    font-size: 20px;
+    line-height: 1.5;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+
+Row: 2 name=Basic (optional reversed card), css=.card {
+    font-family: arial;
+    font-size: 20px;
+    line-height: 1.5;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+
+Row: 3 name=Basic (type in the answer), css=.card {
+    font-family: arial;
+    font-size: 20px;
+    line-height: 1.5;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+
+Row: 4 name=Cloze, css=.card {
+    font-family: arial;
+    font-size: 20px;
+    line-height: 1.5;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+.cloze {
+    font-weight: bold;
+    color: blue;
+}
+.nightMode .cloze {
+    color: lightblue;
+}
+
+Row: 5 name=Image Occlusion, css=#image-occlusion-canvas {
+    --inactive-shape-color: #ffeba2;
+    --active-shape-color: #ff8e8e;
+    --inactive-shape-border: 1px #212121;
+    --active-shape-border: 1px #212121;
+    --highlight-shape-color: #ff8e8e00;
+    --highlight-shape-border: 1px #ff8e8e;
+}
+
+.card {
+    font-family: arial;
+    font-size: 20px;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+
