@@ -1,10 +1,12 @@
 package dev.tinow.brainrotstopper.ui.theme
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -16,11 +18,20 @@ val BsMono = FontFamily(
     Font(R.font.jetbrains_mono_bold, FontWeight.Bold),
 )
 
+/**
+ * CSS gives every line box the full `line-height` (half-leading above the first and below the last line), also for a
+ * single line. Compose's default `Trim.Both` cuts that off, so a one-line text is only as high as the font (verified:
+ * a one-line 22 px stat measured 29 dp, `lineHeight = 60.sp` changed nothing). `Trim.None` + `Center` matches CSS.
+ */
+val ExactLineHeight = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None)
+
 private fun style(size: Int, lineHeightFactor: Float, weight: FontWeight = FontWeight.Normal, letterSpacing: TextUnit = TextUnit.Unspecified) =
     TextStyle(
         fontFamily = BsMono,
         fontSize = size.sp,
         lineHeight = (size * lineHeightFactor).sp,
+        lineHeightStyle = ExactLineHeight,
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
         fontWeight = weight,
         letterSpacing = letterSpacing,
     )

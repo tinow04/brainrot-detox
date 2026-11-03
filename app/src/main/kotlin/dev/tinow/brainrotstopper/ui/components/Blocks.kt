@@ -1,5 +1,7 @@
 package dev.tinow.brainrotstopper.ui.components
 
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -59,7 +61,7 @@ fun RateButton(text: String, interval: String?, kind: RateKind, onClick: () -> U
             .background(color.copy(alpha = 0.10f), Shape)
             .border(BsDims.Border, color, Shape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = BsDims.RatePadH, vertical = BsDims.RatePadV),
+            .padding(horizontal = BsDims.RatePadH + BsDims.Border, vertical = BsDims.RatePadV + BsDims.Border),
         verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
     ) {
         BsText(text, t.rateKey, color)
@@ -129,7 +131,7 @@ fun BsBanner(text: String, kind: BsTagKind, onClick: () -> Unit, modifier: Modif
             .heightIn(min = BsDims.TouchMin)
             .border(BsDims.Border, color, Shape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = BsDims.S12, vertical = BsDims.S8),
+            .padding(horizontal = BsDims.S12 + BsDims.Border, vertical = BsDims.S8 + BsDims.Border),
         contentAlignment = Alignment.CenterStart,
     ) { BsText(text, BsTheme.type.meta.copy(fontWeight = FontWeight.Bold), color) }
 }
@@ -158,14 +160,25 @@ fun AppRow(label: String, blocked: Boolean, onToggle: (Boolean) -> Unit, modifie
     }
 }
 
+/**
+ * Compose never makes a first line smaller than the font (1.32 em), CSS does: value 22 px * 1.25 = 27.5 (Compose: 29 dp)
+ * and label 12 px * 1.3 = 15.6 (Compose: 16 dp). Cuts [trim] off the text height and centres the glyphs in what is left.
+ */
+private fun Modifier.trimFirstLine(trim: Dp): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints)
+    val t = trim.roundToPx()
+    layout(placeable.width, (placeable.height - t).coerceAtLeast(0)) { placeable.place(0, -t / 2) }
+}
+
 /** `.stat`: bordered tile with a big value and a dim label. */
 @Composable
 fun BsStatTile(value: String, label: String, modifier: Modifier = Modifier) {
     val c = BsTheme.colors
     val t = BsTheme.type
-    Column(modifier.border(BsDims.Border, c.line).padding(horizontal = BsDims.StatPadH, vertical = BsDims.StatPadV)) {
-        BsText(value, t.stat, c.text)
-        BsText(label, t.label, c.dim)
+    Column(modifier.border(BsDims.Border, c.line).padding(horizontal = BsDims.StatPadH + BsDims.Border, vertical = BsDims.StatPadV + BsDims.Border)) {
+        BsText(value, t.stat, c.text, Modifier.trimFirstLine(1.5.dp))
+        // `.stat .l` line-height 1.3. Compose does not break after "-" here ("richtig-quote" split mid-word), so offer a break point.
+        BsText(label.replace("-", "-\u200B"), t.label.copy(lineHeight = 15.6.sp), c.dim, Modifier.trimFirstLine(0.75.dp)) // 0.4 dp overhang + rounding of the multi-line labels, tuned against the reference lines
     }
 }
 
@@ -176,6 +189,7 @@ data class ChartBar(val label: String, val value: Int)
 fun BsBarChart(bars: List<ChartBar>, modifier: Modifier = Modifier) {
     val c = BsTheme.colors
     val t = BsTheme.type
+    val chartLabel = t.label.copy(lineHeight = 18.sp) // `.chart .c` has font-size 12 but no `.t-sm`: line-height 1.5 inherited
     val max = bars.maxOfOrNull { it.value }?.coerceAtLeast(1) ?: 1
     Row(
         modifier.fillMaxWidth().height(BsDims.ChartHeight),
@@ -186,9 +200,9 @@ fun BsBarChart(bars: List<ChartBar>, modifier: Modifier = Modifier) {
             val today = i == bars.lastIndex
             val h = if (bar.value <= 0) 0.dp else (bar.value.toFloat() / max * 90f).dp.coerceAtLeast(BsDims.ChartBarMin)
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(BsDims.S4, Alignment.Bottom)) {
-                BsText(bar.value.toString(), if (today) t.label.copy(fontWeight = FontWeight.Bold) else t.label.copy(fontWeight = FontWeight.Medium), if (today) c.text else c.muted)
+                BsText(bar.value.toString(), if (today) chartLabel.copy(fontWeight = FontWeight.Bold) else chartLabel.copy(fontWeight = FontWeight.Medium), if (today) c.text else c.muted)
                 Box(Modifier.fillMaxWidth().height(h).background(c.accent.copy(alpha = if (today) 1f else 0.45f), RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)))
-                BsText(bar.label, if (today) t.label.copy(fontWeight = FontWeight.Bold) else t.label, if (today) c.text else c.dim)
+                BsText(bar.label, if (today) chartLabel.copy(fontWeight = FontWeight.Bold) else chartLabel, if (today) c.text else c.dim)
             }
         }
     }

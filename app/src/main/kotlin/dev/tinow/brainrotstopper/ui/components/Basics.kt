@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -195,8 +196,10 @@ fun BsBox(label: String, modifier: Modifier = Modifier, content: @Composable Col
         Column(
             Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .border(BsDims.Border, c.line)
-                .padding(top = BsDims.BoxPaddingTop, start = BsDims.BoxPaddingSides, end = BsDims.BoxPaddingSides, bottom = BsDims.BoxPaddingSides),
+                // CSS border-box: the 1 px border adds to the padding of an auto-height box (Compose border() takes no layout space).
+                .padding(top = BsDims.BoxPaddingTop + BsDims.Border, start = BsDims.BoxPaddingSides + BsDims.Border, end = BsDims.BoxPaddingSides + BsDims.Border, bottom = BsDims.BoxPaddingSides + BsDims.Border),
             content = content,
         )
         BsText(
@@ -213,7 +216,7 @@ fun BsBox(label: String, modifier: Modifier = Modifier, content: @Composable Col
 
 /** `.kv`: key (dim) left, value right. */
 @Composable
-fun BsKv(key: String, value: String, modifier: Modifier = Modifier) {
+fun BsKv(key: String, value: String, modifier: Modifier = Modifier, keyColor: Color? = null, valueColor: Color? = null) {
     val c = BsTheme.colors
     val t = BsTheme.type
     Row(
@@ -221,8 +224,8 @@ fun BsKv(key: String, value: String, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(BsDims.KvGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BsText(key, t.body, c.dim)
-        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) { BsText(value, t.body, c.text) }
+        BsText(key, t.body, keyColor ?: c.dim)
+        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) { BsText(value, t.body, valueColor ?: c.text) }
     }
 }
 
@@ -232,7 +235,7 @@ fun BsSep(text: String, modifier: Modifier = Modifier) {
     val c = BsTheme.colors
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(BsDims.SepGap), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.weight(1f).height(BsDims.Border).background(c.line))
-        BsText(text, BsTheme.type.label, c.dim)
+        BsText(text, BsTheme.type.label.copy(lineHeight = 18.sp), c.dim) // `.sep` has no `.t-sm`: line-height 1.5 inherited
         Box(Modifier.weight(1f).height(BsDims.Border).background(c.line))
     }
 }

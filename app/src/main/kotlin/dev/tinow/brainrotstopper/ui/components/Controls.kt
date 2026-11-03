@@ -77,7 +77,8 @@ fun BsSwitch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: 
 fun BsStepper(value: Int, onMinus: () -> Unit, onPlus: () -> Unit, modifier: Modifier = Modifier, minusLabel: String = "weniger", plusLabel: String = "mehr") {
     val c = BsTheme.colors
     val t = BsTheme.type
-    Row(modifier.border(BsDims.Border, c.ctl, Shape), verticalAlignment = Alignment.CenterVertically) {
+    // `.step` is auto-height: the 1 px border adds to the 48 dp buttons (outer height 50 dp), Compose border() takes no layout space.
+    Row(modifier.border(BsDims.Border, c.ctl, Shape).padding(BsDims.Border), verticalAlignment = Alignment.CenterVertically) {
         StepButton("−", minusLabel, onMinus)
         Box(Modifier.widthIn(min = 48.dp), contentAlignment = Alignment.Center) { BsText(value.toString(), t.stat.copy(fontSize = 20.sp), c.text) }
         StepButton("+", plusLabel, onPlus)
@@ -186,7 +187,7 @@ fun BsNavBar(items: List<String>, selected: Int, onSelect: (Int) -> Unit, modifi
 
 /** `.search`: prompt `$ grep` plus a text field; border turns accent on focus. */
 @Composable
-fun BsSearchField(value: String, onValueChange: (String) -> Unit, placeholder: String, prompt: String, modifier: Modifier = Modifier, description: String = placeholder) {
+fun BsSearchField(value: String, onValueChange: (String) -> Unit, placeholder: String, prompt: String, modifier: Modifier = Modifier, description: String = placeholder, password: Boolean = false) {
     val c = BsTheme.colors
     val t = BsTheme.type
     val source = remember { MutableInteractionSource() }
@@ -200,7 +201,7 @@ fun BsSearchField(value: String, onValueChange: (String) -> Unit, placeholder: S
         horizontalArrangement = Arrangement.spacedBy(BsDims.SepGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BsText(prompt, t.input, c.accent, Modifier.clearAndSetSemantics { })
+        BsText(prompt, t.body, c.accent, Modifier.clearAndSetSemantics { }) // `.search` prompt inherits the 14 px body, only the input is 16 px
         Box(Modifier.weight(1f)) {
             BasicTextField(
                 value = value,
@@ -209,7 +210,8 @@ fun BsSearchField(value: String, onValueChange: (String) -> Unit, placeholder: S
                 textStyle = t.input.copy(color = c.text),
                 cursorBrush = SolidColor(c.accent),
                 interactionSource = source,
-                keyboardOptions = KeyboardOptions.Default,
+                keyboardOptions = if (password) KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Password, autoCorrectEnabled = false) else KeyboardOptions.Default,
+                visualTransformation = if (password) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
                 modifier = Modifier.fillMaxWidth().semantics { contentDescription = description },
             )
             if (value.isEmpty()) BsText(placeholder, t.input, c.dim, Modifier.clearAndSetSemantics { })
