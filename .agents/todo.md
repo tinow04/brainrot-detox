@@ -1,17 +1,243 @@
 # TODO
 
-## Offen
+Stand 2026-11-02. Quelle: `plan.json` (Plan der Planungs-Synthese), Details je Aufgabe dort (Feld `details`, `files`). Mit `[x]` abhaken und Datum nennen, wenn erledigt.
 
-- [ ] Android-Projekt initialisieren (Kotlin, Compose, Gradle)
-- [ ] Klären: Android Studio oder nur Gradle per CLI? USB-Debugging am Pixel 9 bereit?
-- [ ] AppWatcher bauen und Overlay über einer Test-App anzeigen
-- [ ] AnkiDroid-API gegen aktuelle Doku prüfen (Berechtigungen, `ReviewInfo`)
-- [ ] AnkiRepository: fällige Karten lesen
-- [ ] Quiz-UI mit Karten-Rendering (WebView)
-- [ ] Antworten an Anki zurückgeben
-- [ ] UnlockManager (5 richtig → Freigabe, Dauer festlegen)
-- [ ] Einstellungen: Auswahl der gesperrten Apps
+## Preflight / Umgebung
+
+- [x] Git-Repo (`main`, origin `tinow04/brainrot-detox`, lokal committet, nicht gepusht)
+- [x] Android cmdline-tools (Build 15859902) unter `~/Android/Sdk/cmdline-tools/latest`
+- [x] SDK-Lizenzen vom User selbst akzeptiert; SDK-Pakete installiert (platform-tools, emulator, `platforms;android-37.0`, build-tools 36.0.0/37.0.0, `system-images;android-37.0;google_apis;x86_64`). Der Workflow-Preflight meldete `ok:false` (Lizenzakzeptanz durch den Agenten vom Permission-System abgelehnt); danach manuell nachgeholt, siehe `log.md`. Vorhandensein der Verzeichnisse am 2026-11-02 per `ls` bestaetigt.
+- [x] AVD `pixel9` (hw.ramSize=3072) angelegt; Boot-Test OK (API 37, userdebug, `adb root` funktioniert) laut `log.md`
+- [x] Emulator-Start-Skript und AnkiDroid-Installation (scripts/emu-start.sh, scripts/anki-install.sh; AnkiDroid v2.25.3 `full` x86_64 mit Signatur-Pruefung installiert)
+
+## M0 Spikes (Toolchain, Emulator, AnkiDroid, Blocking, Dienst)
+
+Ziel: M0: Ein minimales, bauendes Projektgeruest (wird in M1 zum echten Projekt ausgebaut, nicht weggeworfen) plus Pruefprogramm, das im Emulator (AVD pixel9, Android 17/API 37) beweist: (S0) die Toolchain baut, (S1a, Pflicht) eine per Provider beantwortete Karte landet im Revlog und die Berechtigungs-/Provider-Abfrage samt Fehlerverhalten funktioniert, (S1b, wichtig, aber teilbar) Rendering-Fixtures und Sonderzustaende, (S2) startActivity aus dem AccessibilityService wird nicht als Background-Activity-Start blockiert und der Eventstrom liefert die Ignore-Regeln, (S3) der Dienst laesst sich per settings put aktivieren und bleibt nach Install/Kill stabil und der Dienst-Neustart mit offener Zielapp ist gemessen. Ergebnisse stehen als belegt/widerlegt (Befehl + Logauszug) in .agents/gotchas.md und decisions.md und setzen die Konstanten laut Architektur Abschnitt 11. Spike-Code liegt nur in src/debug (SpikeActivity/SpikeReceiver) und scripts/spike/. Reihenfolge: S0, S0b, S1a, S2, S3, S1b (S1b zuletzt, damit ein haengender Seeder die Kernmessungen nicht blockiert).
+
+Reihenfolge: S0, S0b, S1a, S2, S3, S1b, S1c.
+
+- [x] **M0-S0** (2026-11-03, belegt) Toolchain - Akzeptanz: assembleDebug beider Module gruen mit JDK 17; buildEnvironment zeigt eine einzige KGP-Version; alle Build-Warnungen protokolliert und nach Entscheidungsregel behandelt; finale Versionsmatrix und compileSdk-DSL in decisions.md.
+- [x] **M0-S0b** (2026-11-03, Skripte laufen; AnkiDroid-Installation noch offen, siehe S1a) Emulator-Umgebung - Akzeptanz: Skripte laufen, Ergebnis dokumentiert (gotchas.md/decisions.md)
+- [x] (2026-11-03, belegt bis auf: Parallelzugriff bei offenem Reviewer, umgekehrte Installationsreihenfolge, Wiedererscheinen nach Learn-Ahead-Ende -> in M6/M7 nachholen, Details gotchas.md/architecture.md Abschnitt 11) **M0-S1a** Anki-Provider und Revlog (PFLICHT, alle Punkte) - Akzeptanz: Nach Antwort per Provider (Ease 1 und 3) existiert je ein neuer revlog-Eintrag mit passendem ease (read-only per sqlite3 belegt) ODER das Gegenteil ist mit Befehl und Auszug belegt; Berechtigung/Provider-Abfrage liefert Decks mit deck_count; ...
+- [x] (2026-11-03, teilweise: a, c, d belegt, b/e dokumentiert, Rendering-Fixtures vorhanden; gotchas.md) **M0-S1b** Rendering und Sonderzustaende (wichtig, bei Zeitnot nach S3 oder als eigener Folge-Schritt) - Akzeptanz: Je Punkt a-e belegt/widerlegt/nicht pruefbar (mit Grund); Rendering-Fixtures liegen als Testresourcen vor (echt oder als unverifiziert markiert); Fehlertext NotInstalledOrApiOff ist gemaess Tabelle gesetzt.
+- [x] (2026-11-03, belegt, gotchas.md) **M0-S1c** Medienabruf (neu, Option S) - Akzeptanz: `scripts/spike/fake-media-server.py` (Bearer-Pruefung, Testbilder) laeuft auf dem Host; ein Debug-Spike in der Test-App holt per `HttpURLConnection` von `http://10.0.2.2:<port>` (Debug-Cleartext nur fuer 10.0.2.2) 200/401/404, Namen mit Leerzeichen/Umlauten prozentkodiert; Ergebnis (Statuscodes, Dauer, Bytes) in gotchas.md. Kein echtes Token, nie der echte Server.
+- [x] (2026-11-03, belegt, Details gotchas.md) **M0-S2** Blocking und Eventstrom - Akzeptanz: In 20/20 Versuchen erscheint die Dummy-LockActivity ohne `Background activity launch blocked!` (und `lock-resumed` 20/20 geloggt); Latenz Dummy-Resume -> Lock-Resume: Median <= 500 ms und p95 <= 1000 ms; die Szenario-Matrix ist vollstaendig ausgefuellt ...
+- [x] (2026-11-03, belegt, Details gotchas.md) **M0-S3** Dienst-Lebenszyklus - Akzeptanz: Dienst laesst sich per Skript aktivieren (Verifikation per settings get + logcat) und bleibt nach adb install -r und kill aktiv oder die Abweichung ist dokumentiert; ECM-Verhalten steht belegt in gotchas.md; Matrixzeile Dienst-Neustart bei offener Zielapp ...
+
+Fallback bei Fehlschlag: S0 scheitert: Fallbackleiter Gradle 9.7.1 -> Kotlin 2.4.10 -> aeltere stabile Compose-BOM (jeweils per Maven-Metadata belegen); scheitert alles, Plan-Korrektur an Opus. S1a Revlog negativ: Architektur bleibt (eigene Zaehler/Statistik), aber gotchas.md und Produktbeschreibung halten fest, dass AnkiDroid-Statistik/Sync die Antworten nicht (oder nicht sichtbar) enthaelt; Opus entscheidet ob weiterhin der Provider-Antwortpfad genutzt wird. Ist adb root nicht verfuegbar: AOSP-Image (system-images android-37.0 default) bzw. Revlog-Pruefung ueber AnkiDroid-UI (Statistik/Karten-Info per Screenshot). reps nicht lesbar: answerVerify=false. Seeder scheitert: Pflicht-Set per UI, restliche Fixtures handgeschrieben (unverifiziert markiert). S2 scheitert (BAL blockiert in >0/20): STOPP, Plan-Korrektur an Opus; Fallbackleiter: (B) TYPE_ACCESSIBILITY_OVERLAY mit ComposeView-Host (braucht ViewTreeLifecycleOwner/SavedStateRegistryOwner; LockRoot ist hostunabhaengig gebaut), (C) SYSTEM_ALERT_WINDOW (+Setup-Schritt), (D) dauerhaft GLOBAL_ACTION_HOME. Latenz ueber Schwelle oder gravierende Matrixzeile: Meldung an Opus (Option Overlay-Vorhang), nicht selbst bauen. S3 settings put wirkungslos: Aktivierung per UI-Klickpfad (input tap + Screenshots) in a11y-enable.sh dokumentieren.
+
+## M1 Referenz-Tooling, Geruest, Theme, Komponenten und alle Screens statisch
+
+Ziel: Bauendes Projekt (aus M0) mit maschinell pruefbarer Mockup-Referenz, token-genauem Theme (Mocha/Latte, JetBrains Mono), allen Basiskomponenten und allen 8 Mockup-Screens plus den neuen Screens (Setup, Error x7, Waiting, Loading, Banner) als zustandslose Composables, per Gallery gegen Referenz geprueft. Keine Logik.
+Abhaengig von: M0
+
+- [ ] **M1-T0** Mockup-Referenz, Textmatrix und Layout-Regeln - Akzeptanz: design/reference/ enthaelt 16 PNGs (8 Screens x dark/light) ODER dokumentierte Rueckmeldung an den User, dass der Renderer scheiterte; design/reference/strings.json und string-whitelist.txt vorhanden; tools/visual-diff.sh liefert fuer ein Bild gegen sich selbst SSIM 1.0 und fuer zwei verschiedene Mockups < 0.9 (Selbsttest); Textmatrix in .agents/mockups.md eingetragen
+- [ ] **M1-T1** Modulkonfiguration, Manifest, Icon - Akzeptanz: scripts/gradlew-jdk17.sh :app:assembleDebug :app:assembleRelease :testapp:assembleDebug gruen; scripts/check-manifest.sh Exit 0 (keine Berechtigung ausserhalb der Allowlist, keine aus der Verbotsliste); Alle drei APKs (app, dummy, dummy2) sind auf AVD pixel9 installierbar; lint ohne MissingApplicationIcon
+- [ ] **M1-T2** Schrift - Akzeptanz: FontFamily mit 400/500/700 in Compose nutzbar (Preview); THIRD_PARTY.md nennt Quelle, Version, Lizenz, sha256
+- [ ] **M1-T3** Theme, Dimensionen, Strings - Akzeptanz: Unit-Test prueft jeden Hexwert gegen die Tabelle aus .agents/mockups.md; BsDimsTest prueft BsDims gegen theme-dims.json; StringsTest: Plural (1 karte/2 karten, 1 tag/2 tage), Fortschrittsbalken, `~3h 20m`, `~45 min`, `0 min`, `86 %`, leere Quote `-`; Theme wechselt mit System-Dark-Mode (cmd uimode night yes/no, Screenshot beider Modi)
+- [ ] **M1-T4** Terminal-Komponenten - Akzeptanz: Jede Komponente hat @Preview dunkel und hell; Touch-Ziele >= 48 dp, Abstaende nur aus {4,8,12,16,24,32}; Semantik-Test: BsSwitch hat Role.Switch, BsRadioOption Role.RadioButton, Fortschritt hat contentDescription; assembleRelease gruen (Release-Stubs vorhanden)
+- [ ] **M1-T5** Alle Screens statisch - Akzeptanz: Pro Screen und Variante @Preview dunkel/hell; scripts/check-strings.sh Exit 0 (keine unerklaerten Mockup-Strings); Compose-UI-Test: bei fontScale 2.0 ist der Hauptbutton jedes Screens sichtbar und >= 48 dp
+- [ ] **M1-T6** Gallery, Skripte, Abgleich - Akzeptanz: scripts/check.sh gruen; Alle 16 Mockup-Ansichten: SSIM >= 0.90 gegen design/reference/ (Warnbereich einzeln begruendet) und check-strings.sh Exit 0; Extra-Screens: Screenshots hell/dunkel vorhanden, Pruefliste je Eintrag abgehakt; Doku: .agents/INDEX.md (Code-Struktur), log.md, todo.md aktualisiert
+
+Emulator-Pruefungen:
+- scripts/emu-start.sh; `adb shell getprop sys.boot_completed` = 1; `adb root` danach `adb shell id` zeigt uid=0
+- `adb install -r app/build/outputs/apk/debug/app-debug.apk`; `adb shell am start -n dev.tinow.brainrotstopper/.debug.ComponentGalleryActivity --es screen intro`; scripts/shot.sh dunkel
+- `adb shell cmd uimode night no` dann shot.sh hell; zurueck mit `night yes`
+- `adb shell wm size 1236x2745; adb shell wm density 480` (Mockup-Modus), Gallery-Screens fotografieren, danach `wm size reset; wm density reset`
+- `adb shell settings put system font_scale 2.0`, Gallery-Screens pruefen (Hauptbutton sichtbar), danach `font_scale 1.0`
+- Dummy-APKs installieren und `adb shell am start -n dev.tinow.brainrotstopper.dummy/.DummyActivity` zeigt magenta, `...dummy2/.DummyActivity` cyan (shot.sh)
+
+## M2 Domain-Kern und Persistenz
+
+Ziel: Alle reinen Entscheidungslogiken (Zeit, Freigabe, Gate-Zustandsmaschine, Quiz-Reducer inkl. Queue-Matrix, Statistik) und die DataStore-Persistenz stehen, vollstaendig per JVM-Test abgesichert. Debug-Hooks vollstaendig. Noch keine Blocking-Komponenten.
+Abhaengig von: M1
+
+- [ ] **M2-T1** Zeit und Modelle - Akzeptanz: Serialisierungs-Roundtrip-Tests fuer alle Modelle gruen; SystemTimeSource instrumentiert: bootCount >= 0 oder -1 dokumentiert
+- [ ] **M2-T2** GrantPolicy, ProtectedPackages, GateEvaluator - Akzeptanz: GrantPolicyTest: gueltig, abgelaufen, exakte Grenze (elapsed==until ungueltig), bootCount anders, bootCount -1, now<grantedAt, Rest>duration+slack, Wall-Clock irrelevant; GateEvaluatorTest: gesperrt/nicht gesperrt/geschuetzt/Grant gueltig und abgelaufen, com.ichi2.anki nie Lock
+- [ ] **M2-T2b** GateStateMachine, LaunchThrottle, Re-Evaluate - Akzeptanz: GateStateMachineTest: jede Zeile der Tabelle aus 3A; Test Event im Throttle-Fenster, danach Stille -> StartLock nach <= Fensterende + REEVAL_TOLERANCE_MS; Test Breaker: 7 Starts in 10 s -> GoHome, nie Allow, Re-Evaluate laeuft in BREAKER_MIN_INTERVAL_MS-Abstaenden bis nach 30 s Lock erscheint; Nutzer geht im Cooldown Home -> kein StartLock; Test Ack-Frist: kein Ack -> Retry -> HOME + Diag(launchFailed)
+- [ ] **M2-T3** QuizReducer und QueuePolicy - Akzeptanz: QuizReducerTest tabellengetrieben: jede Transition; jede Zeile der Queue-Matrix je ein Test (inkl. 4a mit beiden Werten von LEARN_COUNT_INCLUDES_PENDING); nur Ease 3/4 zaehlen; Fortschritt bleibt nach Nochmal/Schwer; AnswerFailed zaehlt nicht; doppeltes Rate wirkungslos; Rate-Guard; veraltete Sequenz ignoriert; Waiting ohne zeitbasierte Freigabe; Cancel behaelt Session; Resume mit gueltiger Freigabe; TTL; Bootwechsel; Zielwechsel; Unlocked-Back = HOME ohne Zaehlung; Stats-Tabelle: Property-Test aborted <= blocks ueber zufaellige Ereignisfolgen; Debounce 10 s; Retarget zaehlt neuen Block und alten Abbruch; Kein 'import android.' in domain/ (DomainPurityTest gruen)
+- [ ] **M2-T4** DataStore-Repositories - Akzeptanz: Instrumentierte Tests auf AVD: Roundtrip, defekte settings.json -> Wiederherstellung aus Spiegelkopie, defekte Spiegelkopie -> Defaults + Flag, parallele updateData ohne Verlust, Pfade in files/datastore/; commitAnswer/commitUnlock sind je ein einziges updateData auf runtime.json (Test mit simuliertem Abbruch zeigt keinen Zwischenzustand)
+- [ ] **M2-T5** StatsAggregator und StreakCalculator - Akzeptanz: Tests: Luecken, Tageswechsel, Zeitzone/Sommerzeit ueber epochDay, leere Daten (Quote '-'), Streak mit heute leer/gestern ok, Streak mit freeUnlocks-Tag, Ranking-Balkenbreite relativ zum Maximum, Balkenhoehe fuer Wert 1 bei Max 15 (Mindesthoehe 4 dp), Max=0, aborted > blocks wird geklemmt
+- [ ] **M2-T6** Debug-Hooks vollstaendig - Akzeptanz: Jede Action der Tabelle ist per `adb shell am broadcast` aufrufbar und wirkt (DUMP_STATE zeigt die Aenderung); `aapt2 dump xmltree` bzw. apkanalyzer des Release zeigt keinen DebugControlReceiver; scripts/check.sh gruen, Doku (architecture.md, todo.md, log.md) aktualisiert
+
+Emulator-Pruefungen:
+- `scripts/e2e/state.sh` gibt BSState-JSON aus (leerer Zustand)
+- `adb shell am broadcast -n dev.tinow.brainrotstopper/.debug.DebugControlReceiver -a dev.tinow.brainrotstopper.debug.action.SET_BLOCKED --es pkgs dev.tinow.brainrotstopper.dummy --es on true`, dann state.sh: Blockliste enthaelt das Dummy-Paket
+- GRANT_NOW fuer das Dummy-Paket, state.sh zeigt remainingMs > 0 und bootCount gleich dem aktuellen
+- RESET --es what all, state.sh zeigt leeren Zustand
+- Instrumentierte Tests: `scripts/gradlew-jdk17.sh :app:connectedDebugAndroidTest` gruen
+
+## M3 Blocking-Mechanismus, Setup (Accessibility, Akku), Haupt-Shell
+
+Ziel: Beim Oeffnen der Dummy-App legt sich die LockActivity zuverlaessig darueber (mit Intro A1); Dienststatus und Setup funktionieren; Umgehungsmatrix im Emulator gemessen. Spike-Ergebnisse aus M0 sind verbindlich.
+Abhaengig von: M2
+
+- [ ] **M3-T1** Skripte vollenden - Akzeptanz: Skripte laufen idempotent, Fehlschlaege brechen laut ab (Exit != 0)
+- [ ] **M3-T2** Dienst, ForegroundTracker, GateController, LockLauncher - Akzeptanz: JVM-Tests: ForegroundTracker-Tabelle (reale Paket/Klassen-Folgen aus S2, Unbekannte gelten als normales Paket), GateController mit FakeLockLauncher (Ack kommt / kommt nicht -> Retry -> HOME), Breaker; Absichtlich geworfene Exception im Handler (THROW_IN_HANDLER) laesst den Dienst weiterlaufen (logcat-Beleg); Dynamische Schutzmenge aktualisiert sich nach Aenderung des Standard-Launchers bzw. einer IME (Test per Fake oder Emulator)
+- [ ] **M3-T3** LockActivity-Huelle - Akzeptanz: Screenshot dunkel/hell gegen A1 (SSIM-Schwelle wie M1-T6); `dumpsys activity activities` zeigt keine Duplikate der LockActivity nach 10x Oeffnen
+- [ ] **M3-T4** PermissionStatusReader, Setup v1, Haupt-Shell, Banner - Akzeptanz: Statuszeile wechselt nach a11y-enable.sh bzw. Ausschalten ohne Neustart der App innerhalb 2 s; Fall 'aktiviert aber nicht gebunden' ist anzeigbar (Fake-Quelle + Screenshot hell/dunkel), ebenso alle Banner-Varianten
+- [ ] **M3-T5** E2E-1 Sperre - Akzeptanz: Skript Exit 0 mit Logauszuegen und Screenshots; Doku: gotchas.md (S2/S3-Ergebnisse), decisions.md (Ignore-Tabelle), architecture.md Ist-Stand, todo.md, log.md
+
+Emulator-Pruefungen:
+- `scripts/a11y-enable.sh` dann `adb logcat -d | grep 'BS/Svc connected'`
+- SET_BLOCKED Dummy; `am start -n dev.tinow.brainrotstopper.dummy/.DummyActivity`; `scripts/focus.sh` zeigt dev.tinow.brainrotstopper/.lock.LockActivity innerhalb 2 s
+- `adb shell input keyevent KEYCODE_BACK`; focus.sh zeigt den Launcher, nicht die Dummy-App
+- GRANT_NOW; Dummy starten; focus.sh zeigt Dummy; nach Ablauf (SET_SHORT_DURATION) wechselt focus.sh ohne Eingabe zur LockActivity
+- Dummy zweimal binnen 1 s starten (Throttle-Fenster), dann nichts tun: focus.sh zeigt nach <= 3 s die LockActivity
+- `adb logcat -d | grep -c 'Background activity launch blocked'` = 0
+- Dienst per `settings put secure enabled_accessibility_services ''` ausschalten: App-Banner 'schutz inaktiv' erscheint (Screenshot)
+- com.ichi2.anki in Apps-Liste nicht waehlbar; SET_BLOCKED auf com.ichi2.anki hat keinen Lock zur Folge
+
+## M4 AnkiDroid-Anbindung und Quiz-Flow A1-A5
+
+Ziel: CardSource gegen echtes AnkiDroid v2.25.3 im Emulator belegt und robust; kompletter Sperr-Flow mit echten Karten, Fehlerscreens, Notausgang, Write-ahead-Antwort, Freigabe und Statistikerfassung.
+Abhaengig von: M3
+
+- [ ] **M4-T1** Anki-Domain, Contract, Gateway - Akzeptanz: AnkiErrorMappingTest: null-Cursor, SecurityException, IllegalStateException, IllegalArgumentException, Timeout, DeadObjectException, defektes JSON jeweils korrekt; Kein android-Import in domain/anki
+- [ ] **M4-T2** AnkiContentProviderSource und FakeCardSource - Akzeptanz: AnkiContentProviderSourceTest: jeder Fehlerzweig, Deck-Rotation bei All, Waiting-Erkennung, nie AllDone bei unlesbaren Counts, leerer nicht-null Cursor mit Counts>0 und learn=0 -> BadData, leerer Cursor mit learn>0 -> Waiting; Aggregation fuer All summiert nur Top-Level-Decks (kein Doppelzaehlen von Unterdecks)
+- [ ] **M4-T3** CardHtml und Renderer - Akzeptanz: CardHtmlTest mit Fixtures: Basic, Cloze, Typ-Feld, Bild, Audio, kaputtes Template, hr#answer-Fall und Fall ohne; kein externes src/href im Ergebnis; Instrumentierter WebView-CSP-Test: Fixture mit Script und externem Bild in JS-aktivierter Test-WebView -> Script laeuft nicht, kein Netzzugriff; Screenshots der Testkarten dunkel/hell in beiden Renderern lesbar (Pruefung des Seiteninhalts per Test-WebView textContent statt nur Augenmass)
+- [ ] **M4-T3b** Medien (Revision 3, Option S) - Akzeptanz: Umsetzung laut architecture.md 5a: `MediaConfig`, `HttpMediaFetcher`, `MediaCache`, `MediaInliner`, Einbindung vor dem Rendern; `MediaInlinerTest` und `HttpMediaFetcherTest` (200/304/401/404/429/Timeout/Redirect/zu gross/falscher Content-Type, Namen mit Leerzeichen, Entities, Pfadangriffe); Emulator mit Fake-Server: Karte mit Bild zeigt das Bild (Screenshot dunkel/hell), Server aus oder 404 -> Platzhalter und Karte bewertbar; kein Token in Logcat (grep), kein Redirect gefolgt; Release-Manifest enthaelt INTERNET und nichts ausserhalb der Allowlist
+- [ ] **M4-T4** QuizEngine und Verdrahtung - Akzeptanz: Engine-Tests (runTest, FakeCardSource, FakeTimeSource) fuer answerVerify true und false: Prozess-Neustart-Simulation (Engine neu, Session aus Runtime), Abbruch nach jedem Pipeline-Schritt ohne Doppelzaehlung, 5 richtig mit 2 Fehlern -> Unlock nach 7 Karten, AnswerFailed zaehlt nicht; Intro greift nachweislich nicht auf AnkiDroid zu (Engine-Test: FakeCardSource-Aufrufzaehler = 0 bis [start]); Compose-UI-Tests je Screen inkl. Fehlerscreens (Titel, Text, genau eine Hauptaktion)
+- [ ] **M4-T5** Setup-Schritte Anki - Akzeptanz: Screenshots fuer alle Fehlerzustaende: AnkiDroid deinstalliert, Permission verweigert, Provider aus (falls S1 moeglich), Speicher nicht eingerichtet
+- [ ] **M4-T6** Notausgang - Akzeptanz: Reducer-/Engine-Tests: vor 60 s kein Grant; nach 60 s Grant 5 min; zweiter Notausgang innerhalb 6 h abgelehnt; Neustart (bootCount) hebt die Sperre des Cooldowns nicht auf; Screenshot Notausgang-Button mit Countdown und deaktiviertem Zustand
+- [ ] **M4-T7** Contract-Test und E2E-2 - Akzeptanz: Skript Exit 0 plus Screenshots (klein) in design/screenshots/; Doku: anki-api.md (neu, in INDEX.md eintragen), gotchas.md (belegt/widerlegt je Faktenpunkt, 'API muss aktiviert werden' korrigieren), decisions.md, architecture.md, todo.md, log.md
+
+Emulator-Pruefungen:
+- `scripts/anki-install.sh`; `adb shell cmd package resolve-content-provider --user 0 com.ichi2.anki.flashcards` oder probe zeigt Provider
+- SET_SOURCE real; Dummy sperren und oeffnen; Screenshot zeigt A1, `adb logcat` zeigt bis [start] keinen Zugriff auf com.ichi2.anki.flashcards; nach [start] A2 mit echter Karte, nach [antwort zeigen] A3 mit vier Bewertungsbuttons
+- Nach 'nochmal' bleibt die Anzeige bei x/5 (Screenshot) und A4 erscheint; nach 5 richtigen A5; `DUMP_STATE` zeigt Grant fuer das Dummy-Paket
+- `adb shell pm revoke dev.tinow.brainrotstopper com.ichi2.anki.permission.READ_WRITE_DATABASE`; Dummy oeffnen, [start]: Fehlerscreen 'berechtigung fehlt', Dummy bleibt gesperrt (focus.sh)
+- `adb shell pm uninstall com.ichi2.anki` bzw. `pm disable-user`: Fehlerscreen 'ankidroid nicht erreichbar', Sperre bleibt zu; nach 60 s erscheint $ ./notausgang
+- `adb shell kill -9 <pid der App>` waehrend Karte A3: Sperre erscheint neu, Fortschritt bleibt (DUMP_STATE correct unveraendert)
+- revlog.sh nach den Antworten zeigt neue Eintraege mit ease 1/3/4 (oder dokumentiertes negatives Ergebnis)
+
+## M5 Einstellungen, Freigabelogik-Feinschliff, App-Auswahl, Statistik
+
+Ziel: Die drei Tabs entsprechen 1:1 den Mockups B1-B3 in hell/dunkel und sind mit Persistenz und Dienst verbunden; Freigabe/Session-Verhalten ist End-to-End belegt.
+Abhaengig von: M4
+
+- [ ] **M5-T1** PackageCatalog und AppsScreen (B1) - Akzeptanz: Instrumentierter PackageCatalogTest: Dummy erscheint, eigenes Paket und com.ichi2.anki nicht; Toggle -> DUMP_STATE zeigt aktualisierte Blockliste; Screenshot gegen B1 (SSIM)
+- [ ] **M5-T2** ConfigScreen (B2) - Akzeptanz: (Revision 3: zusaetzlich Box `BILDER` mit URL-/Token-Feld und `$ ./test`, siehe architecture.md 5a; Token landet nicht in Logcat) Werte landen in settings.json und ueberleben Prozess-Neustart; Unit-Test der Wertebereichs-Klemmung; Screenshot gegen B2 (SSIM); neue Session nutzt neue Werte (E2E)
+- [ ] **M5-T3** StatsScreen (B3) - Akzeptanz: Werte stimmen mit StatsAggregator-Tests ueberein (SEED_STATS preset week liefert die Mockup-Werte 14/87/12 tage/412/86 %/~3h 20m); Screenshot gegen B3 hell/dunkel (SSIM)
+- [ ] **M5-T4** Freigabe- und Session-E2E - Akzeptanz: Skripte Exit 0, BSState-Belege (blocks/aborted/unlocks/freeUnlocks); Unit/Engine-Tests decken dieselben Faelle ab
+- [ ] **M5-T5** Gesamtabgleich Mockups - Akzeptanz: Alle 16 Ansichten SSIM >= 0.90, check-strings.sh Exit 0, Abweichungsliste leer oder je Punkt begruendet in .agents/mockups.md; Doku: INDEX.md, architecture.md, todo.md, log.md aktualisiert
+
+Emulator-Pruefungen:
+- Tab apps: Schalter fuer Dummy an -> `DUMP_STATE` zeigt Paket in blockedPackages; Dummy starten -> LockActivity
+- Tab einstellungen: Stepper auf 3 stellen, Dauer 5 min, Deck waehlen; `DUMP_STATE` nach neuer Session zeigt required=3, unlockMinutes=5
+- Tab statistik: nach E2E zeigt 'gesperrt heute' die Anzahl neuer Episoden; Screenshot hell/dunkel
+- Freigabe 5 min: `DUMP_STATE` remainingMs sinkt; Dummy bleibt offen; nach Ablauf (SET_SHORT_DURATION) Sperre ohne Eingabe
+- Home waehrend 3/5, Dummy erneut oeffnen: Intro zeigt 3/5 (Screenshot)
+- Wechsel dummy -> dummy2 (beide gesperrt): Fortschritt bleibt, Intro nennt dummy2
+
+## M6 Haertung: Neustart, Kill, Umgehungen, Fehlerfaelle
+
+Ziel: Alle Umgehungs- und Fehlerszenarien sind im Emulator durchgespielt; Ergebnisse (auch Restluecken) stehen belegt in den Docs; behebbare Luecken sind gefixt.
+Abhaengig von: M5
+
+- [ ] **M6-T1** Neustart und Prozess-Tod - Akzeptanz: Skript Exit 0 bzw. dokumentierte Ausnahmen in gotchas.md
+- [ ] **M6-T2** Dienststatus und Selbstsabotage - Akzeptanz: Banner erscheint binnen 2 s; Blockliste nach Korruption unveraendert wirksam
+- [ ] **M6-T3** Umgehungsmatrix - Akzeptanz: Matrix 'Vektor -> blockiert/umgangen/akzeptiert' mit Beleg in gotchas.md; Kein ANR/Crash in logcat, Diag.errorCount nachvollziehbar
+- [ ] **M6-T4** Fehlerfall-Matrix - Akzeptanz: Je Fall Screenshot + Gate-Ergebnis; fail-closed ausser NothingDue-Grant und Notausgang; Matrix in .agents/test-checklist.md
+- [ ] **M6-T5** Plattform-Details und Zeit - Akzeptanz: Belege in log.md; Abweichungen als Befund
+- [ ] **M6-T6** Review-Befunde und Doku - Akzeptanz: Review-Liste leer oder begruendet; scripts/check.sh gruen
+
+Emulator-Pruefungen:
+- `adb reboot`; nach Boot `adb logcat -d | grep 'BS/Svc connected'`; DUMP_STATE: Grants leer bzw. ungueltig
+- `adb shell am force-stop dev.tinow.brainrotstopper` (bewusst); App oeffnen: Banner 'schutz inaktiv'; a11y-enable.sh; Banner verschwindet
+- `adb shell input keyevent KEYCODE_HOME` 10x in 5 s mit Dummy im Vordergrund: Dummy nie dauerhaft sichtbar, logcat 'BS/Gate breaker'; nach Cooldown ohne Eingabe wieder gesperrt
+- `input keyevent KEYCODE_APP_SWITCH`: gesperrte App aus Recents -> Sperre
+- `adb shell input keyevent KEYCODE_POWER` zweimal bei abgelaufener Freigabe: nach Entsperren Sperre sichtbar
+- Split-Screen/PiP-Ergebnis in gotchas.md mit Screenshot
+
+## M7 Regression und Abschluss
+
+Ziel: Gegen neuere AnkiDroid-Versionen geprueft, Release-Build, Doku und Checklisten vollstaendig, ehrliche Restliste.
+Abhaengig von: M6
+
+- [ ] **M7-T1** Regression gegen AnkiDroid 2.26-Alpha - Akzeptanz: Ergebnis (identisch/abweichend) in gotchas.md
+- [ ] **M7-T2** Release-Hygiene - Akzeptanz: Release-APK startet im Emulator (Smoke: Sperre + 1 Karte); check-manifest.sh Exit 0 fuer Release (nur Allowlist, keine verbotene Berechtigung)
+- [ ] **M7-T3** Vollstaendigkeit und Checklisten - Akzeptanz: Alle Dateien aktualisiert; INDEX.md nennt neue Dateien; scripts/check.sh gruen
+
+Emulator-Pruefungen:
+- `scripts/anki-install.sh <2.26-alpha>`; e2e2_quiz.sh Exit 0 oder dokumentierte Abweichung
+- `scripts/gradlew-jdk17.sh :app:assembleRelease`; `adb install -r` Release; Dummy sperren: LockActivity erscheint, 1 Karte beantwortbar
+- `apkanalyzer manifest print` des Release: keine Debug-Receiver, keine verbotenen Berechtigungen; scripts/check-manifest.sh Exit 0
+
+## Offene Entscheidungen fuer den User
+
+Alle acht Punkte hat der User am 2026-11-03 mit dem Standard bestaetigt (Details: `decisions.md`, Abschnitt "Offene Entscheidungen aus der Planung: vom User bestaetigt").
+
+- [x] 2026-11-03 Freigabe je App (nicht global)
+- [x] 2026-11-03 Nichts faellig / Deck leer: Freigabe ohne Quiz (auch bei correct<required, mit Streak-Wertung)
+- [x] 2026-11-03 Notausgang bei dauerhaftem AnkiDroid-Fehler (Button nach 60 s, 5 min Freigabe, max. 1x je 6 h)
+- [x] 2026-11-03 Zeitersparnis-Schaetzung 5 min pro abgebrochener Sperre (mit * markiert)
+- [x] 2026-11-03 Neue Karten zaehlen mit
+- [x] 2026-11-03 Setup als Startroute beim Erststart, danach Banner bei offenem Pflichtschritt, kein vierter Tab
+- [x] 2026-11-03 Keine Benachrichtigung bei totem Dienst
+- [x] 2026-11-03 applicationId dev.tinow.brainrotstopper, minSdk 35, Tagesgrenze lokale Mitternacht
+
+**Neu offen (2026-11-03): Medien (Bilder/Audio) der Karten.** Der User akzeptiert "nur Platzhalter" nicht. Direkte Recherche (ohne Workflow) am 2026-11-03, Ergebnis:
+- AnkiDroid-API: **keine** Medienausgabe (v2.25.3: `CardContentProvider` hat kein `openFile`/`openAssetFile`; Medien nur schreibend ueber `insert` auf `.../media`; `media_files` = nur Dateinamen, `col.media.filesInStr(card)`; `AnkiServer` (NanoHTTPD, 127.0.0.1) lehnt GET mit 404 ab; FileProvider `*.apkgfileprovider` ist `exported=false`).
+- Anki Python-API / AnkiConnect: nur Desktop (AnkiConnect `retrieveMediaFile` = base64 per HTTP auf 127.0.0.1:8765, Desktop-Anki + Add-on noetig), auf dem Handy nicht nutzbar.
+- Optionen: (A) AnkiDroid-Ordner im Modus `PUBLIC` (`~/AnkiDroid`, braucht MANAGE_EXTERNAL_STORAGE, im Play-Store-Build nicht moeglich) + unsere App liest `collection.media` per SAF-Ordnerwahl oder All-files-access. Im Modus `APP_PRIVATE` (Play-Store-Standard, `Android/data/com.ichi2.anki/files/AnkiDroid`) ab Android 11 fuer andere Apps gesperrt, auch per SAF. (B) .apkg-Export mit Medien: User exportiert Deck, App importiert Medien in eigenen Speicher und bildet die Dateinamen aus `media_files`/Karten-HTML darauf ab; funktioniert mit jedem AnkiDroid, aber manuell/veraltbar; Legacy-Format (JSON-`media`-Mapping) einfach, neues Format braucht zstd/Protobuf (aus Drittquellen, unverifiziert). (C) Platzhalter als Rueckfall.
+- Alles ungetestet im Emulator.
+- **Antworten des Users (2026-11-03):** AnkiDroid kommt aus dem Play Store, Wechsel auf die GitHub-Version waere aber ok, wenn es nachweislich funktioniert. Nur Bilder (kein Audio). Manueller .apkg-Export ist ihm zu nervig (Option B verworfen). Er hat einen eigenen Server.
+- **Neue Option S (Server, 2026-11-03):** Der in Anki eingebaute Sync-Server (`anki --syncserver` oder `python -m anki.syncserver`, Docs: docs.ankiweb.net/sync-server.html) legt pro Nutzer `<SYNC_BASE>/<name>/collection.anki2`, `media.db` und `media/<dateiname>` ab (Quellcode `ankitects/anki`, `rslib/src/sync/http_server/` auf main; Tag nicht geprueft). AnkiDroid (auch Play Store) und Desktop synchronisieren dann mit dem eigenen Server statt AnkiWeb. Ein kleiner schreibgeschuetzter HTTP-Dateiserver ueber `media/` liefert der App die Bilder per Dateiname (aus `media_files`), App cached sie. Kosten: Sync wandert von AnkiWeb zum eigenen Server (Migration), App braucht INTERNET (Manifest-Allowlist und "kein INTERNET" im Plan aendern), Server nur HTTP, also VPN (Tailscale) oder HTTPS-Proxy; Client- und Serverversion muessen zusammenpassen. Headless-Sync mit AnkiWeb per pip-`anki` ist laut Forum fragil (Login, Full-Download-Fehler), nicht empfohlen.
+- **Option A praezisiert:** GitHub-Release v2.25.3 hat das Flavor `full` ("no restrictions on storage/camera", Manifest `MANAGE_EXTERNAL_STORAGE`, im Play-Build deaktiviert), Assets u. a. `AnkiDroid-2.25.3-full-universal.apk` und `variant-abi-AnkiDroid-2.25.3-x86_64.apk` (fuer den Emulator). Im Modus `PUBLIC` liegt alles unter `~/AnkiDroid/collection.media`.
+- **User-Tendenz (2026-11-03): Option S** (eigener Server, Traefik vorhanden, INTERNET ok). Server-Setup-Prompt liegt in `server-setup-prompt.md`. Danach Entscheidung S vs. A. Ungeprueft im Prompt: `python -m anki.syncserver`-Modulpfad, Healthcheck der pip-Variante, `SYNC_IP_HEADER`, Traefik-Timeouts bei grossen Uploads, Verhalten des AnkiDroid-2.25.3-Vollsyncs.
+- **ENTSCHIEDEN 2026-11-03: Option S.** Server laeuft und ist getestet (`media-server.md`). Plan angepasst: `architecture.md` Abschnitt 5a, Manifest (INTERNET), Rendering, neue Aufgabe M4-T3b, Spike M0-S1c, Risiken. Option A ist verworfen.
+- ~~Empfehlung (vor der User-Tendenz, erledigt):~~ A zuerst (offline, sofort, keine Infrastruktur), per Spike im Emulator belegen (full x86_64 installieren, Ordner PUBLIC, Notiz mit Bild anlegen, Testapp mit All-files-access bzw. SAF-Ordnerwahl liest `collection.media/<datei>`); S als Alternative/Rueckfall. Danach Plan anpassen (M0-S1b, M4 Rendering, Setup-Schritt Medienordner, Manifest-Allowlist, ggf. INTERNET).
+
+## Standardwerte
+
+- applicationId/namespace: dev.tinow.brainrotstopper; Test-Dummys: dev.tinow.brainrotstopper.dummy und .dummy2 (Flavors von :testapp)
+- Deck-Auswahl: genau EINE Auswahl, Standard 'alle decks'; alternativ ein einzelnes Deck inklusive Unterdecks; 'alle decks' = alle nicht-dynamischen Top-Level-Decks mit faelligen Karten (Rotation nach Faelligkeit, Zaehler = Summe der Top-Level-Decks), keine deckID-lose Abfrage
+- Richtige Karten bis Freigabe: 5 (Bereich 1..20); nur Ease 3 (gut) und 4 (leicht) zaehlen; Nochmal/Schwer erhoehen den Zaehler nicht
+- Freigabedauer: 15 min (Auswahl 5/15/30/60), Freigabe gilt je App, nur ueber elapsedRealtime + BOOT_COUNT gueltig; BOOT_COUNT unlesbar = ungueltig
+- Abgelaufene Freigabe bei offener App: sofort wieder sperren
+- Quiz-Session: bleibt 10 min (Leerlauf) nach Abbrechen/Home erhalten, Zielwechsel uebernimmt den Fortschritt; required/Deck/Dauer werden beim Anlegen eingefroren; Einstellungsaenderungen gelten fuer die naechste Session
+- Intro greift nicht auf AnkiDroid zu; Anki-Zugriff erst nach [start] (kein Prefetch, kein Prozessstart von AnkiDroid bei jeder Sperre, kein Deckauswahl-Nebeneffekt bei sofortigem Abbruch)
+- Nichts faellig (Queue-Matrix Zeile 4): Freigabe ohne Quiz mit Text 'alles gelernt für heute' nach [start], auch mitten in der Session und auch bei correct<required (NothingDuePolicy.GRANT, Konstante ohne UI); Lernkarten noch nicht faellig: Waiting-Screen, pollt alle 15 s, keine zeitbasierte Freigabe
+- Statistik-Definition: blocks = neue Sperr-Episode (Entprellung 10 s), aborted = abgebrochene oder verlassene Episode (immer <= blocks), unlocks = Quiz-Freigaben, freeUnlocks = NothingDue-Freigaben, emergencies = Notausgaenge; Woche = letzte 7 Tage inkl. heute; Tagesgrenze = lokale Mitternacht (nicht Anki-Tageswechsel); Streak = aufeinanderfolgende Tage mit unlocks+freeUnlocks >= 1; zeit gespart = abgebrochene Sperren x 5 min (mit * als geschaetzt markiert)
+- Alle AnkiDroid-Fehler sind fail-closed (nie Auto-Freigabe); Notausgang: auf Fehlerscreens nach 60 s, Grant 5 min je App, hoechstens 1x je 6 h (Konstante EMERGENCY_EXIT_ENABLED=true); kein Ueberspringen/Begraben von Karten; Karten mit Medien werden nicht uebersprungen (Platzhalter [ bild: x ] / [ audio ]); Rendering-Fehler fallen auf bewertbaren Klartext zurueck
+- Kartenrendering: WebView ohne JavaScript, ohne Netz und Dateizugriff, CSP-Meta, Reveal per neu geladenem Dokument; automatischer Rueckfall auf Klartext-Renderer
+- Rate-Guard 600 ms; Launch-Ack 1500 ms mit einem Retry und danach HOME; Throttle 1500 ms je Paket mit geplantem Re-Evaluate; Breaker >6 Starts/10 s -> HOME + 3 s Mindestabstand fuer 30 s mit Re-Evaluate, nie Freigabe
+- Ignore-Prinzip des ForegroundTracker: nur transiente Overlay-Pakete (systemui, android, IMEs, Permission-Controller, Package-Installer, Ergebnis S2); Unbekannte gelten als normale Apps; Schutzmengen (u. a. com.ichi2.anki, Home-Launcher, IMEs, Dialer) werden dynamisch aktualisiert
+- Texte: eine Quelle ui/Strings.kt, nur Deutsch, Umlaute wie in den Mockups; A2 mit abbrechen, A3/A4 ohne (Zurueck/Geste = Abbrechen), A5 mit schliessen = HOME; A4 'schwer' mit [ WARN ]
+- Persistenz: DataStore JSON (settings, runtime, stats), Spiegelkopie fuer settings, Backup komplett aus (allowBackup=false + data_extraction_rules), kein Room/KSP/Hilt/Navigation/Material3/Robolectric/BuildConfig
+- Berechtigungen: AnkiDroid-READ_WRITE_DATABASE und INTERNET (nur Bildabruf vom eigenen Server, Allowlist per Skript); Setup-Schritte Accessibility, AnkiDroid installiert/Permission/API, Akku (empfohlen), kein Overlay/UsageStats/FGS/Boot/Benachrichtigungen
+- Erkennung nur ueber typeWindowStateChanged, canRetrieveWindowContent=false, nie isAccessibilityTool; Sperr-UI als eigene LockActivity (singleTask, eigener Task, excludeFromRecents, portrait)
+- SDK: minSdk 35, targetSdk 36, compileSdk 37; JDK 17 (/usr/lib/jvm/java-17-openjdk, bereits installiert, Studio-Gradle-JDK dort einstellen)
+- Nicht geschuetzt (nur erkannt/gemeldet): Dienst abschalten, Force-Stop, App aus Liste nehmen, Deinstallation, toter Dienst durch Killer, Dienst-Neustart bei bereits offener gesperrter App; keine WRITE_SECURE_SETTINGS-Selbstheilung, kein DO_SYNC im MVP
+- AnkiDroid-Zielversion v2.25.3 (vor der eigenen App installieren); Regression gegen 2.26-Alpha in M7
+- Mockup-Abgleich: Referenz-PNGs aus design/reference/ (tools/mockup), SSIM >= 0.90, maschineller String-Diff; Mindest-Touchziel 48 dp, Seitenrand 24 dp, Schrift JetBrains Mono 400/500/700, Theme folgt dem System (Catppuccin Mocha/Latte)
+- Messmethode Latenz: eigene uptimeMillis-Logzeilen (Dummy-Resume -> Lock-Resume), Median <= 500 ms, p95 <= 1000 ms
+
+## Risiken
+
+- HOCH: Background-Activity-Start der LockActivity aus dem AccessibilityService auf Android 17 ist nur per AOSP-Code/Doku-Ausnahme belegt, nicht am Geraet. Mitigation: Spike M0-S2 (20/20, StrictMode, logcat) und Launch-Ack mit HOME-Fallback. Fallback-Leiter (Plan-Korrektur an Opus): TYPE_ACCESSIBILITY_OVERLAY, dann SYSTEM_ALERT_WINDOW, dann nur HOME.
+- HOCH: Zuverlaessigkeit von TYPE_WINDOW_STATE_CHANGED bei Recents, Split-Screen, PiP, Freeform, Dialogen/IME ist ungeprueft; falsche Ignore-Regeln erzeugen Flackern oder Luecken. Mitigation: S2 protokolliert den Eventstrom und fixiert die Ignore-Tabelle nach festem Prinzip; Throttle mit Re-Evaluate, Breaker, Ack; Restluecken (z. B. PiP) werden klassifiziert und dokumentiert.
+- HOCH: Toolchain AGP 9.5.0 + Gradle 9.8.2 + Kotlin 2.4.21 liegt ausserhalb der JetBrains-Matrix, built-in Kotlin/Plugin-Aufloesung/compileSdk-DSL ungetestet. Mitigation: M0-S0 zuerst, buildEnvironment-Check, Warnungs-Entscheidungsregel, Fallbackleiter Gradle 9.7.1 -> Kotlin 2.4.10 -> aeltere BOM.
+- HOCH: AnkiDroid-Providerdetails unverifiziert (Spalten der Kartenabfrage, next_review_times-Format, Wiedererscheinen von Lernkarten und ob learn-Count nicht faellige Lernkarten enthaelt, deaktivierter Provider, Revlog/Sync der Provider-Antworten, Installationsreihenfolge der Permission, Kaltstart-Dauer, Parallelzugriff). Mitigation: Spike S1a (Pflicht) mit Rohdump und Revlog-Check, Ergebnis-Tabelle Abschnitt 11; CardSource isoliert alles; Fehler typisiert und fail-closed; ein negatives Revlog-Ergebnis aendert die Architektur nicht (eigene Zaehler), muss aber dokumentiert werden.
+- HOCH: Dienst-Neustart (kill, Update, Crash-Restart) mit bereits offener gesperrter App: Vordergrund unbekannt, Sperre erst beim naechsten Fensterwechsel. Ein verlorener Ablauf-Timer wird erst bei Event/SCREEN_ON bemerkt. Mitigation: S3-e misst es, Matrixzeile in gotchas.md, Hinweis im Setup; keine Gegenmassnahme im MVP (canRetrieveWindowContent bleibt false).
+- MITTEL: Der Antwortpfad haengt an AnkiDroids 'Legacy path, used by tests' (Scheduler.answerCard) und kann in 2.26 entfallen; update()-Rueckgabe beweist keinen Erfolg. Mitigation: Version pinnen, Regression M7, Verifikation ueber reps falls lesbar (injizierte Capability, beide Pfade getestet), sonst konservative Recovery (nie doppelt antworten; im Schlechtfall Karte erneut bewerten oder ungezaehlt).
+- MITTEL: Dienst-Lebenszyklus: Force-Stop/Ausschalten entfernt den Dienst dauerhaft, Akku-Optimierung/LMK/Android-17-MemoryLimiter koennen ihn beenden; ohne gebundenen Dienst gibt es keinen Schutz und der Nutzer wird nicht proaktiv benachrichtigt. uiautomator dump/am start -S unterdruecken ihn in Tests. Mitigation: Statusbanner, persistierter Zustand, Catch-all, Dienststatus-Pruefung nach jedem Install/Lauf, Pixel-Themen in test-checklist.md; Restrisiko in decisions.md.
+- MITTEL: Aktivierung des Dienstes unter Eingeschraenkten Einstellungen/ECM bei adb-installierter APK und Advanced Protection (Android 17) nur durch Presse/Sekundaerquellen belegt. Mitigation: S3, Setup-Hinweise, Statuszustand 'blockiert', nie isAccessibilityTool setzen.
+- MITTEL: Karten-Rendering (HTML ohne CSS, Cloze, Typ-Feld, LaTeX/MathJax, Template-Fehlertext, JS-Karten, Medien nicht ueber die API lesbar; geloest durch Option S, Restrisiko: Server nicht erreichbar/Sync fehlt -> Platzhalter). Mitigation: Platzhalter, WebView ohne JS/Netz/Dateien plus CSP, Klartext-Rueckfall, Notausgang; nur mit Bild/Audio loesbare Karten bleiben durch Selbstbewertung nutzbar, aber unvollstaendig (Produktbeschraenkung).
+- MITTEL: Mockup-Referenz: support.js fehlt, .dc.html nicht direkt renderbar; der selbstgebaute Renderer (M1-T0) kann scheitern (Timebox 2 h, dann Referenz-PNGs vom User). Visuelle Abnahme dann nur per Strings/Dims.
+- MITTEL: DataStore: zweite Instanz je Datei wirft IllegalStateException, falscher Scope bricht Operationen ab, JSON-Serializer-Plugin zu Kotlin 2.4.21 ungeprueft. Mitigation: nur der AppContainer erzeugt Stores, instrumentierter Test, Version in S0; Rueckfall Preferences-DataStore mit manuell kodiertem JSON-String.
+- MITTEL: Selbstbewertung ist prinzipbedingt manipulierbar; Freigabe bei AllDone ohne Quiz und der Notausgang sind bewusste Policies (offene Entscheidungen); Restumgehungen (Dienst abschalten, Liste aendern) sind nicht verhindert.
+- MITTEL: S1-Seeding (Cloze/Typ-Feld per .apkg-Import) ist unverifiziert und kann haengen. Mitigation: S1 in a (Pflicht-Set Basic) und b geteilt, S1b zuletzt; handgeschriebene Fixtures als Fallback.
+- NIEDRIG: Spiegelkopie von settings.json verhindert stilles Abschalten bei Korruption nur, solange die Kopie intakt ist; beide defekt -> Defaults (nichts gesperrt) plus Banner.
+- NIEDRIG: Text A4 'die karte kommt später nochmal' kann bei Wiederholungskarten und 'schwer' ungenau sein; fuer schwer wurde ein allgemeiner Text festgelegt, Mockup-Text fuer nochmal bleibt 1:1.
+- NIEDRIG: Parallelnutzung derselben Karte in AnkiDroid und kurzzeitige Deckauswahl-Aenderung durch die schedule-Abfrage (bei Exception nicht zurueckgesetzt). Mitigation: Mutex, keine Schleifen, kein Zugriff im Intro, S1a-9 misst den Parallelzugriff.
+- NIEDRIG: Tagesgrenze lokale Mitternacht weicht vom Anki-Tageswechsel ab: Lernen nach Mitternacht erscheint in der App am neuen Tag, Streak kann an der Grenze anders aussehen als in Anki.
+- NIEDRIG: Developer Verification (Phase 1 seit 30.09.2026 in vier Laendern, global 2027) betrifft Deutschland 2026 nicht; spaeter adb-Installation oder Limited Distribution.
+- NIEDRIG: Entwicklungsumgebung: Standard-java ist JDK 25 (nicht verwenden), wenig RAM neben Emulator (ca. 3-4 GB), Studio-Gradle-JDK muss auf 17 stehen. Mitigation: JAVA_HOME im Wrapper-Skript, org.gradle.jvmargs=-Xmx2g, kein paralleler Emulator, kein Robolectric. Lizenz: FlashCardsContract.kt-Kopfzeile vor Uebernahme lesen; AddContentApi.kt/Ease.kt nicht kopieren.
 
 ## Erledigt
 
-- [x] 2026-11-02 – Projektordner, `CLAUDE.md` und `.agents/` angelegt
+- [x] 2026-11-02 - Projektordner, `CLAUDE.md` und `.agents/` angelegt
+- [x] 2026-11-02 - Mockups Iteration 1 erzeugt (`design/mockups/`)
+- [x] 2026-11-02 - Planungs-Workflow: Recherche, Architektur, Plan (`research.md`, `architecture.md`, `plan.json`)
