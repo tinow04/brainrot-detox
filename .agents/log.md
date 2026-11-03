@@ -2,6 +2,11 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-03 (PC-Freeze durch Emulator + Gradle)
+- Desktop fror gegen 21:53 ein (kwin-Haenger ab 21:51, kein OOM-Kill im Journal): Emulator (3 GB) + Gradle- und Kotlin-Daemon gleichzeitig. Code und Build danach geprueft: unversehrt, `compileDebugKotlin`/`compileDebugAndroidTestKotlin` gruen. Emulator-Disk (`userdata-qemu.img.qcow2`) wurde hart abgewuergt, bei Problemen `-wipe-data`.
+- Gegenmassnahmen: `scripts/emu-start.sh` begrenzt den Emulator per `systemd-run` auf 7 GB (cgroup), stoppt vorher die Gradle-Daemons und bricht bei < 7000 MB freiem RAM ab; `-memory` unter 4096 wirkt nicht (Image erzwingt 4 GB). `gradle.properties`: `kotlin.daemon.jvmargs=-Xmx1536m`. `ANDROID_HOME` aus `/etc/profile.d` wird in den Skripten ignoriert. Details in `gotchas.md`.
+- Danach M1-T5/T6 abgeschlossen: `FontScaleTest` laeuft (Espresso 3.8.0-alpha03 wegen Android 17), `scripts/gallery-compare.sh`, `scripts/gallery-extras.sh` und `scripts/check.sh` angelegt, Gallery ohne Systemleisten. Mockup-Abgleich: alle 16 Ansichten SSIM >= 0,90 (0,91-0,98). Hauptursache war die Zeilenhoehe (Compose `Trim.Both` schneidet bei einer Zeile den Zuschlag ab, jetzt `ExactLineHeight`), dazu Border-im-Padding, vererbte Zeilenhoehe 1,5, Blockabstaende. Details in `gotchas.md`. Nichts committet. Naechster Schritt: M2 (Domain-Kern und Persistenz).
+
 ## 2026-11-03 (Plan auf Option S umgestellt, M0 durchgefuehrt)
 - Plan auf Medien-Option S umgestellt (`architecture.md` Abschnitt 5a, INTERNET, `decisions.md`, `todo.md` inkl. M0-S1c und M4-T3b, `media-server.md`). M0 komplett im Emulator gemessen: S0 Toolchain gruen, S0b Skripte, S1a Provider/Revlog (Antworten landen im Revlog, `usn=-1`), S1b Fixtures/Sonderzustaende, S1c Medienabruf gegen Fake-Server, S2 Blocking (20/20, Median 65 ms), S3 Dienstlebenszyklus. Ergebnisse in `gotchas.md` und `architecture.md` Abschnitt 11 (Gemessene Werte). Code: Gradle-Projekt `:app` (MainActivity, Spike-Dienst, LockActivity, Debug-`SpikeReceiver`), `:testapp` (dummy/dummy2), `scripts/`. Nichts committet oder gepusht.
 - Naechster Schritt: M1 (Referenz-Tooling, Theme, Komponenten, statische Screens).
