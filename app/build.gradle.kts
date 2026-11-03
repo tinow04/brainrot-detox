@@ -61,5 +61,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
+    // Espresso 3.6 calls InputManager.getInstance(), removed on Android 17 (API 37)
+    androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.truth)
 }
