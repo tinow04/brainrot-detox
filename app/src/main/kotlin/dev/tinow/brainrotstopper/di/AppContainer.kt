@@ -1,11 +1,43 @@
 package dev.tinow.brainrotstopper.di
 
 import android.app.Application
+import androidx.datastore.dataStoreFile
+import dev.tinow.brainrotstopper.data.store.RuntimeRepository
+import dev.tinow.brainrotstopper.data.store.SettingsRepository
+import dev.tinow.brainrotstopper.data.store.StatsRepository
+import dev.tinow.brainrotstopper.data.system.SystemTimeSource
+import dev.tinow.brainrotstopper.domain.time.TimeSource
 import dev.tinow.brainrotstopper.hooks.DebugFlags
 import dev.tinow.brainrotstopper.hooks.NoDebugFlags
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import java.io.File
 
-/** Manual dependency container, one per process. Grows with the milestones (stores, engine, gateways). */
+/**
+ * Manual dependency container, one per process. DataStore allows one instance per file per process, so the repositories
+ * are created once here (files in `files/datastore/`). Grows with the milestones (engine, gateways).
+ */
 class AppContainer(val app: Application) {
     @Volatile
     var debugFlags: DebugFlags = NoDebugFlags
+
+    /** Scope of all persistence work; a failing child never cancels its siblings. */
+    val ioScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    val timeSource: TimeSource by lazy { SystemTimeSource(app.contentResolver) { debugFlags.wallOffsetMs } }
+
+    val stats: StatsRepository by lazy { StatsRepository(app.dataStoreFile("stats.json"), ioScope) }
+
+    val runtime: RuntimeRepository by lazy { RuntimeRepository(app.dataStoreFile("runtime.json"), ioScope, stats) }
+
+    val settings: SettingsRepository by lazy {
+        SettingsRepository(
+            file = app.dataStoreFile("settings.json"),
+            mirror = File(app.filesDir, "settings.mirror.json"),
+            scope = ioScope,
+            onCorrupted = { ioScope.launch { runtime.markSettingsCorrupted() } },
+        )
+    }
 }
