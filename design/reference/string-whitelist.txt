@@ -24,3 +24,17 @@ Welches Organell produziert den Großteil des ATP in der Zelle? # sample card te
 Mitochondrium # sample card text
 (innere Membran: oxidative Phosphorylierung) # sample card text
 [ bild: mitochondrium.png ] # sample card media placeholder (format `[ bild: <name> ]` is in Strings.kt)
+# Composed texts (format functions in Strings.kt, exact outputs asserted in StringsTest):
+re:^\d+( (karten|tage|min|fällig))?$ # numbers with unit
+re:^~\d+h \d+m$|^~\d+ min$|^\d+ %$|^\d\d:\d\d$ # time saved, quote, mm:ss
+re:^\[[█░]+\] \d+/\d+$ # progress bar
+re:^\d+/\d+$ # c/required
+re:^<?\d+[mhd]$ # rating intervals from AnkiDroid
+re:^\$ \./(check --app|unlock|open) \S+$ # commands with app label
+re:^\$ \./rate --card \d+ --(again|hard)$ # rate command
+re:^karte \d+ · frage$ # card label
+re:^gesperrt · \d+$ # blocked separator
+re:^\d+ \(\d+ richtig\)$ # session cards
+re:^api aktiv · \d+ decks gefunden$ # AnkiDroid status
+re:^richtige bis \S+ offen ist\.$ # tail of the feedback sentence
+re:^\S+ ist für$ # head of the unlock sentence

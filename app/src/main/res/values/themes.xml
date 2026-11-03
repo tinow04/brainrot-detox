@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Brainrot" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/bs_window_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- LockActivity: no window animation, no white flash -->
+    <style name="Theme.Brainrot.Lock" parent="Theme.Brainrot">
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowDisablePreview">false</item>
+    </style>
+</resources>

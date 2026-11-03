@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mocha bg -->
+    <color name="bs_window_bg">#1e1e2e</color>
+</resources>
