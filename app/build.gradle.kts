@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.datastore)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
 
@@ -64,4 +65,5 @@ dependencies {
     // Espresso 3.6 calls InputManager.getInstance(), removed on Android 17 (API 37)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.truth)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
