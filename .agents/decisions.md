@@ -142,3 +142,17 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 **Warum:** AnkiDroid-API liefert keine Mediendateien. Option A (GitHub-Build, PUBLIC-Ordner, All-files-Zugriff) haette zwei zusaetzliche Rechte und einen Build-Wechsel gebraucht; der Server laeuft schon, ist getestet (200/304/206/401/405) und funktioniert mit dem Play-Store-AnkiDroid. Option B (manueller Export) verworfen.
 
 **Konsequenzen:** Manifest-Allowlist und Verbotsliste angepasst; Tests laufen nur gegen einen lokalen Fake-Server (kein echtes Token im Emulator); AnkiDroid und Desktop muessen mit demselben Sync-Server syncen (404 = noch nicht gesynct). Schnittstelle: `media-server.md`. Details: `architecture.md` Abschnitt 5a.
+
+## 2026-11-03 - M2: Breaker-Cooldown schickt die Zielapp nach Hause, weitere Domain-Entscheidungen
+
+**Entscheidung:**
+- **Breaker (Abweichung von Tabelle 3A):** Waehrend des 30-s-Cooldowns nach dem Breaker laeuft die Zielapp nicht frei weiter. Die Zustandsmaschine sendet `GoHome` hoechstens alle `BREAKER_MIN_INTERVAL_MS` (3 s) und plant ein Re-Evaluate; nach 30 s folgt wieder `StartLock`. Geht der Nutzer selbst Home oder in eine andere App, endet der Cooldown ohne Lock.
+- **Kein Block fuer gueltigen Grant:** `RuntimeOps.attach` zaehlt keinen Block und oeffnet keine Episode, wenn fuer das Ziel ein gueltiger Grant existiert (Wiederkehr in die Unlocked-Ansicht). Sonst zaehlte jedes erneute Oeffnen nach dem Unlock als Block.
+- **Quiz-Events:** nur `Cancel` (Zurueck/Geste/[abbrechen]); Notausgang und NothingDue-Grant als `CommitGrant`-Effekt mit `GrantResult`-Event (UI wechselt erst nach dem Commit), `grantPending` blockiert Doppel-Taps. Richtige Antwort ohne Unlock geht direkt zur naechsten Karte (Loading), nur Again/Hard zeigen Feedback. Nach Retry bei `AnswerNotSaved` wird `pending` verworfen (`DiscardPending`), damit die Recovery sie nicht doppelt sendet.
+- **Statistik als zweite Datei:** `RuntimeRepository.apply` schreibt erst `runtime.json` (ein `updateData`), dann `stats.json`. Ein Prozesstod dazwischen kostet hoechstens einen Zaehler, nie Grant oder Antwort. Eine gemeinsame Datei wurde verworfen, weil 400 Tage Statistik bei jedem Antwort-Commit neu geschrieben wuerden.
+- **Row 4a:** Wartezeit bei frischer falscher Antwort gilt nur, wenn `LEARN_COUNT_INCLUDES_PENDING=false`; gemessen ist `true`, also greift sie nicht. Negative Zeitdifferenz zaehlt dabei als "frisch" (fail-closed).
+- **Korruption:** `settings.json` -> Spiegelkopie -> Defaults, immer mit Flag `runtime.diag.settingsCorrupted`. `runtime.json`/`stats.json` defekt -> leer (fail-closed: keine Grants). Der Corruption-Callback ist nicht suspendierend (`ReplaceFileCorruptionHandler` erlaubt nur ein normales Lambda), der Container startet das Flag-Schreiben im IO-Scope.
+- **Streak:** `StreakCalculator.streak` (mit heute, leerer Tag heute bricht nicht, wenn gestern zaehlte) und `streakBeforeToday` (Intro); Notausgang-Tage zaehlen nicht, NothingDue-Tage schon.
+
+**Warum:** Ein Breaker, der die App frei laesst, waere ein Umgehungsweg per Schnell-Wiederoeffnen; die Tabelle nannte nur "kein Lock starten", der Invariante "Verzoegerung gibt die App nie frei" nach muss die App aber weg. Die uebrigen Punkte folgen aus der Statistik-Tabelle (Episoden, aborted <= blocks) und der Write-ahead-Pipeline und sind durch Tests belegt.
+

@@ -2,6 +2,11 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-03 (M2: Domain-Kern und Persistenz)
+- Gebaut: `domain/` komplett (Modelle, Zeit, Grant/Gate, `GateStateMachine` mit Throttle/Breaker/Ack, Quiz-Reducer, `QueuePolicy` Zeilen 1-6 und 4a, `SessionPolicy`, `RuntimeOps`, `StatsLedger`, `StatsAggregator`/`StreakCalculator`), `data/store/` (`JsonSerializer`, `SettingsRepository` mit Spiegelkopie, `RuntimeRepository`, `StatsRepository`), `SystemTimeSource`, `AppContainer`-Verdrahtung, Debug-Hooks (`DebugControlReceiver`, 13 Actions, `StatsSeed`, `scripts/e2e/debug.sh` und `state.sh`).
+- Belege: 164 JVM-Tests und 26 instrumentierte Tests gruen (`StoreRepositoriesTest` 14, `SystemTimeSourceTest` 3, `FontScaleTest` 9); alle 13 Debug-Actions am Emulator wirksam, Release-Manifest ohne `DebugControlReceiver`; `scripts/check.sh` gruen (SSIM unveraendert 0,91-0,98).
+- Entscheidungen in `decisions.md` (Breaker schickt die App heim, kein Block bei gueltigem Grant, Statistik als zweite Schreibung u. a.). Offen: Verbraucher der Debug-Flags kommen in M3/M4 (siehe `todo.md`). Nichts committet. Naechster Schritt: M3 (Blocking-Mechanismus, Setup, Haupt-Shell) oder erst committen.
+
 ## 2026-11-03 (Repo-Bereinigung vor dem ersten Push)
 - Historie und Arbeitsbaum auf persönliche Angaben geprüft (keine Secrets/Token gefunden) und per `git filter-branch` bereinigt: echte Server-Hostnamen -> `<basisdomain>`, privater Artifact-Link entfernt, E-Mail aus den Workflow-Skripten entfernt, `/home/tinow/...` -> `<projektordner>`/`~/`, Token-Länge gestrichen. Commit-Hashes haben sich dadurch geändert. Die Autor-Adresse der Commits ist unverändert (GitHub-Noreply-Adresse wurde nicht gewünscht/entschieden).
 - Erster Push nach `origin/main` (privates Repo `tinow04/brainrot-detox`). Vor einer Veröffentlichung als öffentliches Repo: Autor-E-Mail der Commits und die Regel in `README.md` erneut prüfen.
