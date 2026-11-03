@@ -2,7 +2,7 @@
 
 Stand: 2026-11-02. Erzeugt mit Claude Design aus `design-prompt.md`.
 
-**Canvas:** <privater Artifact-Link, nicht im Repo> (privat, nur für den User)
+**Canvas:** privater Artifact-Link, liegt nur beim User (nicht im Repo)
 
 Lokale Quelle im Repo: `design/mockups/` (identisch mit dem Canvas, Stand 2026-11-03). Referenzbilder: `design/reference/<screen>-<dark|light>.png` (412×915, 16 Dateien, erzeugt mit `tools/mockup/shoot.sh` = `tools/mockup/render.mjs` + Firefox headless; Schrift JetBrains Mono aus `app/src/main/res/font/`). Maßgeblich bleibt der Canvas.
 

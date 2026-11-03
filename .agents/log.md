@@ -2,6 +2,10 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-03 (Repo-Bereinigung vor dem ersten Push)
+- Historie und Arbeitsbaum auf persönliche Angaben geprüft (keine Secrets/Token gefunden) und per `git filter-branch` bereinigt: echte Server-Hostnamen -> `<basisdomain>`, privater Artifact-Link entfernt, E-Mail aus den Workflow-Skripten entfernt, `/home/tinow/...` -> `<projektordner>`/`~/`, Token-Länge gestrichen. Commit-Hashes haben sich dadurch geändert. Die Autor-Adresse der Commits ist unverändert (GitHub-Noreply-Adresse wurde nicht gewünscht/entschieden).
+- Erster Push nach `origin/main` (privates Repo `tinow04/brainrot-detox`). Vor einer Veröffentlichung als öffentliches Repo: Autor-E-Mail der Commits und die Regel in `README.md` erneut prüfen.
+
 ## 2026-11-03 (PC-Freeze durch Emulator + Gradle)
 - Desktop fror gegen 21:53 ein (kwin-Haenger ab 21:51, kein OOM-Kill im Journal): Emulator (3 GB) + Gradle- und Kotlin-Daemon gleichzeitig. Code und Build danach geprueft: unversehrt, `compileDebugKotlin`/`compileDebugAndroidTestKotlin` gruen. Emulator-Disk (`userdata-qemu.img.qcow2`) wurde hart abgewuergt, bei Problemen `-wipe-data`.
 - Gegenmassnahmen: `scripts/emu-start.sh` begrenzt den Emulator per `systemd-run` auf 7 GB (cgroup), stoppt vorher die Gradle-Daemons und bricht bei < 7000 MB freiem RAM ab; `-memory` unter 4096 wirkt nicht (Image erzwingt 4 GB). `gradle.properties`: `kotlin.daemon.jvmargs=-Xmx1536m`. `ANDROID_HOME` aus `/etc/profile.d` wird in den Skripten ignoriert. Details in `gotchas.md`.

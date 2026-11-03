@@ -27,4 +27,4 @@ Dieser Ordner hält Wissen aus vergangenen Chats fest, damit kein Agent das Repo
 - Bei Entscheidungen immer das **Warum** festhalten.
 - Veraltete Einträge löschen oder korrigieren, nicht nur ergänzen.
 - Unverifizierte Annahmen als `(unverifiziert)` markieren, besonders bei API-Details von AnkiDroid und Android.
-- Keine Secrets oder persönlichen Daten.
+- Keine Secrets oder persönlichen Daten. Das gilt auch für echte Hostnamen des eigenen Servers (immer `<basisdomain>`), E-Mail-Adressen, private Links (z. B. claude.ai-Artifacts) und absolute Home-Pfade (`<projektordner>`, `~/`). Vor jedem Push die Historie prüfen: `git grep -nIiE "<hostname>|<email>|/home/<user>" $(git rev-list --all)` (in bash, nicht zsh).
