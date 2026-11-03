@@ -1,5 +1,7 @@
 # Source me: sets SDK paths without relying on PATH. Usage: source scripts/emu-env.sh
-export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
+# The SDK lives in ~/Android/Sdk. /etc/profile.d (AUR cmdline-tools package) sets ANDROID_HOME=/opt/android-sdk,
+# which has no emulator/build-tools, so ignore the inherited value. Override with BS_ANDROID_HOME.
+export ANDROID_HOME="${BS_ANDROID_HOME:-$HOME/Android/Sdk}"
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 export ADB="$ANDROID_HOME/platform-tools/adb"

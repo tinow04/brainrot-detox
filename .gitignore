@@ -15,3 +15,6 @@ captures/
 # OS
 .DS_Store
 tools/mockup/out/
+
+# Kotlin compiler session data
+.kotlin/
