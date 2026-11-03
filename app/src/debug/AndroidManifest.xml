@@ -9,5 +9,9 @@
         <receiver
             android:name="dev.tinow.brainrotstopper.debug.SpikeReceiver"
             android:exported="true" />
+
+        <receiver
+            android:name="dev.tinow.brainrotstopper.debug.DebugControlReceiver"
+            android:exported="true" />
     </application>
 </manifest>

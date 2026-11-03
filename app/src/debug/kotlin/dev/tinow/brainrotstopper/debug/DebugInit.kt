@@ -10,7 +10,29 @@ object DebugInit {
     @Volatile
     var flags: DebugFlagsImpl = DebugFlagsImpl()
 
-    class DebugFlagsImpl(override var cursorBlinkEnabled: Boolean = true) : DebugFlags
+    /** Mutable flags set by [DebugControlReceiver]; visible across threads. */
+    class DebugFlagsImpl : DebugFlags {
+        @Volatile override var cursorBlinkEnabled: Boolean = true
+        @Volatile override var sessionTtlMsOverride: Long? = null
+        @Volatile override var unlockSecondsOverride: Int? = null
+        @Volatile override var simulateLaunchBlock: Boolean = false
+        @Volatile override var throwInHandler: Boolean = false
+        @Volatile override var wallOffsetMs: Long = 0L
+        @Volatile override var cardSource: String = "real"
+        @Volatile override var scenario: String = "normal"
+        @Volatile var answerDelayMs: Long = 0L
+        @Volatile var queryDelayMs: Long = 0L
+
+        /** Last EVENT_FLOOD request; the gate controller consumes it from M3 on. */
+        @Volatile var floodRequest: Pair<String, Int>? = null
+
+        override fun gatewayDelayMs(stage: String): Long = if (stage == "answer") answerDelayMs else queryDelayMs
+
+        fun reset() {
+            sessionTtlMsOverride = null; unlockSecondsOverride = null; simulateLaunchBlock = false; throwInHandler = false
+            wallOffsetMs = 0; cardSource = "real"; scenario = "normal"; answerDelayMs = 0; queryDelayMs = 0; floodRequest = null
+        }
+    }
 
     fun install(container: AppContainer) {
         container.debugFlags = flags
