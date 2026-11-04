@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-04 (M3-T3: LockActivity-Huelle)
+- T1/T2 committet (3 Commits). `LockActivity` jetzt Compose: Resume-Check, Intro A1 aus Settings/Stats/Session, Cancel/Zurueck = HOME, Vollbild. `<queries>` um MAIN/LAUNCHER erweitert (App-Label). Belege siehe `todo.md` M3-T3. Naechster Schritt: M3-T4 (PermissionStatusReader, Setup v1, Haupt-Shell, Banner), dann T5 (E2E-1). T3 ist noch nicht committet.
+
 ## 2026-11-04 (M3-T1/T2: Skripte, Dienst, Gate-Huelle)
 - Gebaut: `service/` (`ForegroundTracker`, `GateController` android-frei mit einem UNLIMITED-Befehlskanal und einer Schleife, `LockLauncher`/`GateDiagSink`/`ProtectedSetProvider` als Schnittstellen, `AndroidLockLauncher`, `AndroidProtectedSetProvider`, `RuntimeDiagSink`, `LockUiBeacon`, duenner `BlockerAccessibilityService`), `data/system/AppLog`, `FakeLockLauncher`/`FakeDiagSink` (debug), `<queries>` fuer HOME, `AppContainer.gate`, EVENT_FLOOD im Debug-Receiver. `LockActivity` meldet sich nur ueber das Beacon (Spike-Huelle bleibt bis T3).
 - Belege: 189 JVM-Tests gruen (25 neu), `scripts/check.sh --no-emulator` gruen, Emulator-Laeufe siehe `todo.md` M3-T2. Skripte idempotent mit lauten Fehlern (siehe M3-T1).
