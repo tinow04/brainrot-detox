@@ -6,6 +6,11 @@
 
     <queries>
         <package android:name="com.ichi2.anki" />
+        <!-- labels of launchable apps (lock screen title, app picker in M5) -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
         <!-- home launchers are collected as protected packages (GateController) -->
         <intent>
             <action android:name="android.intent.action.MAIN" />
