@@ -288,6 +288,7 @@ Aufruf: `adb shell am broadcast -n dev.tinow.brainrotstopper/.debug.DebugControl
 | EVENT_FLOOD | pkg, n | erzeugt n synthetische Events fuer pkg |
 | SET_WALL_OFFSET_MS | ms | verschiebt nur wallMs/Tagesgrenze (elapsed nie) |
 | SEED_STATS | preset = week, empty | Statistik-Beispieldaten (Mockup-Werte) |
+| FAKE_PERMISSIONS | state = off, unbound, restricted, ok, none | ersetzt den vom `PermissionStatusReader` gelesenen Berechtigungsstatus (M3-T4); none = echt |
 
 ## 10. Teststrategie
 

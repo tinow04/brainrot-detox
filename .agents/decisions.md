@@ -168,3 +168,10 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 - **Vollbild ohne Systemleisten** in der `LockActivity` (`BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`). **Warum:** Mockups zeigen keine Leisten; mit Leisten lag der SSIM gegen A1 bei 0,83, ohne bei 0,94. Die Leisten sind per Wischen von der Kante weiter erreichbar.
 - **Bis M4 hat `[start]` keine Quiz-Wirkung** (nur Ladescreen mit abbrechen). `attach`/`cancel` laufen schon in der Huelle ueber `RuntimeOps`, damit Block-/Abbruchstatistik stimmt; die `QuizEngine` uebernimmt das in M4.
+
+## 2026-11-04 M3-T4: Setup und Shell
+
+- **Setup v1 hat nur Bedienungshilfe (Pflicht) und Akku (empfohlen)**; die drei AnkiDroid-Zeilen und der Banner `Degraded` kommen mit M4-T5. `Protection.mandatoryOpen` zaehlt bis dahin nur die Bedienungshilfe.
+- **Status "blockiert durch eingeschraenkte Einstellungen" (`Restricted`) wird vom Reader nicht erkannt** (keine oeffentliche API; (unverifiziert) ob ein AppOps-Wert dafuer taugt). Zustand, Banner, Setup-Zeile und Debug-Fake existieren; im echten Betrieb sieht der Nutzer "nicht aktiviert" plus den Tipp zu den eingeschraenkten Einstellungen. Am Geraet pruefen (M7, `test-checklist.md`).
+- **`onboardingDismissed` wird gesetzt, wenn der Nutzer das Setup verlaesst** (Zurueck oder `$ ./weiter`), nicht beim Anzeigen. Danach erscheint das Setup nur noch ueber den Banner. `$ ./weiter` gibt es nur, wenn kein Pflichtschritt offen ist.
+- **Bindestatus = `AccessibilityManager.getEnabledAccessibilityServiceList`** (listet laufende Dienste, am Emulator bestaetigt), Aktivierung = Eintrag in `enabled_accessibility_services`. Tab-Inhalte (B1-B3) sind Platzhalter bis M5.

@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-04 (M3-T4: Berechtigungsstatus, Setup v1, Haupt-Shell)
+- T3 committet. Neu: `domain/permission/Protection`, `data/system/PermissionStatusReader`, `ui/main/MainApp` + `MainActivity`, `ui/setup/SetupActions`, `SetupScreen` mit mehreren Hinweisen/zweiter Aktion/`weiter`, `BannerState.from`, Debug-Action `FAKE_PERMISSIONS`. Belege in `todo.md` M3-T4. Naechster Schritt: M3-T5 (E2E-1 Sperre als Skript, Doku-Abschluss M3). T4 noch nicht committet.
+
 ## 2026-11-04 (M3-T3: LockActivity-Huelle)
 - T1/T2 committet (3 Commits). `LockActivity` jetzt Compose: Resume-Check, Intro A1 aus Settings/Stats/Session, Cancel/Zurueck = HOME, Vollbild. `<queries>` um MAIN/LAUNCHER erweitert (App-Label). Belege siehe `todo.md` M3-T3. Naechster Schritt: M3-T4 (PermissionStatusReader, Setup v1, Haupt-Shell, Banner), dann T5 (E2E-1). T3 ist noch nicht committet.
 
