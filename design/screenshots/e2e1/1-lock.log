@@ -1,0 +1,5 @@
+--------- beginning of main
+11-04 20:24:17.356  9694  9720 I BS/Gate : fg pkg=dev.tinow.brainrotstopper.dummy
+11-04 20:24:17.357  9694  9720 I BS/Gate : lock pkg=dev.tinow.brainrotstopper.dummy reason=blocked
+11-04 20:24:17.379  9694  9720 I BS/Svc  : lock-start-called t=293035 retry=false
+11-04 20:24:17.389  9694  9694 I BS/Svc  : lock-resumed t=293046

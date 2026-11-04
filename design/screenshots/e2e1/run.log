@@ -1,0 +1,50 @@
+
+== 0 setup
+service already bound
+   ok: service bound, dev.tinow.brainrotstopper.dummy blocked, log cleared
+
+== 1 blocked app is covered by the lock within 2 s
+   ok: lock in front after 131 ms (poll resolution ~150 ms)
+   shot: design/screenshots/e2e1/1-lock.png
+   ok: log shows the gate decision
+
+== 2 back leaves to the launcher and the lock does not come back
+   ok: launcher stays in front for 3 s
+   ok: no lock task left
+
+== 3 grant: app stays usable, then the lock returns by itself
+   grant remainingMs 7960
+Warning: Activity not started, its current task has been brought to the front
+   ok: dummy stays in front for 4 s under the grant
+   shot: design/screenshots/e2e1/3-granted.png
+   ok: lock returned without any input (poll saw it 3497 ms after the check)
+
+== 4 two quick starts (throttle window), then silence: the lock shows within 3 s
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+   ok: lock in front
+
+== 5 ten openings leave exactly one lock task
+   ok: 1 lock task after 10 openings
+
+== 6 launch watchdog: a lock that cannot start ends at HOME and is counted
+   ok: HOME after the watchdog, launchFailedCount 0 -> 1
+
+== 7 exceptions in the handler do not stop the service
+   ok: lock works again, service still bound
+
+== 8 protected packages are never locked (AnkiDroid, own app)
+Warning: Activity not started, its current task has been brought to the front
+   ok: own app stays usable although listed as blocked
+   ok: AnkiDroid not locked (focus: com.ichi2.anki/.DeckPicker)
+
+== 9 no blocked background activity start in the whole run
+   ok: 0 lines
+
+== 10 service off -> banner in the app
+service off
+   shot: design/screenshots/e2e1/10-banner-off.png
+   ok: banner text on screen while the service is off
+   shot: design/screenshots/e2e1/10-banner-on.png
+   ok: service re-enabled
+
+e2e1: all 16 checks passed
