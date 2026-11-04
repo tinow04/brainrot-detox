@@ -2,6 +2,11 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-04 (M3-T1/T2: Skripte, Dienst, Gate-Huelle)
+- Gebaut: `service/` (`ForegroundTracker`, `GateController` android-frei mit einem UNLIMITED-Befehlskanal und einer Schleife, `LockLauncher`/`GateDiagSink`/`ProtectedSetProvider` als Schnittstellen, `AndroidLockLauncher`, `AndroidProtectedSetProvider`, `RuntimeDiagSink`, `LockUiBeacon`, duenner `BlockerAccessibilityService`), `data/system/AppLog`, `FakeLockLauncher`/`FakeDiagSink` (debug), `<queries>` fuer HOME, `AppContainer.gate`, EVENT_FLOOD im Debug-Receiver. `LockActivity` meldet sich nur ueber das Beacon (Spike-Huelle bleibt bis T3).
+- Belege: 189 JVM-Tests gruen (25 neu), `scripts/check.sh --no-emulator` gruen, Emulator-Laeufe siehe `todo.md` M3-T2. Skripte idempotent mit lauten Fehlern (siehe M3-T1).
+- Offen/Naechstes: M3-T3 (echte LockActivity-Huelle mit Intro A1, Zurueck/Geste = HOME), T4 (PermissionStatusReader, Setup v1, Haupt-Shell, Banner), T5 (E2E-1). Nichts committet.
+
 ## 2026-11-03 (M2: Domain-Kern und Persistenz)
 - Gebaut: `domain/` komplett (Modelle, Zeit, Grant/Gate, `GateStateMachine` mit Throttle/Breaker/Ack, Quiz-Reducer, `QueuePolicy` Zeilen 1-6 und 4a, `SessionPolicy`, `RuntimeOps`, `StatsLedger`, `StatsAggregator`/`StreakCalculator`), `data/store/` (`JsonSerializer`, `SettingsRepository` mit Spiegelkopie, `RuntimeRepository`, `StatsRepository`), `SystemTimeSource`, `AppContainer`-Verdrahtung, Debug-Hooks (`DebugControlReceiver`, 13 Actions, `StatsSeed`, `scripts/e2e/debug.sh` und `state.sh`).
 - Belege: 164 JVM-Tests und 26 instrumentierte Tests gruen (`StoreRepositoriesTest` 14, `SystemTimeSourceTest` 3, `FontScaleTest` 9); alle 13 Debug-Actions am Emulator wirksam, Release-Manifest ohne `DebugControlReceiver`; `scripts/check.sh` gruen (SSIM unveraendert 0,91-0,98).
