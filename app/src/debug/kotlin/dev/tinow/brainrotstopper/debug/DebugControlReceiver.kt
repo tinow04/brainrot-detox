@@ -70,7 +70,12 @@ class DebugControlReceiver : BroadcastReceiver() {
                 val ms = i.getStringExtra("ms")?.toLongOrNull() ?: 0L
                 if (i.getStringExtra("stage") == "answer") flags.answerDelayMs = ms else flags.queryDelayMs = ms
             }
-            "EVENT_FLOOD" -> flags.floodRequest = (i.getStringExtra("pkg") ?: return) to (i.getStringExtra("n")?.toIntOrNull() ?: 0)
+            "EVENT_FLOOD" -> {
+                val pkg = i.getStringExtra("pkg") ?: return
+                val n = i.getStringExtra("n")?.toIntOrNull() ?: 0
+                flags.floodRequest = pkg to n
+                c.gate?.inject(pkg, n) ?: Log.w(TAG, "EVENT_FLOOD: gate not running (service not bound)")
+            }
             "SET_WALL_OFFSET_MS" -> flags.wallOffsetMs = i.getStringExtra("ms")?.toLongOrNull() ?: 0L
             "SEED_STATS" -> {
                 val seed = if (i.getStringExtra("preset") == "empty") StatsSeed.empty() else StatsSeed.week(now.epochDay)

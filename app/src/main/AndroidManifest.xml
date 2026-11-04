@@ -6,6 +6,11 @@
 
     <queries>
         <package android:name="com.ichi2.anki" />
+        <!-- home launchers are collected as protected packages (GateController) -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
     </queries>
 
     <application

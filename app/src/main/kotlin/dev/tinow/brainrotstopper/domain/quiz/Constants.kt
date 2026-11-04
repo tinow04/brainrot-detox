@@ -28,6 +28,8 @@ object Constants {
     const val EMERGENCY_GRANT_MIN = 5
     const val EMERGENCY_COOLDOWN_MS = 21_600_000L
     const val PROTECTED_REFRESH_MS = 60_000L
+    /** After the lock UI went away the gate waits this long for the next foreground event before it looks again. */
+    const val LOCK_GONE_GRACE_MS = 300L
     const val STATS_RETENTION_DAYS = 400
 
     /** Measured in M0-S1a: `deck_count` learn also counts intraday cards that are not due yet. */

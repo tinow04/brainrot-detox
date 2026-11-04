@@ -23,6 +23,10 @@ class AppContainer(val app: Application) {
     @Volatile
     var debugFlags: DebugFlags = NoDebugFlags
 
+    /** The running gate controller (set by the accessibility service while it is bound); the debug hooks use it. */
+    @Volatile
+    var gate: dev.tinow.brainrotstopper.service.GateController? = null
+
     /** Scope of all persistence work; a failing child never cancels its siblings. */
     val ioScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
