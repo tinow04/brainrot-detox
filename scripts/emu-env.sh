@@ -11,3 +11,19 @@ AAPT2="$(ls -d "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)"
 export APKSIGNER
 APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)"
 export AVD_NAME="${AVD_NAME:-pixel9}"
+
+# Fails loudly (exit 2) unless exactly one booted device/emulator is reachable. Call at the top of every script that uses adb.
+bs_require_device() {
+  local state
+  state="$("$ADB" get-state 2>&1 </dev/null)" || { echo "no device: $state (scripts/emu-start.sh?)" >&2; exit 2; }
+  [ "$("$ADB" shell getprop sys.boot_completed </dev/null | tr -d '\r')" = 1 ] || { echo "device not booted yet" >&2; exit 2; }
+}
+
+# Prints "bound", "enabled" (enabled in settings but not bound) or "off" for our accessibility service.
+bs_a11y_state() {
+  local dump
+  dump="$("$ADB" shell dumpsys accessibility </dev/null)" || return 1
+  if grep -q 'Bound services:.*label=Brainrot Stopper' <<<"$dump"; then echo bound
+  elif grep -q 'Enabled services:.*dev.tinow.brainrotstopper/' <<<"$dump"; then echo enabled
+  else echo off; fi
+}

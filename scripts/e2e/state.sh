@@ -2,6 +2,7 @@
 # Prints the BSState JSON of the debug build (DUMP_STATE). Waits for a line with a fresh nonce, so stale logs never count.
 set -euo pipefail
 source "$(dirname "$0")/../emu-env.sh"
+bs_require_device
 
 NONCE="$$-$(date +%s%N)"
 "$ADB" shell am broadcast -n dev.tinow.brainrotstopper/.debug.DebugControlReceiver \
