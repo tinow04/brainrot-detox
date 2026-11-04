@@ -3,18 +3,17 @@ package dev.tinow.brainrotstopper
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.activity.enableEdgeToEdge
+import dev.tinow.brainrotstopper.data.system.PermissionStatusReader
+import dev.tinow.brainrotstopper.ui.main.MainApp
+import dev.tinow.brainrotstopper.ui.theme.BsTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            Box(Modifier.fillMaxSize().padding(24.dp)) { BasicText("$ ./brainrot-stopper") }
-        }
+        enableEdgeToEdge()
+        val container = (application as BrainrotApp).container
+        val reader = PermissionStatusReader(this) { container.debugFlags }
+        setContent { BsTheme { MainApp(container, reader) } }
     }
 }

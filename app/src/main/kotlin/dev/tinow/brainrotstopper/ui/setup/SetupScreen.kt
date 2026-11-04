@@ -24,11 +24,19 @@ import dev.tinow.brainrotstopper.ui.theme.BsTheme
 enum class SetupState { Open, Ok, Error }
 
 /** One setup step: status tag, text and the action that fixes it (shown when not ok). */
-data class SetupRow(val label: String, val state: SetupState, val action: String?, val onAction: () -> Unit)
+data class SetupRow(
+    val label: String,
+    val state: SetupState,
+    val action: String?,
+    val onAction: () -> Unit,
+    /** Optional second, quieter action (e.g. `app-info` next to the accessibility settings). */
+    val action2: String? = null,
+    val onAction2: () -> Unit = {},
+)
 
 /** First-run / repair checklist (architecture 7); the host decides the order and the actions. */
 @Composable
-fun SetupScreen(rows: List<SetupRow>, hint: String?, modifier: Modifier = Modifier) {
+fun SetupScreen(rows: List<SetupRow>, hints: List<String>, modifier: Modifier = Modifier, onDone: (() -> Unit)? = null) {
     val c = BsTheme.colors
     val t = BsTheme.type
     Column(
@@ -51,9 +59,11 @@ fun SetupScreen(rows: List<SetupRow>, hint: String?, modifier: Modifier = Modifi
                 }
                 if (row.state != SetupState.Ok && row.action != null) {
                     BsButton(row.action, row.onAction, style = if (row.state == SetupState.Error) BsButtonStyle.Primary else BsButtonStyle.Ghost)
+                    if (row.action2 != null) BsButton(row.action2, row.onAction2, style = BsButtonStyle.Ghost)
                 }
             }
         }
-        if (hint != null) BsText(hint, t.label, c.dim)
+        hints.forEach { BsText(it, t.label, c.dim) }
+        if (onDone != null) BsButton(Strings.BTN_CONTINUE, onDone)
     }
 }

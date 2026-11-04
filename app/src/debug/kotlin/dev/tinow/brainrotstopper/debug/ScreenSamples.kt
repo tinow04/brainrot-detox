@@ -127,13 +127,13 @@ object ScreenSamples {
             "b3" -> Main(MainTab.Stats) { StatsScreen(stats) }
             "setup" -> SetupScreen(
                 listOf(
-                    SetupRow(Strings.SETUP_ANKI_INSTALLED, SetupState.Ok, null) {},
-                    SetupRow(Strings.SETUP_ANKI_PERMISSION, SetupState.Open, Strings.BTN_ALLOW) {},
-                    SetupRow(Strings.SETUP_ANKI_READY, SetupState.Error, Strings.BTN_RETRY) {},
-                    SetupRow(Strings.SETUP_ACCESSIBILITY, SetupState.Open, Strings.BTN_ACCESSIBILITY) {},
-                    SetupRow(Strings.SETUP_BATTERY, SetupState.Open, Strings.BTN_BATTERY) {},
+                    SetupRow(Strings.SETUP_ANKI_INSTALLED, SetupState.Ok, null, {}),
+                    SetupRow(Strings.SETUP_ANKI_PERMISSION, SetupState.Open, Strings.BTN_ALLOW, {}),
+                    SetupRow(Strings.SETUP_ANKI_READY, SetupState.Error, Strings.BTN_RETRY, {}),
+                    SetupRow(Strings.SETUP_ACCESSIBILITY, SetupState.Open, Strings.BTN_ACCESSIBILITY, {}),
+                    SetupRow(Strings.SETUP_BATTERY, SetupState.Open, Strings.BTN_BATTERY, {}),
                 ),
-                Strings.SETUP_HINT_AUTOSYNC,
+                listOf(Strings.SETUP_HINT_AUTOSYNC),
             )
             "banner-degraded" -> Main(MainTab.Apps, BannerState.Degraded) { AppsScreen(apps.filter { it.blocked }, apps.filter { !it.blocked }, "", {}, { _, _ -> }) }
             "banner-disabled" -> Main(MainTab.Config, BannerState.ProtectionOffDisabled) { ConfigPreview(config) }

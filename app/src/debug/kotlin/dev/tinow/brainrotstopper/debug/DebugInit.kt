@@ -18,6 +18,7 @@ object DebugInit {
         @Volatile override var simulateLaunchBlock: Boolean = false
         @Volatile override var throwInHandler: Boolean = false
         @Volatile override var wallOffsetMs: Long = 0L
+        @Volatile override var permissionOverride: String? = null
         @Volatile override var cardSource: String = "real"
         @Volatile override var scenario: String = "normal"
         @Volatile var answerDelayMs: Long = 0L
@@ -30,7 +31,7 @@ object DebugInit {
 
         fun reset() {
             sessionTtlMsOverride = null; unlockSecondsOverride = null; simulateLaunchBlock = false; throwInHandler = false
-            wallOffsetMs = 0; cardSource = "real"; scenario = "normal"; answerDelayMs = 0; queryDelayMs = 0; floodRequest = null
+            wallOffsetMs = 0; permissionOverride = null; cardSource = "real"; scenario = "normal"; answerDelayMs = 0; queryDelayMs = 0; floodRequest = null
         }
     }
 

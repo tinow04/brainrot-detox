@@ -76,6 +76,7 @@ class DebugControlReceiver : BroadcastReceiver() {
                 flags.floodRequest = pkg to n
                 c.gate?.inject(pkg, n) ?: Log.w(TAG, "EVENT_FLOOD: gate not running (service not bound)")
             }
+            "FAKE_PERMISSIONS" -> flags.permissionOverride = i.getStringExtra("state")?.takeIf { it in setOf("off", "unbound", "restricted", "ok") }
             "SET_WALL_OFFSET_MS" -> flags.wallOffsetMs = i.getStringExtra("ms")?.toLongOrNull() ?: 0L
             "SEED_STATS" -> {
                 val seed = if (i.getStringExtra("preset") == "empty") StatsSeed.empty() else StatsSeed.week(now.epochDay)
@@ -134,6 +135,7 @@ class DebugControlReceiver : BroadcastReceiver() {
                 put("simulateLaunchBlock", f.simulateLaunchBlock); put("throwInHandler", f.throwInHandler)
                 put("wallOffsetMs", f.wallOffsetMs); put("cardSource", f.cardSource); put("scenario", f.scenario)
                 put("answerDelayMs", f.answerDelayMs); put("queryDelayMs", f.queryDelayMs)
+                put("permissionOverride", f.permissionOverride)
                 put("flood", f.floodRequest?.let { "${it.first}:${it.second}" })
             })
         }

@@ -26,6 +26,9 @@ interface DebugFlags {
     /** Shifts only wall time and the day boundary; elapsed time never. */
     val wallOffsetMs: Long get() = 0L
 
+    /** Replaces the observed permission state: `off`, `unbound`, `restricted` or `ok` (FAKE_PERMISSIONS); null = real. */
+    val permissionOverride: String? get() = null
+
     /** `real` or `fake` card source (M4) and the fake scenario. */
     val cardSource: String get() = "real"
     val scenario: String get() = "normal"
