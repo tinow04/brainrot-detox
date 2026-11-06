@@ -90,6 +90,7 @@ object ScreenSamples {
 
     @Composable
     fun Screen(name: String) {
+        if (CardGallery.handles(name)) return CardGallery.Screen(name)
         when (name) {
             "a1" -> IntroScreen(IntroState("instagram", "biologie", 12, 15, 0, 5), {}, {})
             "a1-resume" -> IntroScreen(IntroState("instagram", "biologie", 12, 15, 3, 5), {}, {})
