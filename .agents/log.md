@@ -2,6 +2,12 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-06 (M4-T3: CardHtml und Renderer, abgeschlossen)
+- RAM war frei, Emulator lief: `CardRenderingTest` 11/11 gruen, Screenshots in `design/screenshots/m4-t3/` (Kontaktbogen je Modus und Renderer). Zwei echte Funde behoben (Hoehenmessung, Listen). Naechster Schritt: T3b (Medien: `MediaConfig`, `HttpMediaFetcher`, `MediaCache`, `MediaInliner` gegen den Fake-Server), dann T4. T3 nicht committet; Emulator laeuft noch.
+
+## 2026-11-04 (M4-T3: erste Haelfte, Code und JVM-Tests)
+- T1/T2 committet (2 Commits). Neu: `data/anki/CardHtml` + `CardHtmlTest`, `lock/render/*`, `debug/CardGallery` + `debug/fake/CardFixtures`, `androidTest/lock/CardRenderingTest`. Alle JVM-Tests gruen, Debug-/Release-Build und Manifestpruefung gruen. Emulator-Start brach ab (nur 3,7 GB RAM frei, Grenze 7 GB, siehe gotchas.md RAM): `CardRenderingTest` und Galerie-Screenshots stehen aus. Naechster Schritt: RAM freigeben, Emulator starten, Test laufen lassen, Screenshots dunkel/hell (Webview und Klartext), dann T3 abhaken; danach T3b, T4. T3 nicht committet.
+
 ## 2026-11-04 (M4-T1/T2: Anki-Domain, Gateway, CardSource)
 - M3 gepusht (9 Commits). Neu: `domain/anki/AnkiParsing`, `NextCard`/`RenderedCard`, `data/anki/*` (Contract, Gateway, Mapper, `AnkiContentProviderSource`), `FakeProviderGateway`, `AnkiSourceContractTest`. Belege in `todo.md` M4-T1/T2. Naechster Schritt: M4-T3 (CardHtml, Renderer), T3b (Medien), T4 (QuizEngine). Nichts committet.
 
