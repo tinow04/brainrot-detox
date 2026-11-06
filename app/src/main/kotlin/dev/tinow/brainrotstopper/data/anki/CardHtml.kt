@@ -146,7 +146,7 @@ object CardHtml {
     }
 
     /** Only plain file names pass: no path, no scheme, no `..`, no control characters, not empty. */
-    internal fun safeName(name: String): String? {
+    fun safeName(name: String): String? {
         val n = name.trim()
         if (n.isEmpty() || n.length > 255) return null
         if (n.any { it == '/' || it == '\\' || it == ':' || it.isISOControl() || it == '' || it == '' }) return null

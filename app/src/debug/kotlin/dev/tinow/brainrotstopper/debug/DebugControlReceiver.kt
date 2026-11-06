@@ -77,6 +77,10 @@ class DebugControlReceiver : BroadcastReceiver() {
                 c.gate?.inject(pkg, n) ?: Log.w(TAG, "EVENT_FLOOD: gate not running (service not bound)")
             }
             "FAKE_PERMISSIONS" -> flags.permissionOverride = i.getStringExtra("state")?.takeIf { it in setOf("off", "unbound", "restricted", "ok") }
+            "SET_MEDIA" -> {
+                // --es url <base url> --es token <token>; missing extras keep the value, empty strings switch the feature off
+                c.settings.update { it.copy(mediaBaseUrl = i.getStringExtra("url") ?: it.mediaBaseUrl, mediaToken = i.getStringExtra("token") ?: it.mediaToken) }
+            }
             "SET_WALL_OFFSET_MS" -> flags.wallOffsetMs = i.getStringExtra("ms")?.toLongOrNull() ?: 0L
             "SEED_STATS" -> {
                 val seed = if (i.getStringExtra("preset") == "empty") StatsSeed.empty() else StatsSeed.week(now.epochDay)
@@ -93,6 +97,7 @@ class DebugControlReceiver : BroadcastReceiver() {
             "session" -> c.runtime.update { it.copy(session = null, episode = null) }
             "stats" -> c.stats.update { Stats() }
             "settings" -> c.settings.update { Settings() }
+            "media" -> c.mediaImages.clearCache()
             "all" -> {
                 c.runtime.update { Runtime() }
                 c.stats.update { Stats() }

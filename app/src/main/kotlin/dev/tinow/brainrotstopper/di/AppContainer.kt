@@ -2,9 +2,12 @@ package dev.tinow.brainrotstopper.di
 
 import android.app.Application
 import androidx.datastore.dataStoreFile
+import android.content.pm.ApplicationInfo
+import dev.tinow.brainrotstopper.data.media.MediaImages
 import dev.tinow.brainrotstopper.data.store.RuntimeRepository
 import dev.tinow.brainrotstopper.data.store.SettingsRepository
 import dev.tinow.brainrotstopper.data.store.StatsRepository
+import dev.tinow.brainrotstopper.data.system.AppLog
 import dev.tinow.brainrotstopper.data.system.SystemTimeSource
 import dev.tinow.brainrotstopper.domain.time.TimeSource
 import dev.tinow.brainrotstopper.hooks.DebugFlags
@@ -42,6 +45,18 @@ class AppContainer(val app: Application) {
             mirror = File(app.filesDir, "settings.mirror.json"),
             scope = ioScope,
             onCorrupted = { ioScope.launch { runtime.markSettingsCorrupted() } },
+        )
+    }
+
+    /** Card images from the own media server (architecture.md 5a). Cleartext http only for the emulator host in debuggable builds. */
+    val mediaImages: MediaImages by lazy {
+        val debuggable = app.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+        MediaImages(
+            settings = settings,
+            cacheDir = File(app.cacheDir, "media"),
+            clock = System::currentTimeMillis,
+            cleartextHosts = if (debuggable) setOf("10.0.2.2") else emptySet(),
+            log = { AppLog.i("BS/Media", it) },
         )
     }
 }
