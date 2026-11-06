@@ -175,3 +175,10 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 - **Status "blockiert durch eingeschraenkte Einstellungen" (`Restricted`) wird vom Reader nicht erkannt** (keine oeffentliche API; (unverifiziert) ob ein AppOps-Wert dafuer taugt). Zustand, Banner, Setup-Zeile und Debug-Fake existieren; im echten Betrieb sieht der Nutzer "nicht aktiviert" plus den Tipp zu den eingeschraenkten Einstellungen. Am Geraet pruefen (M7, `test-checklist.md`).
 - **`onboardingDismissed` wird gesetzt, wenn der Nutzer das Setup verlaesst** (Zurueck oder `$ ./weiter`), nicht beim Anzeigen. Danach erscheint das Setup nur noch ueber den Banner. `$ ./weiter` gibt es nur, wenn kein Pflichtschritt offen ist.
 - **Bindestatus = `AccessibilityManager.getEnabledAccessibilityServiceList`** (listet laufende Dienste, am Emulator bestaetigt), Aktivierung = Eintrag in `enabled_accessibility_services`. Tab-Inhalte (B1-B3) sind Platzhalter bis M5.
+
+## 2026-11-04 M4-T1/T2: Anki-Quelle
+
+- **`IllegalStateException` -> StorageNotConfigured nur bei Meldung mit "storage"**, sonst `Unexpected("IllegalStateException")`. **Warum:** Die Architektur-Tabelle bildet jede ISE auf "ankidroid einmal oeffnen und einrichten" ab; eine andere ISE (z. B. geschlossene Sammlung) wuerde den Nutzer in die Irre fuehren. Gemessene Meldung: `AnkiDroid storage is not configured`.
+- **`CardSource.nextCard` liefert `NextCard`** (Ref, Tastenanzahl, Intervall-Labels, Medienliste) statt nur `CardRef`; die Queue-Matrix (`QueuePolicy`) bleibt auf `CardRef`, die Engine (T4) bildet ab. `render` liefert die Rohseiten, HTML-Aufbau bleibt `CardHtml`.
+- **Modell-CSS ist best effort:** jeder Fehler beim Lesen heisst "keine CSS", nie ein Fehler und nie ein Grund, die Sperre geschlossen zu halten.
+- **Antwort:** `update`-Zeilenzahl >= 1 ist `Ok`, 0 ist `AnswerNotSaved`; ob die Antwort wirklich angekommen ist, prueft die Engine ueber `cardProgress` (answerVerify).

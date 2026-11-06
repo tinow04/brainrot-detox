@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-04 (M4-T1/T2: Anki-Domain, Gateway, CardSource)
+- M3 gepusht (9 Commits). Neu: `domain/anki/AnkiParsing`, `NextCard`/`RenderedCard`, `data/anki/*` (Contract, Gateway, Mapper, `AnkiContentProviderSource`), `FakeProviderGateway`, `AnkiSourceContractTest`. Belege in `todo.md` M4-T1/T2. Naechster Schritt: M4-T3 (CardHtml, Renderer), T3b (Medien), T4 (QuizEngine). Nichts committet.
+
 ## 2026-11-04 (M3-T5: E2E-1 Sperre, M3 abgeschlossen)
 - T4 committet. `scripts/e2e/e2e1_lock.sh` + `lib.sh` (16 Pruefungen) laeuft gruen am Emulator; Beleg in `design/screenshots/e2e1/`. `scripts/check.sh` komplett gruen. Funde: Breaker greift bei zu schnellem Wiederoeffnen wie gedacht (Test pausiert), `dumpsys` listet denselben Task mehrfach (Tasks per `sort -u` zaehlen). T5 noch nicht committet.
 - Naechster Schritt: M4 (AnkiDroid-Anbindung und Quiz-Flow), zuerst T1 (Anki-Domain, Contract, Gateway) und T2 (CardSource gegen echtes AnkiDroid), dann T3/T3b (Rendering, Medien), T4 (QuizEngine).
