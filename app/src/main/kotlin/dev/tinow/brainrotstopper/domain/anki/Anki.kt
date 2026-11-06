@@ -26,10 +26,40 @@ data class DeckCounts(val learn: Int, val review: Int, val new: Int) {
     val total: Int get() = learn + review + new
 }
 
-/** What the device can do, measured by the M0 spikes; injected, never global. */
-data class AnkiCapabilities(val answerVerify: Boolean = true)
+/** What the device can do, measured by the M0 spikes (architecture.md 11); injected, never global. */
+data class AnkiCapabilities(
+    /** `reps` is readable per projection and rises after an answer (M0-S1a). */
+    val answerVerify: Boolean = true,
+    /** The `models` query returns the note type CSS. */
+    val modelCssAvailable: Boolean = true,
+    /** `next_review_times` is a JSON array of four strings. */
+    val intervalLabelsAvailable: Boolean = true,
+)
 
 data class DeckInfo(val id: Long, val name: String, val counts: DeckCounts, val dynamic: Boolean)
+
+/**
+ * What the scheduler returned for the next card. [intervalLabels] are the four button labels (again, hard, good, easy) or
+ * null when the provider did not deliver exactly four parsable strings; [mediaFiles] are file names only (a hint).
+ */
+data class NextCard(
+    val ref: CardRef,
+    val buttonCount: Int,
+    val intervalLabels: List<String>?,
+    val mediaFiles: List<String>,
+)
+
+/** Raw card sides as AnkiDroid renders them; HTML building and sanitising is `CardHtml` (M4-T3). */
+data class RenderedCard(
+    val ref: CardRef,
+    val question: String,
+    /** Contains the question, a `<hr id=answer>` and the back side (cloze cards have no `<hr id=answer>`). */
+    val answer: String,
+    /** Only the back side. */
+    val answerPure: String,
+    /** CSS of the note type, null when it could not be read (never an error). */
+    val css: String?,
+)
 
 /**
  * Domain view of AnkiDroid. Implementations map every RuntimeException to [AnkiError], serialise access and apply
@@ -41,7 +71,10 @@ interface CardSource {
     suspend fun deckCounts(selection: DeckSelection): AnkiResult<DeckCounts>
 
     /** `Ok(null)` = the scheduler cursor is empty (the queue matrix then decides what that means). */
-    suspend fun nextCard(selection: DeckSelection): AnkiResult<CardRef?>
+    suspend fun nextCard(selection: DeckSelection): AnkiResult<NextCard?>
+
+    /** The raw question and answer of [ref]. */
+    suspend fun render(ref: CardRef): AnkiResult<RenderedCard>
 
     /** Review count of the card, only when [AnkiCapabilities.answerVerify]. */
     suspend fun cardProgress(ref: CardRef): AnkiResult<Int>
