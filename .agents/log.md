@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-06 (M4-T3b: Medien)
+- T3 committet (2 Commits). Neu: `data/media/*`, `AppContainer.mediaImages`, Debug `SET_MEDIA`/`RESET media`/Galerie `-net`, `scripts/e2e/e2e_media.sh`, vier Testklassen (49 Tests). 313 JVM-Tests und `e2e_media.sh` (8 Pruefungen) gruen, Release-Build und Manifestpruefung gruen. Naechster Schritt: T4 (QuizEngine und Verdrahtung: Source + Reducer + `CardHtml` + `mediaImages` + LockActivity A1-A5), dann T5-T7. T3b nicht committet; Emulator laeuft noch.
+
 ## 2026-11-06 (M4-T3: CardHtml und Renderer, abgeschlossen)
 - RAM war frei, Emulator lief: `CardRenderingTest` 11/11 gruen, Screenshots in `design/screenshots/m4-t3/` (Kontaktbogen je Modus und Renderer). Zwei echte Funde behoben (Hoehenmessung, Listen). Naechster Schritt: T3b (Medien: `MediaConfig`, `HttpMediaFetcher`, `MediaCache`, `MediaInliner` gegen den Fake-Server), dann T4. T3 nicht committet; Emulator laeuft noch.
 
