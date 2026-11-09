@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-06 (M4-T4: QuizEngine und Verdrahtung)
+- T3b committet (2 Commits). Neu: `lock/quiz/*` (Engine, Host, ViewModel), `RuntimeStore`, `DelayingGateway`, Debug `FakeCardSource`, `QuizEngineTest` (36), `QuizHostTest` (22), `scripts/e2e/e2e_quiz.sh` (11 Pruefungen). 349 JVM-, 62 instrumentierte Tests und E2E gruen, auch ein Durchlauf gegen das echte AnkiDroid. Beim E2E gefunden: `RESET --es what all` setzt auch die Debug-Flags zurueck (kurze Freigabe danach neu setzen). Neuer Gate-Logeintrag `BS/Gate gate <Cmd> -> <Zustand>` je Schritt (Diagnose). Naechster Schritt: T5 (Setup-Zeilen AnkiDroid, Banner Degraded, Fehlerscreens mit echten Zustaenden), dann T6 Notausgang, T7 Contract/E2E-2. T4 nicht committet.
+
 ## 2026-11-06 (M4-T3b: Medien)
 - T3 committet (2 Commits). Neu: `data/media/*`, `AppContainer.mediaImages`, Debug `SET_MEDIA`/`RESET media`/Galerie `-net`, `scripts/e2e/e2e_media.sh`, vier Testklassen (49 Tests). 313 JVM-Tests und `e2e_media.sh` (8 Pruefungen) gruen, Release-Build und Manifestpruefung gruen. Naechster Schritt: T4 (QuizEngine und Verdrahtung: Source + Reducer + `CardHtml` + `mediaImages` + LockActivity A1-A5), dann T5-T7. T3b nicht committet; Emulator laeuft noch.
 
