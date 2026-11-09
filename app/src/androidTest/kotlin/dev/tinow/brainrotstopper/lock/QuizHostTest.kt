@@ -3,6 +3,8 @@ package dev.tinow.brainrotstopper.lock
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -15,6 +17,7 @@ import dev.tinow.brainrotstopper.domain.model.Ease
 import dev.tinow.brainrotstopper.domain.model.GrantKind
 import dev.tinow.brainrotstopper.domain.quiz.Phase
 import dev.tinow.brainrotstopper.domain.quiz.QuizState
+import dev.tinow.brainrotstopper.domain.runtime.EmergencyButton
 import dev.tinow.brainrotstopper.lock.quiz.CardContent
 import dev.tinow.brainrotstopper.lock.quiz.ErrorTarget
 import dev.tinow.brainrotstopper.lock.quiz.QuizActions
@@ -38,7 +41,11 @@ class QuizHostTest {
     private val actions = QuizActions(
         start = { log += "start" }, reveal = { log += "reveal" }, rate = { log += "rate:${it.name}" }, next = { log += "next" },
         cancel = { log += "cancel" }, openTarget = { log += "open" }, retry = { log += "retry" }, emergency = { log += "emergency" },
+        emergencyButton = { buttons.removeFirstOrNull() ?: button },
     )
+    /** What the engine reports for the emergency button; [buttons] are handed out first, one per poll. */
+    private var button: EmergencyButton = EmergencyButton.Hidden
+    private val buttons = ArrayDeque<EmergencyButton>()
     private val card = CardContent(FakeCardSource.cards(1).single(), listOf("<1 min", "<6 min", "1 d", "4 d"), emptyMap())
     private val intro = IntroState("instagram", "alle decks", 3, 12, 0, 5)
 
@@ -128,7 +135,7 @@ class QuizHostTest {
         show(Phase.Error, block = { copy(error = error) })
         rule.onNodeWithText(texts.title).assertIsDisplayed()
         rule.onNodeWithText(texts.text).assertIsDisplayed()
-        // exactly one main action and the cancel button; no second action, no emergency button yet
+        // exactly one main action and the cancel button; no second action, no emergency button while it is hidden
         rule.onAllNodesWithText(action).assertCountEquals(1)
         rule.onAllNodesWithText(Strings.BTN_CANCEL).assertCountEquals(1)
         rule.onAllNodesWithText(Strings.BTN_EMERGENCY, substring = true).assertCountEquals(0)
@@ -144,6 +151,42 @@ class QuizHostTest {
     @Test fun errorBadData() = error(AnkiError.BadData, Strings.ERR_BAD_DATA.action, "retry")
     @Test fun errorUnexpected() = error(AnkiError.Unexpected("x"), Strings.ERR_BAD_DATA.action, "retry")
     @Test fun errorAnswerNotSaved() = error(AnkiError.AnswerNotSaved, Strings.ERR_ANSWER_NOT_SAVED.action, "retry")
+
+    // --- emergency exit (M4-T6)
+
+    @Test fun emergencyCountdownIsDisabled() {
+        button = EmergencyButton.Wait(42)
+        show(Phase.Error, block = { copy(error = AnkiError.Unreachable, errorSince = 0) })
+        rule.onNodeWithText(Strings.emergencyCountdown(42)).assertIsDisplayed().assertIsNotEnabled().performClick()
+        assertThat(log).isEmpty()
+    }
+
+    @Test fun emergencyReadyOnEveryErrorTriggersTheExit() {
+        button = EmergencyButton.Ready
+        show(Phase.Error, block = { copy(error = AnkiError.AnswerNotSaved, errorSince = 0) })
+        rule.onNodeWithText(Strings.BTN_EMERGENCY).assertIsDisplayed().assertIsEnabled().performClick()
+        rule.onAllNodesWithText(Strings.ERR_ANSWER_NOT_SAVED.action).assertCountEquals(1)
+        assertThat(log).containsExactly("emergency")
+    }
+
+    @Test fun emergencyCooldownIsDisabledWithTheTimeLeft() {
+        button = EmergencyButton.Cooldown(4 * 3_600_000L + 11 * 60_000L + 1)
+        show(Phase.Error, block = { copy(error = AnkiError.DeckMissing, errorSince = 0) })
+        rule.onNodeWithText("\$ ./notausgang (in 4h 12m)").assertIsDisplayed().assertIsNotEnabled().performClick()
+        assertThat(log).isEmpty()
+    }
+
+    @Test fun emergencyButtonFollowsTheClock() {
+        rule.mainClock.autoAdvance = false
+        buttons += listOf(EmergencyButton.Wait(2), EmergencyButton.Wait(2), EmergencyButton.Wait(1))
+        button = EmergencyButton.Ready
+        show(Phase.Error, block = { copy(error = AnkiError.Unreachable, errorSince = 0) })
+        rule.onNodeWithText(Strings.emergencyCountdown(2)).assertIsDisplayed()
+        rule.mainClock.advanceTimeBy(1_100)
+        rule.onNodeWithText(Strings.emergencyCountdown(1)).assertIsDisplayed()
+        rule.mainClock.advanceTimeBy(1_100)
+        rule.onNodeWithText(Strings.BTN_EMERGENCY).assertIsDisplayed().assertIsEnabled()
+    }
 
     @Test fun errorTextsAreDistinctPerKindExceptTheSharedOnes() {
         val titles = listOf(

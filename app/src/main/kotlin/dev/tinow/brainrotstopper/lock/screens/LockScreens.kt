@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.tinow.brainrotstopper.domain.runtime.EmergencyButton
 import dev.tinow.brainrotstopper.ui.Strings
 import dev.tinow.brainrotstopper.ui.components.AppIconInitials
 import dev.tinow.brainrotstopper.ui.components.BlinkCursor
@@ -260,14 +261,14 @@ fun LoadingScreen(app: String, onCancel: () -> Unit) {
 }
 
 /**
- * Fail-closed error screen (architecture 2.7): the app stays blocked. [emergencySeconds] counts down to the emergency
- * exit (0 = available, null = not offered for this error).
+ * Fail-closed error screen (architecture 2.7): the app stays blocked. [emergency] is the emergency exit below the main
+ * action: counting down, ready, on cooldown (both disabled) or hidden.
  */
 @Composable
 fun ErrorScreen(
     app: String,
     error: Strings.ErrorTexts,
-    emergencySeconds: Int?,
+    emergency: EmergencyButton,
     onAction: () -> Unit,
     onEmergency: () -> Unit,
     onCancel: () -> Unit,
@@ -278,14 +279,13 @@ fun ErrorScreen(
         header = { BsHeader(Strings.HDR_PATH, Strings.HDR_LOCK) },
         bottom = {
             BsButton(error.action, onAction)
-            if (emergencySeconds != null) {
-                BsButton(
-                    if (emergencySeconds > 0) Strings.emergencyCountdown(emergencySeconds) else Strings.BTN_EMERGENCY,
-                    onEmergency,
-                    style = BsButtonStyle.Ghost,
-                    enabled = emergencySeconds == 0,
-                )
+            val label = when (emergency) {
+                EmergencyButton.Hidden -> null
+                is EmergencyButton.Wait -> Strings.emergencyCountdown(emergency.seconds)
+                EmergencyButton.Ready -> Strings.BTN_EMERGENCY
+                is EmergencyButton.Cooldown -> Strings.emergencyCooldown(emergency.remainingMs)
             }
+            if (label != null) BsButton(label, onEmergency, style = BsButtonStyle.Ghost, enabled = emergency == EmergencyButton.Ready)
             CancelButton(onCancel)
         },
     ) {

@@ -20,7 +20,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-tap_main()  { "$ADB" shell input tap 540 2123; }       # $ ./start, antwort zeigen, $ ./weiter, $ ./erneut, $ ./open
+tap_main()  { "$ADB" shell input tap 540 2123; }       # $ ./start, antwort zeigen, $ ./weiter, $ ./open (error screens: $ ./notausgang since M4-T6)
 tap_cont()  { "$ADB" shell input tap 540 2268; }       # $ ./weiter on the feedback screen (single button, lower)
 tap_cancel(){ "$ADB" shell input tap 540 2270; }       # abbrechen / schliessen
 tap_rate()  { case "$1" in again) "$ADB" shell input tap 293 1972;; good) "$ADB" shell input tap 293 2224;; easy) "$ADB" shell input tap 787 2224;; esac; }

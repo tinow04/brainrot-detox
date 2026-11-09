@@ -108,21 +108,57 @@ object RuntimeOps {
         val next = pruned.copy(
             grants = pruned.grants + (target to grant),
             episode = null,
-            emergency = EmergencyState(now.elapsedMs, now.bootCount),
+            emergency = EmergencyState(now.elapsedMs, now.bootCount, now.wallMs),
         )
         return Applied(next, StatsDelta(emergencies = 1), true)
     }
 }
 
+/** What the emergency button of an error screen shows (architecture.md 5, Notausgang). */
+sealed interface EmergencyButton {
+    /** Switched off (or the boot count is unreadable): no button. */
+    data object Hidden : EmergencyButton
+
+    /** The error screen has not been up for [Constants.EMERGENCY_WAIT_MS] yet: disabled, counting down. */
+    data class Wait(val seconds: Int) : EmergencyButton
+
+    data object Ready : EmergencyButton
+
+    /** Used less than [Constants.EMERGENCY_COOLDOWN_MS] ago: disabled with the time left. */
+    data class Cooldown(val remainingMs: Long) : EmergencyButton
+}
+
 object EmergencyPolicy {
-    /** At most once per [Constants.EMERGENCY_COOLDOWN_MS] on the same boot; a reboot resets the cooldown. */
-    fun available(state: EmergencyState?, now: TimeSnapshot): Boolean {
-        if (!Constants.EMERGENCY_EXIT_ENABLED || now.bootCount < 0) return false
-        if (state == null || state.bootCount != now.bootCount) return true
-        val since = now.elapsedMs - state.lastUsedElapsed
-        return since !in 0 until Constants.EMERGENCY_COOLDOWN_MS
+    /** At most once per [Constants.EMERGENCY_COOLDOWN_MS]; a reboot does not end the cooldown ([remainingMs]). */
+    fun available(state: EmergencyState?, now: TimeSnapshot, enabled: Boolean = Constants.EMERGENCY_EXIT_ENABLED): Boolean =
+        enabled && now.bootCount >= 0 && remainingMs(state, now) == 0L
+
+    /**
+     * Cooldown left, between 0 and [Constants.EMERGENCY_COOLDOWN_MS]. On the same boot only the monotonic clock counts.
+     * After a reboot the monotonic clock restarted: at least this boot's uptime has passed since the use (trusted lower
+     * bound); the wall clock may show more (phone was off) and then counts. A wall clock behind the use is ignored.
+     */
+    fun remainingMs(state: EmergencyState?, now: TimeSnapshot): Long {
+        if (state == null) return 0
+        val cooldown = Constants.EMERGENCY_COOLDOWN_MS
+        val since = if (now.bootCount >= 0 && state.bootCount == now.bootCount) {
+            now.elapsedMs - state.lastUsedElapsed
+        } else {
+            val wallSince = if (state.lastUsedWall > 0 && now.wallMs >= state.lastUsedWall) now.wallMs - state.lastUsedWall else 0
+            maxOf(now.elapsedMs, wallSince)
+        }
+        return (cooldown - since).coerceIn(0, cooldown)
     }
 
-    fun remainingMs(state: EmergencyState?, now: TimeSnapshot): Long =
-        if (state == null || state.bootCount != now.bootCount) 0 else maxOf(0, Constants.EMERGENCY_COOLDOWN_MS - (now.elapsedMs - state.lastUsedElapsed))
+    /** The button for an error screen shown since [errorSince] (elapsed): the longer of wait and cooldown wins. */
+    fun button(errorSince: Long, state: EmergencyState?, now: TimeSnapshot, enabled: Boolean = Constants.EMERGENCY_EXIT_ENABLED): EmergencyButton {
+        if (!enabled || now.bootCount < 0) return EmergencyButton.Hidden
+        val waitMs = (Constants.EMERGENCY_WAIT_MS - (now.elapsedMs - errorSince)).coerceIn(0, Constants.EMERGENCY_WAIT_MS)
+        val coolMs = remainingMs(state, now)
+        return when {
+            coolMs > 0 && coolMs >= waitMs -> EmergencyButton.Cooldown(coolMs)
+            waitMs > 0 -> EmergencyButton.Wait(((waitMs + 999) / 1000).toInt())
+            else -> EmergencyButton.Ready
+        }
+    }
 }

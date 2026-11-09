@@ -162,15 +162,16 @@ class RuntimeOpsTest {
         assertThat(r.delta).isEqualTo(StatsDelta(emergencies = 1))
         assertThat(r.runtime.grants.getValue("a").durationMs).isEqualTo(5 * 60_000L)
         assertThat(r.runtime.episode).isNull()
+        assertThat(r.runtime.emergency).isEqualTo(EmergencyState(100_000, 1, 1_700_000_000_000 + 100_000))
     }
 
-    @Test fun emergencyCooldownBlocksSecondUseUntilSixHoursOrReboot() {
+    @Test fun emergencyCooldownBlocksSecondUseForSixHours() {
         val used = EmergencyState(lastUsedElapsed = 1_000, bootCount = 1)
         val rt = Runtime(emergency = used)
         assertThat(EmergencyPolicy.available(used, t(1_000 + Constants.EMERGENCY_COOLDOWN_MS - 1))).isFalse()
         assertThat(RuntimeOps.commitEmergency(rt, "a", t(2_000)).info).isFalse()
         assertThat(EmergencyPolicy.available(used, t(1_000 + Constants.EMERGENCY_COOLDOWN_MS))).isTrue()
-        assertThat(EmergencyPolicy.available(used, t(2_000, boot = 2))).isTrue()
+        assertThat(EmergencyPolicy.available(used, t(2_000, boot = 2))).isFalse() // a reboot does not end it (EmergencyPolicyTest)
         assertThat(EmergencyPolicy.available(used, t(1_000 + Constants.EMERGENCY_COOLDOWN_MS, boot = -1))).isFalse()
     }
 

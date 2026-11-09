@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -18,6 +19,7 @@ import dev.tinow.brainrotstopper.domain.model.Ease
 import dev.tinow.brainrotstopper.domain.model.GrantKind
 import dev.tinow.brainrotstopper.domain.quiz.Constants
 import dev.tinow.brainrotstopper.domain.quiz.Phase
+import dev.tinow.brainrotstopper.domain.runtime.EmergencyButton
 import dev.tinow.brainrotstopper.lock.render.CardView
 import dev.tinow.brainrotstopper.lock.render.rememberCardStyle
 import dev.tinow.brainrotstopper.lock.screens.AnswerScreen
@@ -91,10 +93,18 @@ fun QuizHost(view: QuizView, actions: QuizActions, onErrorTarget: (ErrorTarget) 
         Phase.Error -> {
             val error = q.error ?: AnkiError.Unexpected("no error")
             val texts = QuizEngine.errorTexts(error)
+            // The countdown and the cooldown move with the clock: ask the engine once a second while the screen shows.
+            val first = remember(q.errorSince, q.seq) { actions.emergencyButton() }
+            val emergency by produceState(first, q.errorSince, q.seq) {
+                while (true) {
+                    value = actions.emergencyButton()
+                    delay(1_000)
+                }
+            }
             ErrorScreen(
                 app = view.appLabel,
                 error = texts,
-                emergencySeconds = null, // the emergency exit follows with M4-T6
+                emergency = emergency,
                 onAction = {
                     when (error) {
                         AnkiError.PermissionMissing -> onErrorTarget(ErrorTarget.AppInfo)
@@ -120,9 +130,11 @@ class QuizActions(
     val openTarget: () -> Unit,
     val retry: () -> Unit,
     val emergency: () -> Unit,
+    val emergencyButton: () -> EmergencyButton = { EmergencyButton.Hidden },
 ) {
     companion object {
-        fun forEngine(e: QuizEngine) = QuizActions(e::start, e::reveal, e::rate, e::next, e::cancel, e::openTarget, e::retry, e::emergency)
+        fun forEngine(e: QuizEngine) =
+            QuizActions(e::start, e::reveal, e::rate, e::next, e::cancel, e::openTarget, e::retry, e::emergency, e::emergencyButton)
     }
 }
 

@@ -99,7 +99,12 @@ data class Episode(
 )
 
 @Serializable
-data class EmergencyState(val lastUsedElapsed: Long, val bootCount: Int)
+data class EmergencyState(
+    val lastUsedElapsed: Long,
+    val bootCount: Int,
+    /** Wall clock of the use; only read after a reboot (the monotonic clock restarted), 0 = unknown. */
+    val lastUsedWall: Long = 0,
+)
 
 @Serializable
 data class Diag(

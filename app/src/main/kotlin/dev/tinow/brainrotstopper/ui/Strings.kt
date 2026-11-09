@@ -146,6 +146,12 @@ object Strings {
     const val BTN_OPEN_ANKIDROID = "\$ ./ankidroid oeffnen"
     const val BTN_EMERGENCY = "\$ ./notausgang"
     fun emergencyCountdown(seconds: Int) = "\$ ./notausgang (${seconds}s)"
+    /** Disabled during the 6 h cooldown, rounded up to whole minutes: `(in 4h 12m)`, under an hour `(in 12m)`. */
+    fun emergencyCooldown(remainingMs: Long): String {
+        val minutes = (remainingMs + 59_999) / 60_000
+        val left = if (minutes >= 60) "${minutes / 60}h ${minutes % 60}m" else "${minutes}m"
+        return "\$ ./notausgang (in $left)"
+    }
 
     // ---- main app: B1 apps
     const val TITLE_PROMPT = "\$"

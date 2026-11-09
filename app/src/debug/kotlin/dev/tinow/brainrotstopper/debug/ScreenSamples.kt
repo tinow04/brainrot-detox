@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
+import dev.tinow.brainrotstopper.domain.runtime.EmergencyButton
 import dev.tinow.brainrotstopper.lock.screens.AnswerScreen
 import dev.tinow.brainrotstopper.lock.screens.ErrorScreen
 import dev.tinow.brainrotstopper.lock.screens.FeedbackScreen
@@ -50,7 +51,7 @@ object ScreenSamples {
     val names = listOf(
         "a1", "a1-resume", "a2", "a3", "a4", "a4-hard", "a5", "a5-alldone", "a5-emergency", "waiting", "loading",
         "error-not-available", "error-permission", "error-storage", "error-unreachable", "error-deck", "error-bad-data", "error-answer",
-        "error-emergency-wait", "b1", "b1-empty", "b2", "b2-media", "b3", "setup", "banner-degraded", "banner-disabled", "banner-unbound",
+        "error-emergency-wait", "error-emergency-cooldown", "b1", "b1-empty", "b2", "b2-media", "b3", "setup", "banner-degraded", "banner-disabled", "banner-unbound",
         "banner-restricted", "banner-corrupt", "components",
     )
 
@@ -110,14 +111,15 @@ object ScreenSamples {
             "a5-emergency" -> UnlockedScreen(head0, 5, null, UnlockVariant.Emergency, {}, {})
             "waiting" -> WaitingScreen(head1, {})
             "loading" -> LoadingScreen("instagram", {})
-            "error-not-available" -> ErrorScreen("instagram", Strings.ERR_NOT_AVAILABLE, 0, {}, {}, {})
-            "error-permission" -> ErrorScreen("instagram", Strings.ERR_PERMISSION, 0, {}, {}, {})
-            "error-storage" -> ErrorScreen("instagram", Strings.ERR_STORAGE, 0, {}, {}, {})
-            "error-unreachable" -> ErrorScreen("instagram", Strings.ERR_UNREACHABLE, 0, {}, {}, {})
-            "error-deck" -> ErrorScreen("instagram", Strings.ERR_DECK_MISSING, null, {}, {}, {})
-            "error-bad-data" -> ErrorScreen("instagram", Strings.ERR_BAD_DATA, 0, {}, {}, {})
-            "error-answer" -> ErrorScreen("instagram", Strings.ERR_ANSWER_NOT_SAVED, null, {}, {}, {})
-            "error-emergency-wait" -> ErrorScreen("instagram", Strings.ERR_UNREACHABLE, 42, {}, {}, {})
+            "error-not-available" -> ErrorScreen("instagram", Strings.ERR_NOT_AVAILABLE, EmergencyButton.Ready, {}, {}, {})
+            "error-permission" -> ErrorScreen("instagram", Strings.ERR_PERMISSION, EmergencyButton.Ready, {}, {}, {})
+            "error-storage" -> ErrorScreen("instagram", Strings.ERR_STORAGE, EmergencyButton.Ready, {}, {}, {})
+            "error-unreachable" -> ErrorScreen("instagram", Strings.ERR_UNREACHABLE, EmergencyButton.Ready, {}, {}, {})
+            "error-deck" -> ErrorScreen("instagram", Strings.ERR_DECK_MISSING, EmergencyButton.Ready, {}, {}, {})
+            "error-bad-data" -> ErrorScreen("instagram", Strings.ERR_BAD_DATA, EmergencyButton.Ready, {}, {}, {})
+            "error-answer" -> ErrorScreen("instagram", Strings.ERR_ANSWER_NOT_SAVED, EmergencyButton.Ready, {}, {}, {})
+            "error-emergency-wait" -> ErrorScreen("instagram", Strings.ERR_UNREACHABLE, EmergencyButton.Wait(42), {}, {}, {})
+            "error-emergency-cooldown" -> ErrorScreen("instagram", Strings.ERR_UNREACHABLE, EmergencyButton.Cooldown(4 * 3_600_000L + 12 * 60_000L), {}, {}, {})
             "b1" -> Main(MainTab.Apps) {
                 var q by remember { mutableStateOf("") }
                 AppsScreen(apps.filter { it.blocked }, apps.filter { !it.blocked }, q, { q = it }, { _, _ -> })

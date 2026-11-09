@@ -21,7 +21,11 @@ data class QuizState(
     val revealedAt: Long = 0,
     val lastEase: Ease? = null,
     val error: AnkiError? = null,
-    val errorSince: Long = 0,
+    /**
+     * Elapsed time of the first error since the last card (or attach); retries keep it, so `erneut` does not restart the
+     * emergency countdown. null = no error since the last card.
+     */
+    val errorSince: Long? = null,
     val unlockKind: GrantKind? = null,
     /** An emergency / nothing-due grant is being committed; further emergency taps are ignored meanwhile. */
     val grantPending: Boolean = false,
@@ -77,7 +81,7 @@ object QuizReducer {
         is QuizEvent.Rate -> rate(s, e)
         is QuizEvent.AnswerSaved -> saved(s, e)
         is QuizEvent.AnswerFailed ->
-            if (e.seq == s.seq && s.phase == Phase.SubmitPending) s.copy(phase = Phase.Error, error = e.error, errorSince = e.now).none() else s.none()
+            if (e.seq == s.seq && s.phase == Phase.SubmitPending) s.copy(phase = Phase.Error, error = e.error, errorSince = s.errorSince ?: e.now).none() else s.none()
         QuizEvent.Continue -> if (s.phase == Phase.Feedback) load(s) else s.none()
         QuizEvent.Cancel -> cancel(s)
         QuizEvent.OpenTarget -> if (s.phase == Phase.Unlocked && s.target != null) s.copy(phase = Phase.Closed, seq = s.seq + 1).with(QuizEffect.StartTarget(s.target)) else s.none()
@@ -107,13 +111,13 @@ object QuizReducer {
     }
 
     private fun next(s: QuizState, e: QuizEvent.NextResult, ctx: QuizCtx): Reduced = when (val d = e.decision) {
-        is QueueDecision.Card -> s.copy(phase = Phase.Question, card = d.ref, shownAt = e.now, error = null, lastEase = null).none()
+        is QueueDecision.Card -> s.copy(phase = Phase.Question, card = d.ref, shownAt = e.now, error = null, errorSince = null, lastEase = null).none()
         QueueDecision.WaitingForLearning ->
-            s.copy(phase = Phase.Waiting, seq = s.seq + 1).with(QuizEffect.SchedulePoll(s.seq + 1, Constants.WAIT_POLL_MS))
+            s.copy(phase = Phase.Waiting, seq = s.seq + 1, errorSince = null).with(QuizEffect.SchedulePoll(s.seq + 1, Constants.WAIT_POLL_MS))
         QueueDecision.AllDone ->
             if (ctx.nothingDueGrant) s.copy(seq = s.seq + 1).with(QuizEffect.CommitGrant(s.seq + 1, GrantKind.NOTHING_DUE))
             else s.copy(phase = Phase.Waiting, seq = s.seq + 1).with(QuizEffect.SchedulePoll(s.seq + 1, Constants.WAIT_POLL_MS))
-        is QueueDecision.Error -> s.copy(phase = Phase.Error, error = d.error, errorSince = e.now).none()
+        is QueueDecision.Error -> s.copy(phase = Phase.Error, error = d.error, errorSince = s.errorSince ?: e.now).none()
     }
 
     private fun rate(s: QuizState, e: QuizEvent.Rate): Reduced {
@@ -150,7 +154,8 @@ object QuizReducer {
     }
 
     private fun emergency(s: QuizState, e: QuizEvent.Emergency, ctx: QuizCtx): Reduced {
-        if (!ctx.emergencyEnabled || s.phase != Phase.Error || s.grantPending || e.now - s.errorSince < Constants.EMERGENCY_WAIT_MS) return s.none()
+        val since = s.errorSince ?: return s.none()
+        if (!ctx.emergencyEnabled || s.phase != Phase.Error || s.grantPending || e.now - since < Constants.EMERGENCY_WAIT_MS) return s.none()
         val seq = s.seq + 1
         return s.copy(seq = seq, grantPending = true).with(QuizEffect.CommitGrant(seq, GrantKind.EMERGENCY))
     }
@@ -159,6 +164,6 @@ object QuizReducer {
         if (e.seq != s.seq || s.phase == Phase.Unlocked || s.phase == Phase.Closed) return s.none()
         return if (e.granted) s.copy(phase = Phase.Unlocked, unlockKind = e.kind, card = null, grantPending = false).none()
         // Denied (cooldown) or failed to persist: stay closed and keep showing the error.
-        else s.copy(phase = Phase.Error, error = s.error ?: AnkiError.Unexpected("grant not committed"), errorSince = s.error?.let { s.errorSince } ?: e.now, grantPending = false).none()
+        else s.copy(phase = Phase.Error, error = s.error ?: AnkiError.Unexpected("grant not committed"), errorSince = s.errorSince ?: e.now, grantPending = false).none()
     }
 }

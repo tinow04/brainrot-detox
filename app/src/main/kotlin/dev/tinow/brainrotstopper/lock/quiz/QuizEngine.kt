@@ -13,12 +13,14 @@ import dev.tinow.brainrotstopper.domain.gate.GateSnapshot
 import dev.tinow.brainrotstopper.domain.model.CardRef
 import dev.tinow.brainrotstopper.domain.model.DeckSelection
 import dev.tinow.brainrotstopper.domain.model.Ease
+import dev.tinow.brainrotstopper.domain.model.EmergencyState
 import dev.tinow.brainrotstopper.domain.model.GrantKind
 import dev.tinow.brainrotstopper.domain.model.PendingAnswer
 import dev.tinow.brainrotstopper.domain.model.QuizSession
 import dev.tinow.brainrotstopper.domain.model.Settings
 import dev.tinow.brainrotstopper.domain.model.Stats
 import dev.tinow.brainrotstopper.domain.quiz.Constants
+import dev.tinow.brainrotstopper.domain.quiz.Phase
 import dev.tinow.brainrotstopper.domain.quiz.QueueDecision
 import dev.tinow.brainrotstopper.domain.quiz.QueuePolicy
 import dev.tinow.brainrotstopper.domain.quiz.QuizCtx
@@ -26,6 +28,8 @@ import dev.tinow.brainrotstopper.domain.quiz.QuizEffect
 import dev.tinow.brainrotstopper.domain.quiz.QuizEvent
 import dev.tinow.brainrotstopper.domain.quiz.QuizReducer
 import dev.tinow.brainrotstopper.domain.quiz.QuizState
+import dev.tinow.brainrotstopper.domain.runtime.EmergencyButton
+import dev.tinow.brainrotstopper.domain.runtime.EmergencyPolicy
 import dev.tinow.brainrotstopper.domain.runtime.RuntimeOps
 import dev.tinow.brainrotstopper.domain.runtime.RuntimeStore
 import dev.tinow.brainrotstopper.domain.stats.StreakCalculator
@@ -117,6 +121,10 @@ class QuizEngine(
 
     @Volatile
     private var visible = true
+
+    /** Last use of the emergency exit as stored in `runtime.json`; read at attach and after each emergency commit. */
+    @Volatile
+    private var emergencyState: EmergencyState? = null
     private var pollWaitingSeq: Int? = null
 
     // ------------------------------------------------------------------ UI API
@@ -135,6 +143,12 @@ class QuizEngine(
     fun openTarget() = dispatch(QuizEvent.OpenTarget)
     fun retry() = dispatch(QuizEvent.Retry(now()))
     fun emergency() = dispatch(QuizEvent.Emergency(now()))
+
+    /** The emergency button of the error screen right now (the screen polls it every second). */
+    fun emergencyButton(): EmergencyButton {
+        val since = synchronized(monitor) { state.errorSince.takeIf { state.phase == Phase.Error } } ?: return EmergencyButton.Hidden
+        return EmergencyPolicy.button(since, emergencyState, time.now(), ctx.emergencyEnabled)
+    }
 
     /** The lock screen went to the background: the waiting screen stops polling AnkiDroid until it is back. */
     fun setVisible(value: Boolean) {
@@ -192,6 +206,7 @@ class QuizEngine(
     private suspend fun doAttach(pkg: String) {
         val cfg = settings()
         val rt = runtime.current()
+        emergencyState = rt.emergency
         val t = time.now()
         when (LockEntry.decide(pkg, GateSnapshot(cfg.blockedPackages, rt.grants), t)) {
             LockEntry.Dismiss -> _commands.trySend(QuizCommand.Finish)
@@ -408,7 +423,11 @@ class QuizEngine(
                 GrantKind.EMERGENCY -> {
                     val target = synchronized(monitor) { state.target } ?: return dispatch(QuizEvent.GrantResult(e.seq, e.kind, false, now()))
                     val minutes = Constants.EMERGENCY_GRANT_MIN
-                    val ok = runtime.apply(t) { RuntimeOps.commitEmergency(it, target, t) }
+                    val ok = try {
+                        runtime.apply(t) { RuntimeOps.commitEmergency(it, target, t) }
+                    } finally {
+                        runCatching { emergencyState = runtime.current().emergency }
+                    }
                     if (ok) editMeta { it.copy(unlock = UnlockInfo(minutes, 0, 0, 0, 0)) }
                     ok
                 }

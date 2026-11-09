@@ -15,6 +15,7 @@ import dev.tinow.brainrotstopper.domain.model.Stats
 import dev.tinow.brainrotstopper.domain.quiz.Constants
 import dev.tinow.brainrotstopper.domain.quiz.Phase
 import dev.tinow.brainrotstopper.domain.runtime.Applied
+import dev.tinow.brainrotstopper.domain.runtime.EmergencyButton
 import dev.tinow.brainrotstopper.domain.runtime.RuntimeStore
 import dev.tinow.brainrotstopper.domain.stats.plus
 import dev.tinow.brainrotstopper.domain.time.TimeSnapshot
@@ -546,6 +547,99 @@ class QuizEngineTest {
         r.source.failing.clear()
         e.retry(); runCurrent()
         assertThat(e.phase).isEqualTo(Phase.Question)
+    }
+
+    // ------------------------------------------------------------------ emergency exit (M4-T6)
+
+    private fun TestScope.toError(r: Rig, target: String = pkg): QuizEngine {
+        r.source.failing["nextCard"] = AnkiError.Unreachable
+        val e = r.engine()
+        begin(e, target)
+        assertThat(e.phase).isEqualTo(Phase.Error)
+        return e
+    }
+
+    @Test fun `emergency exit only after 60 s on the error screen, then 5 minutes for the target`() = runTest {
+        val r = rig()
+        val e = toError(r)
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Wait(60))
+        r.time.advance(Constants.EMERGENCY_WAIT_MS - 1)
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Wait(1))
+        e.emergency(); runCurrent()
+        assertThat(e.phase).isEqualTo(Phase.Error)
+        assertThat(r.store.rt.grants).isEmpty()
+
+        r.time.advance(1)
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Ready)
+        e.emergency(); runCurrent()
+        assertThat(e.phase).isEqualTo(Phase.Unlocked)
+        assertThat(e.view.value.quiz.unlockKind).isEqualTo(GrantKind.EMERGENCY)
+        assertThat(e.view.value.unlock?.minutes).isEqualTo(Constants.EMERGENCY_GRANT_MIN)
+        val grant = r.store.rt.grants.getValue(pkg)
+        assertThat(grant.kind).isEqualTo(GrantKind.EMERGENCY)
+        assertThat(grant.untilElapsedMs - grant.grantedAtElapsedMs).isEqualTo(Constants.EMERGENCY_GRANT_MIN * 60_000L)
+        assertThat(GrantPolicy.isValid(grant, r.time.now())).isTrue()
+        assertThat(r.day?.emergencies).isEqualTo(1)
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Hidden)
+    }
+
+    @Test fun `retrying does not restart the emergency countdown`() = runTest {
+        val r = rig()
+        val e = toError(r)
+        r.time.advance(Constants.EMERGENCY_WAIT_MS - 5_000)
+        e.retry(); runCurrent()
+        assertThat(e.phase).isEqualTo(Phase.Error)
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Wait(5))
+    }
+
+    @Test fun `a second emergency exit within 6 h is refused, also for another app`() = runTest {
+        val r = rig()
+        val first = toError(r)
+        r.time.advance(Constants.EMERGENCY_WAIT_MS)
+        first.emergency(); runCurrent()
+        assertThat(first.phase).isEqualTo(Phase.Unlocked)
+        val usedAt = r.time.elapsedMs
+
+        val e = toError(r, other)
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Cooldown(Constants.EMERGENCY_COOLDOWN_MS))
+        r.time.advance(Constants.EMERGENCY_WAIT_MS)
+        e.emergency(); runCurrent()
+        assertThat(e.phase).isEqualTo(Phase.Error) // refused: the lock stays closed
+        assertThat(r.store.rt.grants).doesNotContainKey(other)
+        assertThat(r.day?.emergencies).isEqualTo(1)
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Cooldown(Constants.EMERGENCY_COOLDOWN_MS - Constants.EMERGENCY_WAIT_MS))
+
+        r.time.advance(usedAt + Constants.EMERGENCY_COOLDOWN_MS - r.time.elapsedMs)
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Ready)
+        e.emergency(); runCurrent()
+        assertThat(e.phase).isEqualTo(Phase.Unlocked)
+        assertThat(r.store.rt.grants.getValue(other).kind).isEqualTo(GrantKind.EMERGENCY)
+    }
+
+    @Test fun `a reboot does not lift the cooldown`() = runTest {
+        val r = rig()
+        val first = toError(r)
+        r.time.advance(Constants.EMERGENCY_WAIT_MS)
+        first.emergency(); runCurrent()
+        val used = r.store.rt.emergency!!
+        assertThat(used.bootCount).isEqualTo(r.time.bootCount)
+
+        // reboot 30 minutes later, 10 minutes up; the engine is new (new process)
+        r.time.bootCount += 1
+        r.time.elapsedMs = 10 * 60_000L
+        r.time.wallMs = used.lastUsedWall + 30 * 60_000L
+        val e = toError(r) // the old grant died with the reboot: the lock is back
+        r.time.advance(Constants.EMERGENCY_WAIT_MS)
+        assertThat(e.emergencyButton()).isInstanceOf(EmergencyButton.Cooldown::class.java)
+        e.emergency(); runCurrent()
+        assertThat(e.phase).isEqualTo(Phase.Error)
+        assertThat(r.store.rt.grants).isEmpty()
+
+        // the phone was off long enough: the wall clock shows 6 h since the use
+        r.time.wallMs = used.lastUsedWall + Constants.EMERGENCY_COOLDOWN_MS
+        assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Ready)
+        e.emergency(); runCurrent()
+        assertThat(e.phase).isEqualTo(Phase.Unlocked)
     }
 
     // ------------------------------------------------------------------ cancel and guards

@@ -331,12 +331,31 @@ class QuizReducerTest {
         for (x in listOf(w, q, off)) assertThat(x.count<QuizEffect.CommitGrant>()).isEqualTo(0)
     }
 
-    @Test fun countdownRestartsWithEachNewError() {
+    @Test fun retriesDoNotRestartTheCountdown() {
         val q = Quiz(); q.toError()
+        val since = q.state.errorSince
         q.advance(Constants.EMERGENCY_WAIT_MS - 1_000)
-        q.send(QuizEvent.Retry(q.t)); q.deliver(QueueDecision.Error(AnkiError.Unreachable))
-        q.advance(2_000); q.send(QuizEvent.Emergency(q.t))
-        assertThat(q.count<QuizEffect.CommitGrant>()).isEqualTo(0)
+        q.send(QuizEvent.Retry(q.t)); q.deliver(QueueDecision.Error(AnkiError.BadData))
+        assertThat(q.state.errorSince).isEqualTo(since)
+        q.advance(1_000); q.send(QuizEvent.Emergency(q.t))
+        assertThat(q.last<QuizEffect.CommitGrant>().kind).isEqualTo(GrantKind.EMERGENCY)
+    }
+
+    @Test fun aCardOrWaitingRestartsTheCountdown() {
+        val q = Quiz(); q.toError(); q.advance(Constants.EMERGENCY_WAIT_MS)
+        q.send(QuizEvent.Retry(q.t)); q.deliver(QueueDecision.Card(q.card))
+        assertThat(q.state.errorSince).isNull()
+        q.advance(1_000); q.send(QuizEvent.Cancel)
+        val w = Quiz(); w.toError(); w.advance(Constants.EMERGENCY_WAIT_MS)
+        w.send(QuizEvent.Retry(w.t)); w.deliver(QueueDecision.WaitingForLearning)
+        assertThat(w.state.errorSince).isNull()
+        val r = Quiz(); r.toError(); r.advance(Constants.EMERGENCY_WAIT_MS)
+        r.send(QuizEvent.Retry(r.t)); r.deliver(QueueDecision.Card(r.card))
+        r.advance(Constants.RATE_GUARD_MS); r.send(QuizEvent.Reveal(r.t)); r.rate(Ease.GOOD)
+        r.send(QuizEvent.AnswerFailed(r.state.seq, AnkiError.AnswerNotSaved, r.t))
+        assertThat(r.state.errorSince).isEqualTo(r.t)
+        r.send(QuizEvent.Emergency(r.t))
+        assertThat(r.count<QuizEffect.CommitGrant>()).isEqualTo(0)
     }
 
     // --- a whole run ----------------------------------------------------------------------------------------------
