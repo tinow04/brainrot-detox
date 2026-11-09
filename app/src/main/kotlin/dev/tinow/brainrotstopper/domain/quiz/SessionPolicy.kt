@@ -19,14 +19,18 @@ sealed interface SessionResolution {
 
 object SessionPolicy {
     /** A session lives for [Constants.SESSION_TTL_MS] of idle time on the same boot; time going backwards means stale. */
-    fun isFresh(session: QuizSession, now: TimeSnapshot): Boolean {
+    fun isFresh(session: QuizSession, now: TimeSnapshot, ttlMs: Long = Constants.SESSION_TTL_MS): Boolean {
         if (now.bootCount < 0 || session.bootCount != now.bootCount) return false
         val idle = now.elapsedMs - session.lastActiveElapsed
-        return idle in 0 until Constants.SESSION_TTL_MS
+        return idle in 0 until ttlMs
     }
 
-    fun resolve(existing: QuizSession?, target: String, settings: Settings, now: TimeSnapshot, newId: () -> String): SessionResolution {
-        if (existing == null || !isFresh(existing, now)) return SessionResolution.New(create(target, settings.sanitized(), now, newId()))
+    fun resolve(
+        existing: QuizSession?, target: String, settings: Settings, now: TimeSnapshot,
+        ttlMs: Long = Constants.SESSION_TTL_MS,
+        newId: () -> String,
+    ): SessionResolution {
+        if (existing == null || !isFresh(existing, now, ttlMs)) return SessionResolution.New(create(target, settings.sanitized(), now, newId()))
         return if (existing.targetPkg == target) SessionResolution.Resume(existing)
         else SessionResolution.Retarget(existing.copy(targetPkg = target))
     }

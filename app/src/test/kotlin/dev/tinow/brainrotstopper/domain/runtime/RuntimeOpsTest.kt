@@ -23,7 +23,7 @@ class RuntimeOpsTest {
     private var ids = 0
     private fun id() = "id${ids++}"
 
-    private fun attach(rt: Runtime, pkg: String, now: Long, boot: Int = 1) = RuntimeOps.attach(rt, pkg, settings, t(now, boot), ::id)
+    private fun attach(rt: Runtime, pkg: String, now: Long, boot: Int = 1) = RuntimeOps.attach(rt, pkg, settings, t(now, boot), newId = ::id)
 
     private fun rate(rt: Runtime, ease: Ease, now: Long): Applied<CommitInfo> {
         val withPending = RuntimeOps.setPending(rt, PendingAnswer(id(), 1, 0, ease, 2_000, 5), t(now))

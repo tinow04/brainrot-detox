@@ -6,6 +6,7 @@ import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import dev.tinow.brainrotstopper.domain.gate.GrantPolicy
 import dev.tinow.brainrotstopper.domain.model.Runtime
 import dev.tinow.brainrotstopper.domain.runtime.Applied
+import dev.tinow.brainrotstopper.domain.runtime.RuntimeStore
 import dev.tinow.brainrotstopper.domain.time.TimeSnapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +20,7 @@ import java.io.File
  * Statistics live in their own file and are written after the runtime commit; if the process dies in between, one
  * counter update is lost, never a grant or an answer (documented in architecture.md 4).
  */
-class RuntimeRepository(file: File, scope: CoroutineScope, private val stats: StatsRepository) {
+class RuntimeRepository(file: File, scope: CoroutineScope, private val stats: StatsRepository) : RuntimeStore {
     private val store: DataStore<Runtime> = DataStoreFactory.create(
         serializer = JsonSerializer(Runtime.serializer(), Runtime()),
         corruptionHandler = ReplaceFileCorruptionHandler { Runtime() },
@@ -29,10 +30,10 @@ class RuntimeRepository(file: File, scope: CoroutineScope, private val stats: St
 
     val flow: Flow<Runtime> get() = store.data
 
-    suspend fun current(): Runtime = store.data.first()
+    override suspend fun current(): Runtime = store.data.first()
 
     /** Applies a pure runtime operation (see RuntimeOps) in one `updateData`, then records its statistics for the local day of [now]. */
-    suspend fun <T> apply(now: TimeSnapshot, op: (Runtime) -> Applied<T>): T {
+    override suspend fun <T> apply(now: TimeSnapshot, op: (Runtime) -> Applied<T>): T {
         var result: Applied<T>? = null
         store.updateData { current -> op(current).also { result = it }.runtime }
         val applied = checkNotNull(result)
@@ -41,7 +42,7 @@ class RuntimeRepository(file: File, scope: CoroutineScope, private val stats: St
     }
 
     /** Plain runtime change without statistics (write-ahead pending, diag counters). */
-    suspend fun update(transform: (Runtime) -> Runtime): Runtime = store.updateData(transform)
+    override suspend fun update(transform: (Runtime) -> Runtime): Runtime = store.updateData(transform)
 
     suspend fun pruneGrants(now: TimeSnapshot) {
         store.updateData { it.copy(grants = GrantPolicy.prune(it.grants, now)) }

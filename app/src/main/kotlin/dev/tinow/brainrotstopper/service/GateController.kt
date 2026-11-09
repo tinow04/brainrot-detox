@@ -201,6 +201,7 @@ class GateController(
         val env = GateEnv(time.elapsedMs, tracker.current, snap, time, lockVisiblePkg)
         val (next, effects) = GateStateMachine.step(model, input, env)
         model = next
+        log("gate ${cmd::class.java.simpleName} -> ${next.state::class.java.simpleName} fg=${tracker.current} lockUi=$lockVisiblePkg fx=${effects.size}")
         tracker.lockActive = lockVisiblePkg != null || next.state is GateState.LockRequested || next.state is GateState.LockVisible
         for (effect in effects) run(effect)
     }

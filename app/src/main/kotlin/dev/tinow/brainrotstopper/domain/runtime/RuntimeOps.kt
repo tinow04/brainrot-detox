@@ -29,7 +29,11 @@ object RuntimeOps {
      * The lock UI came up for [pkg]. A valid grant means nothing is blocked (no episode, no block counted). Otherwise the
      * episode is opened or kept (debounce [Constants.BLOCK_DEBOUNCE_MS]) and the session resolved.
      */
-    fun attach(rt: Runtime, pkg: String, settings: Settings, now: TimeSnapshot, newId: () -> String): Applied<AttachInfo> {
+    fun attach(
+        rt: Runtime, pkg: String, settings: Settings, now: TimeSnapshot,
+        sessionTtlMs: Long = Constants.SESSION_TTL_MS,
+        newId: () -> String,
+    ): Applied<AttachInfo> {
         val base = rt.pruned(now)
         val grant = base.grants[pkg]
         if (GrantPolicy.isValid(grant, now)) return Applied(base, StatsDelta(), AttachInfo(null, grant!!.kind, false))
@@ -45,7 +49,7 @@ object RuntimeOps {
             delta += StatsDelta(blocks = 1, perApp = mapOf(pkg to 1))
             Episode(pkg, now.elapsedMs, now.elapsedMs, now.bootCount)
         }
-        val resolution = SessionPolicy.resolve(base.session, pkg, settings, now, newId)
+        val resolution = SessionPolicy.resolve(base.session, pkg, settings, now, sessionTtlMs, newId)
         return Applied(base.copy(episode = episode, session = resolution.session), delta, AttachInfo(resolution, null, !sameEpisode))
     }
 
@@ -65,7 +69,7 @@ object RuntimeOps {
      * Commit step of the answer pipeline: clears `pending`, counts per the stats table and, if the required number of
      * good answers is reached, creates the grant, deletes the session and closes the episode - all in one result.
      */
-    fun commitAnswer(rt: Runtime, now: TimeSnapshot): Applied<CommitInfo> {
+    fun commitAnswer(rt: Runtime, now: TimeSnapshot, unlockMsOverride: Long? = null): Applied<CommitInfo> {
         val session = rt.session
         val pending = session?.pending ?: return Applied(rt, StatsDelta(), CommitInfo(false, session))
         val ease = pending.ease
@@ -80,7 +84,7 @@ object RuntimeOps {
         )
         var delta = StatsDelta(answered = 1, correct = if (ease.counts) 1 else 0)
         if (ease.counts && counted.correct >= counted.required) {
-            val grant = GrantPolicy.create(GrantKind.QUIZ, counted.unlockMinutes * 60_000L, now)
+            val grant = GrantPolicy.create(GrantKind.QUIZ, unlockMsOverride ?: (counted.unlockMinutes * 60_000L), now)
             val next = rt.pruned(now).copy(grants = rt.pruned(now).grants + (counted.targetPkg to grant), session = null, episode = null)
             delta += StatsDelta(unlocks = 1)
             return Applied(next, delta, CommitInfo(true, null))
@@ -89,9 +93,9 @@ object RuntimeOps {
     }
 
     /** Deck really empty: the target is released for the normal duration without a quiz. Counts `freeUnlocks`. */
-    fun commitNothingDue(rt: Runtime, now: TimeSnapshot): Applied<Boolean> {
+    fun commitNothingDue(rt: Runtime, now: TimeSnapshot, unlockMsOverride: Long? = null): Applied<Boolean> {
         val session = rt.session ?: return Applied(rt, StatsDelta(), false)
-        val grant = GrantPolicy.create(GrantKind.NOTHING_DUE, session.unlockMinutes * 60_000L, now)
+        val grant = GrantPolicy.create(GrantKind.NOTHING_DUE, unlockMsOverride ?: (session.unlockMinutes * 60_000L), now)
         val pruned = rt.pruned(now)
         return Applied(pruned.copy(grants = pruned.grants + (session.targetPkg to grant), session = null, episode = null), StatsDelta(freeUnlocks = 1), true)
     }

@@ -37,6 +37,7 @@ object DebugInit {
 
     fun install(container: AppContainer) {
         container.debugFlags = flags
+        container.fakeCardSource = { scenario -> dev.tinow.brainrotstopper.debug.fake.FakeCardSource.scenario(scenario) }
         // detectBlockedBackgroundActivityLaunch needs API 36 (lint NewApi); minSdk is 35.
         if (Build.VERSION.SDK_INT >= 36) {
             StrictMode.setVmPolicy(

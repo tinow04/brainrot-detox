@@ -3,7 +3,12 @@ package dev.tinow.brainrotstopper.di
 import android.app.Application
 import androidx.datastore.dataStoreFile
 import android.content.pm.ApplicationInfo
+import dev.tinow.brainrotstopper.data.anki.AndroidProviderGateway
+import dev.tinow.brainrotstopper.data.anki.AnkiContentProviderSource
+import dev.tinow.brainrotstopper.data.anki.DelayingGateway
 import dev.tinow.brainrotstopper.data.media.MediaImages
+import dev.tinow.brainrotstopper.domain.anki.AnkiCapabilities
+import dev.tinow.brainrotstopper.domain.anki.CardSource
 import dev.tinow.brainrotstopper.data.store.RuntimeRepository
 import dev.tinow.brainrotstopper.data.store.SettingsRepository
 import dev.tinow.brainrotstopper.data.store.StatsRepository
@@ -58,5 +63,20 @@ class AppContainer(val app: Application) {
             cleartextHosts = if (debuggable) setOf("10.0.2.2") else emptySet(),
             log = { AppLog.i("BS/Media", it) },
         )
+    }
+
+    /** Debug builds install a factory for scripted card sources here (scenario name to source); release leaves it null. */
+    @Volatile
+    var fakeCardSource: ((String) -> CardSource)? = null
+
+    private val realCardSource: CardSource by lazy {
+        AnkiContentProviderSource(DelayingGateway(AndroidProviderGateway(app)) { debugFlags.gatewayDelayMs(it) }, AnkiCapabilities())
+    }
+
+    /** The card source for a new lock screen; read per lock so that `SET_SOURCE` takes effect without a restart. */
+    fun cardSource(): CardSource {
+        val flags = debugFlags
+        if (flags.cardSource == "fake") fakeCardSource?.let { return it(flags.scenario) }
+        return realCardSource
     }
 }
