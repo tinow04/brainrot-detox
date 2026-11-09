@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-09 (M4-T6: Notausgang)
+- T5 committet und gepusht (`origin/main` = `232aeab`). Neu: `EmergencyPolicy.remainingMs`/`button` + `EmergencyButton`, `EmergencyState.lastUsedWall`, Countdown im Fehlerscreen (Engine fragt, `QuizHost` tickt jede Sekunde), Notausgang auf allen Fehlerscreens, `EmergencyPolicyTest`, `scripts/e2e/e2e_emergency.sh` (6 Pruefungen), Belege `design/screenshots/m4-t6/`. 384 JVM-, 66 instrumentierte Tests, `check.sh`, `e2e_emergency.sh` und `e2e_quiz.sh` gruen. Entscheidung: ein Neustart beendet den Cooldown nicht (Wall-Clock nur nach Neustart zum Verkuerzen), Retry startet den Countdown nicht neu (decisions.md). Naechster Schritt: T7 (Contract/E2E-2, Sperr-Fehlertext fuer null-Cursor). T6 nicht committet.
+
 ## 2026-11-09 (M4-T5: Setup-Schritte AnkiDroid)
 - T4 committet und alles gepusht (`origin/main` = `bb89172`). Neu: AnkiDroid-Schritte 1-3 im Setup (Domain `Protection.ankiSteps`, `SetupModel`, `SetupViewModel`, Permission-Dialog, Banner `Degraded`), `scripts/e2e/e2e_setup.sh` (20 Pruefungen), Belege `design/screenshots/m4-t5/`. 369 JVM-, 62 instrumentierte Tests, `check.sh`, `e2e_setup.sh` und `e2e_quiz.sh` gruen. Funde: umgekehrte Installationsreihenfolge funktioniert; null-Cursor trotz aufloesbarem Provider = AnkiDroid ohne Speicherzugriff (nicht "API aus"). AnkiDroid im Emulator einmal deinstalliert und aus Sicherung wiederhergestellt. Naechster Schritt: T6 Notausgang, dann T7 (Contract/E2E-2, dabei den Sperr-Fehlertext fuer den null-Cursor-Fall verfeinern). T5 nicht committet; Emulator laeuft noch.
 
