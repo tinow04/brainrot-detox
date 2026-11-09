@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-09 (M4-T5: Setup-Schritte AnkiDroid)
+- T4 committet und alles gepusht (`origin/main` = `bb89172`). Neu: AnkiDroid-Schritte 1-3 im Setup (Domain `Protection.ankiSteps`, `SetupModel`, `SetupViewModel`, Permission-Dialog, Banner `Degraded`), `scripts/e2e/e2e_setup.sh` (20 Pruefungen), Belege `design/screenshots/m4-t5/`. 369 JVM-, 62 instrumentierte Tests, `check.sh`, `e2e_setup.sh` und `e2e_quiz.sh` gruen. Funde: umgekehrte Installationsreihenfolge funktioniert; null-Cursor trotz aufloesbarem Provider = AnkiDroid ohne Speicherzugriff (nicht "API aus"). AnkiDroid im Emulator einmal deinstalliert und aus Sicherung wiederhergestellt. Naechster Schritt: T6 Notausgang, dann T7 (Contract/E2E-2, dabei den Sperr-Fehlertext fuer den null-Cursor-Fall verfeinern). T5 nicht committet; Emulator laeuft noch.
+
 ## 2026-11-06 (M4-T4: QuizEngine und Verdrahtung)
 - T3b committet (2 Commits). Neu: `lock/quiz/*` (Engine, Host, ViewModel), `RuntimeStore`, `DelayingGateway`, Debug `FakeCardSource`, `QuizEngineTest` (36), `QuizHostTest` (22), `scripts/e2e/e2e_quiz.sh` (11 Pruefungen). 349 JVM-, 62 instrumentierte Tests und E2E gruen, auch ein Durchlauf gegen das echte AnkiDroid. Beim E2E gefunden: `RESET --es what all` setzt auch die Debug-Flags zurueck (kurze Freigabe danach neu setzen). Neuer Gate-Logeintrag `BS/Gate gate <Cmd> -> <Zustand>` je Schritt (Diagnose). Naechster Schritt: T5 (Setup-Zeilen AnkiDroid, Banner Degraded, Fehlerscreens mit echten Zustaenden), dann T6 Notausgang, T7 Contract/E2E-2. T4 nicht committet.
 
