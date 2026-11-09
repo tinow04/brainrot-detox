@@ -117,13 +117,16 @@ class FakeCardSource(cards: List<RenderedCard> = emptyList()) : CardSource {
             "error-notinstalled" -> failing(AnkiError.NotInstalledOrApiOff)
             "error-storage" -> failing(AnkiError.StorageNotConfigured)
             "error-unreachable" -> failing(AnkiError.Unreachable)
-            "error-deck" -> failing(AnkiError.DeckMissing)
+            "error-deck" -> FakeCardSource(cards(30)).also { it.failing["nextCard"] = AnkiError.DeckMissing }
             "error-bad" -> failing(AnkiError.BadData)
             "answer-lost" -> FakeCardSource(cards(30)).also { it.answerApplies = false }
             "no-intervals" -> FakeCardSource(cards(30)).also { it.intervals = null }
             else -> FakeCardSource(cards(30))
         }
 
-        private fun failing(error: AnkiError) = FakeCardSource(cards(30)).also { it.failing["nextCard"] = error }
+        /** The lock screen sees the error at the first card, the setup check (probe, decks) sees it as well. */
+        private fun failing(error: AnkiError) = FakeCardSource(cards(30)).also { f ->
+            listOf("probe", "listDecks", "nextCard").forEach { f.failing[it] = error }
+        }
     }
 }

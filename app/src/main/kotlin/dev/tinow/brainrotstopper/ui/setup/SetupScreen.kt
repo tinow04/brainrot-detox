@@ -32,6 +32,8 @@ data class SetupRow(
     /** Optional second, quieter action (e.g. `app-info` next to the accessibility settings). */
     val action2: String? = null,
     val onAction2: () -> Unit = {},
+    /** Dim line under the label: what is wrong or what was found (e.g. `api aktiv · 3 decks gefunden`). */
+    val detail: String? = null,
 )
 
 /** First-run / repair checklist (architecture 7); the host decides the order and the actions. */
@@ -57,6 +59,7 @@ fun SetupScreen(rows: List<SetupRow>, hints: List<String>, modifier: Modifier = 
                     }
                     BsText(row.label, t.body, c.text, Modifier.weight(1f))
                 }
+                if (row.detail != null) BsText(row.detail, t.label, c.dim)
                 if (row.state != SetupState.Ok && row.action != null) {
                     BsButton(row.action, row.onAction, style = if (row.state == SetupState.Error) BsButtonStyle.Primary else BsButtonStyle.Ghost)
                     if (row.action2 != null) BsButton(row.action2, row.onAction2, style = BsButtonStyle.Ghost)
