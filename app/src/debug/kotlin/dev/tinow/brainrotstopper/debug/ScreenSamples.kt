@@ -102,7 +102,7 @@ object ScreenSamples {
             )
             "a4" -> FeedbackScreen(head1, 2, RateKind.Again, {})
             "a4-hard" -> FeedbackScreen(head1, 2, RateKind.Hard, {})
-            "a5" -> UnlockedScreen(head5, 15, SessionStats(7, 5, 262_000, 12), UnlockVariant.Unlocked, {}, {})
+            "a5" -> UnlockedScreen(head5, 15, SessionStats(7, 5, 161_000, 13), UnlockVariant.Unlocked, {}, {})
             "a5-alldone" -> UnlockedScreen(head5, 15, SessionStats(3, 3, 70_000, 12), UnlockVariant.AllDone, {}, {})
             "a5-emergency" -> UnlockedScreen(head0, 5, null, UnlockVariant.Emergency, {}, {})
             "waiting" -> WaitingScreen(head1, {})

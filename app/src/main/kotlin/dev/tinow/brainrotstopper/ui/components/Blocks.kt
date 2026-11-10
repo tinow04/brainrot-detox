@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.tinow.brainrotstopper.debug.debugBounds
@@ -223,6 +224,6 @@ fun BsRankRow(name: String, fraction: Float, count: Int, modifier: Modifier = Mo
         Box(Modifier.weight(1f).height(BsDims.RankBarHeight).background(c.fill)) {
             Box(Modifier.fillMaxWidth(fraction.coerceIn(0f, 1f)).height(BsDims.RankBarHeight).background(c.accent))
         }
-        BsText(count.toString(), t.meta, c.muted, Modifier.width(BsDims.RankCountWidth), maxLines = 1)
+        BsText(count.toString(), t.meta.copy(textAlign = TextAlign.End), c.muted, Modifier.width(BsDims.RankCountWidth), maxLines = 1)
     }
 }

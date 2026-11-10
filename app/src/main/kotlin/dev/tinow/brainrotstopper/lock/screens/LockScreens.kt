@@ -184,7 +184,8 @@ fun FeedbackScreen(head: LockHead, cardNumber: Int, kind: RateKind, onContinue: 
 
 @Composable
 private fun CountsRow(rating: String, counts: Boolean, color: androidx.compose.ui.graphics.Color) {
-    BsKv(rating.substringAfter("] "), if (counts) Strings.COUNTS_YES else Strings.COUNTS_NO, keyColor = color, valueColor = color)
+    // Mockup A4: key `[n] name` in the body text colour, only the verdict is coloured.
+    BsKv(rating, if (counts) Strings.COUNTS_YES else Strings.COUNTS_NO, keyColor = BsTheme.colors.text, valueColor = color)
 }
 
 // ---------------------------------------------------------------- A5 unlocked

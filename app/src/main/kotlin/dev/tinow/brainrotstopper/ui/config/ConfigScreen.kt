@@ -74,7 +74,7 @@ fun ConfigScreen(
         ScreenTitle(Strings.TITLE_CONFIG)
         BsBox(Strings.BOX_CARDS) {
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                BsText(Strings.KV_REQUIRED, t.body, c.dim, Modifier.weight(1f))
+                BsText(Strings.KV_REQUIRED, t.body, c.muted, Modifier.weight(1f))
                 BsStepper(state.required, { onRequired(state.required - 1) }, { onRequired(state.required + 1) })
             }
         }
