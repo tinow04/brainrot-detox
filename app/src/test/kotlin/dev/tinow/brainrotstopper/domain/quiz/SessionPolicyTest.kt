@@ -46,6 +46,24 @@ class SessionPolicyTest {
         assertThat(SessionPolicy.resolve(base, "a", settings, t(50_000)) { "n" }).isInstanceOf(SessionResolution.New::class.java)
     }
 
+    @Test fun changedSettingsDoNotTouchARunningSession() {
+        val r = SessionPolicy.resolve(base, "a", settings.copy(deck = DeckSelection.All, requiredCorrect = 2), t(160_000)) { "n" }
+        assertThat(r.session.deck).isEqualTo(DeckSelection.Single(7, "Vokabeln"))
+        assertThat(r.session.required).isEqualTo(5)
+    }
+
+    @Test fun missingDeckIsReplacedFromTheSettingsOnlyTheDeck() {
+        val missing = base.copy(deckMissing = true)
+        val r = SessionPolicy.resolve(missing, "a", settings.copy(deck = DeckSelection.All, requiredCorrect = 2), t(160_000)) { "n" }
+        assertThat(r).isInstanceOf(SessionResolution.Resume::class.java)
+        assertThat(r.session.deck).isEqualTo(DeckSelection.All)
+        assertThat(r.session.deckMissing).isFalse()
+        assertThat(r.session.correct).isEqualTo(3)
+        assertThat(r.session.required).isEqualTo(5)
+        val other = SessionPolicy.resolve(missing, "b", settings.copy(deck = DeckSelection.All), t(160_000)) { "n" }
+        assertThat(other.session.deck).isEqualTo(DeckSelection.All)
+    }
+
     @Test fun otherTargetWithinTtlRetargetsAndKeepsCorrect() {
         val r = SessionPolicy.resolve(base, "b", settings, t(160_000)) { "n" }
         assertThat(r).isInstanceOf(SessionResolution.Retarget::class.java)

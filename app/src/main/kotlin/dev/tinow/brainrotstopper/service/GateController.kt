@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -84,6 +85,11 @@ class GateController(
         scope.launch {
             combine(settings, runtime, protectedSets.filterNotNull()) { s, r, p ->
                 GateSnapshot(blockedPackages = s.blockedPackages, grants = r.grants, dynamicProtected = p.protectedPackages)
+            }.retryWhen { cause, attempt ->
+                // A store read error must not end the snapshot flow: the loop would wait for it forever (fail-open).
+                log("snapshot flow failed (${cause::class.java.simpleName}), retry ${attempt + 1}")
+                delay(minOf(SNAPSHOT_RETRY_MAX_MS, SNAPSHOT_RETRY_MS shl attempt.coerceAtMost(4).toInt()))
+                true
             }.distinctUntilChanged().collect { next ->
                 val hadSnapshot = snapshot.value != null
                 snapshot.value = next
@@ -243,5 +249,7 @@ class GateController(
 
     private companion object {
         const val LOAD_TIMEOUT_MS = 5_000L
+        const val SNAPSHOT_RETRY_MS = 500L
+        const val SNAPSHOT_RETRY_MAX_MS = 5_000L
     }
 }

@@ -31,8 +31,11 @@ object SessionPolicy {
         newId: () -> String,
     ): SessionResolution {
         if (existing == null || !isFresh(existing, now, ttlMs)) return SessionResolution.New(create(target, settings.sanitized(), now, newId()))
-        return if (existing.targetPkg == target) SessionResolution.Resume(existing)
-        else SessionResolution.Retarget(existing.copy(targetPkg = target))
+        // A deck that AnkiDroid no longer knows is the one frozen value that is replaced (M6-T6): otherwise the lock
+        // stays on "deck nicht gefunden" until the TTL ends, although the user picked another deck as asked.
+        val kept = if (existing.deckMissing) existing.copy(deck = settings.sanitized().deck, deckMissing = false) else existing
+        return if (kept.targetPkg == target) SessionResolution.Resume(kept)
+        else SessionResolution.Retarget(kept.copy(targetPkg = target))
     }
 
     fun create(target: String, settings: Settings, now: TimeSnapshot, id: String) = QuizSession(

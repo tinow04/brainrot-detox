@@ -6,7 +6,8 @@ import org.junit.Test
 /** Package/class sequences are the ones recorded in M0-S2 (gotchas.md), not invented ones. */
 class ForegroundTrackerTest {
     private val lockCls = "dev.tinow.brainrotstopper.lock.LockActivity"
-    private val tracker = ForegroundTracker(lockCls)
+    private val mainCls = "dev.tinow.brainrotstopper.MainActivity"
+    private val tracker = ForegroundTracker(lockCls, mainCls)
     private val insta = "com.instagram.android"
     private val launcher = "com.google.android.apps.nexuslauncher"
 
@@ -68,6 +69,13 @@ class ForegroundTrackerTest {
         tracker.onEvent(insta, "A")
         assertThat(tracker.onEvent("dev.tinow.brainrotstopper", "dev.tinow.brainrotstopper.MainActivity"))
             .isEqualTo(ForegroundTracker.Result.Foreground("dev.tinow.brainrotstopper"))
+    }
+
+    @Test fun `own main screen opened from the lock replaces the blocked app`() {
+        tracker.onEvent(insta, "A")
+        tracker.lockActive = true
+        assertThat(tracker.onEvent("dev.tinow.brainrotstopper", mainCls)).isEqualTo(ForegroundTracker.Result.Foreground("dev.tinow.brainrotstopper"))
+        assertThat(tracker.current).isEqualTo("dev.tinow.brainrotstopper")
     }
 
     @Test fun `enabled input method is ignored, a disabled one is a normal app`() {

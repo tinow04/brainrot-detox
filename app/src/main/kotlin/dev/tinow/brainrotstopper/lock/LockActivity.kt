@@ -3,6 +3,7 @@ package dev.tinow.brainrotstopper.lock
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
@@ -41,6 +42,9 @@ class LockActivity : ComponentActivity() {
     private val engine get() = vm.engine
     private var targetPkg: String? = null
 
+    /** The last stop came from the screen going off (not from leaving); cleared when the lock is in front again. */
+    private var stoppedByScreenOff = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -66,19 +70,29 @@ class LockActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        attach(intent)
+        val pkg = intent.getStringExtra(EXTRA_TARGET_PKG)
+        val phase = engine.phase
+        if (stoppedByScreenOff && pkg != null && pkg == targetPkg && phase != Phase.Idle && phase != Phase.Closed) {
+            // Screen off stops the lock and the gate starts it again for the same app: keep card, progress and the
+            // emergency countdown instead of falling back to the intro (M6-T6). Leaving for real still re-attaches.
+            Log.i("BS/Svc", "lock-restart kept phase=$phase")
+        } else {
+            attach(intent)
+        }
         targetPkg?.let { LockUiBeacon.resumed(it) }
     }
 
     override fun onResume() {
         super.onResume()
         Log.i("BS/Svc", "lock-resumed t=${SystemClock.uptimeMillis()}")
+        stoppedByScreenOff = false
         targetPkg?.let { LockUiBeacon.resumed(it) }
         engine.setVisible(true)
     }
 
     override fun onStop() {
         super.onStop()
+        stoppedByScreenOff = !(getSystemService(PowerManager::class.java)?.isInteractive ?: true)
         engine.setVisible(false)
         LockUiBeacon.gone()
     }

@@ -8,6 +8,7 @@ import dev.tinow.brainrotstopper.domain.model.Runtime
 import dev.tinow.brainrotstopper.domain.runtime.Applied
 import dev.tinow.brainrotstopper.domain.runtime.RuntimeStore
 import dev.tinow.brainrotstopper.domain.time.TimeSnapshot
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -20,7 +21,12 @@ import java.io.File
  * Statistics live in their own file and are written after the runtime commit; if the process dies in between, one
  * counter update is lost, never a grant or an answer (documented in architecture.md 4).
  */
-class RuntimeRepository(file: File, scope: CoroutineScope, private val stats: StatsRepository) : RuntimeStore {
+class RuntimeRepository(
+    file: File,
+    scope: CoroutineScope,
+    private val stats: StatsRepository,
+    private val onStatsError: (Exception) -> Unit = {},
+) : RuntimeStore {
     private val store: DataStore<Runtime> = DataStoreFactory.create(
         serializer = JsonSerializer(Runtime.serializer(), Runtime()),
         corruptionHandler = ReplaceFileCorruptionHandler { Runtime() },
@@ -37,7 +43,14 @@ class RuntimeRepository(file: File, scope: CoroutineScope, private val stats: St
         var result: Applied<T>? = null
         store.updateData { current -> op(current).also { result = it }.runtime }
         val applied = checkNotNull(result)
-        stats.add(now.epochDay, applied.delta)
+        // The runtime commit is done: a failing statistics write loses one counter update, never the operation itself.
+        try {
+            stats.add(now.epochDay, applied.delta)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            onStatsError(e)
+        }
         return applied.info
     }
 

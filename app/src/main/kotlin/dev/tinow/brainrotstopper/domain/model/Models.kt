@@ -87,6 +87,11 @@ data class QuizSession(
     val bootCount: Int,
     val startedWall: Long,
     val pending: PendingAnswer? = null,
+    /**
+     * AnkiDroid reported the frozen [deck] as missing: the next attach takes the deck from the settings again (the user
+     * was sent there to pick another one), everything else stays frozen.
+     */
+    val deckMissing: Boolean = false,
 )
 
 /** One uninterrupted lock run of a target package (statistics counts blocks per episode). */

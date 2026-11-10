@@ -7,6 +7,7 @@ import dev.tinow.brainrotstopper.domain.anki.AnkiCapabilities
 import dev.tinow.brainrotstopper.domain.anki.AnkiError
 import dev.tinow.brainrotstopper.domain.gate.GrantPolicy
 import dev.tinow.brainrotstopper.domain.model.CardRef
+import dev.tinow.brainrotstopper.domain.model.DeckSelection
 import dev.tinow.brainrotstopper.domain.model.Ease
 import dev.tinow.brainrotstopper.domain.model.GrantKind
 import dev.tinow.brainrotstopper.domain.model.Runtime
@@ -86,7 +87,7 @@ class QuizEngineTest {
     ) {
         val time = FakeTimeSource()
         val store = MemoryRuntimeStore()
-        val settings = Settings(blockedPackages = blocked, requiredCorrect = required)
+        var settings = Settings(blockedPackages = blocked, requiredCorrect = required)
         val flagsImpl = flags
         val scopes = mutableListOf<CoroutineScope>()
         var imagesSeen = emptyList<String>()
@@ -535,6 +536,28 @@ class QuizEngineTest {
             assertThat(r.store.rt.grants).isEmpty()
             assertThat(QuizEngine.errorTexts(error).title).startsWith("[ FEHLER ]")
         }
+    }
+
+    @Test fun `a missing deck is replaced by the deck picked afterwards, progress stays`() = runTest {
+        val r = rig()
+        r.settings = r.settings.copy(deck = DeckSelection.Single(4242, "weg"))
+        val e = r.engine()
+        begin(e)
+        good(r, e, 1)
+        r.source.failing["nextCard"] = AnkiError.DeckMissing
+        e.cancel(); runCurrent()
+        begin(e)
+        assertThat(e.view.value.quiz.error).isEqualTo(AnkiError.DeckMissing)
+        assertThat(r.store.rt.session!!.deckMissing).isTrue()
+        // "$ ./einstellungen": the user picks another deck, then opens the app again
+        r.settings = r.settings.copy(deck = DeckSelection.All)
+        r.source.failing.remove("nextCard")
+        e.cancel(); runCurrent()
+        begin(e)
+        assertThat(e.phase).isEqualTo(Phase.Question)
+        assertThat(r.store.rt.session!!.deck).isEqualTo(DeckSelection.All)
+        assertThat(r.store.rt.session!!.deckMissing).isFalse()
+        assertThat(r.store.rt.session!!.correct).isEqualTo(1)
     }
 
     @Test fun `unreadable counts on an empty cursor are an error and never nothing due`() = runTest {

@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import dev.tinow.brainrotstopper.BrainrotApp
+import dev.tinow.brainrotstopper.MainActivity
 import dev.tinow.brainrotstopper.data.system.AppLog
 import dev.tinow.brainrotstopper.lock.LockActivity
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +39,7 @@ class BlockerAccessibilityService : AccessibilityService() {
             protectedProvider = AndroidProtectedSetProvider(this),
             launcher = AndroidLockLauncher(this),
             diag = RuntimeDiagSink(container.runtime, container.ioScope),
-            tracker = ForegroundTracker(LockActivity::class.java.name),
+            tracker = ForegroundTracker(LockActivity::class.java.name, MainActivity::class.java.name),
             flags = { container.debugFlags },
             log = { AppLog.i(AppLog.GATE, it) },
         )

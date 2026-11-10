@@ -259,9 +259,14 @@ step "10 deleted deck (selection points to a deck that does not exist)"
 dbg SET_DECK --es id 4242 --es name geloescht
 lock_start; error_case DeckMissing '\$ \./einstellungen' 10-deck-missing
 status
-row "Gewaehltes Deck geloescht" "Fehler DeckMissing, Sperre bleibt" '$ ./einstellungen' "$ROWS" "$DECKS"
+row "Gewaehltes Deck geloescht" "Fehler DeckMissing, Sperre bleibt; neues Deck gilt sofort (Fortschritt bleibt)" '$ ./einstellungen' "$ROWS" "$DECKS"
+# the running session froze the missing deck; picking another deck must take effect at once, not after the 10 min TTL
+lock_start; [[ "$(last_phase)" =~ error=DeckMissing ]] || fail "want DeckMissing again, got '$(last_phase)'"
+tap_btn abbrechen; wait_focus nexuslauncher 4 >/dev/null || fail "abbrechen did not go home"
 dbg SET_DECK --es id all
-ok "deck nicht gefunden, setup $ROWS, config $DECKS"
+lock_start; [[ "$(last_phase)" =~ ^(Question|Unlocked) ]] || fail "new deck not used by the running session: '$(last_phase)'"
+leave_lock
+ok "deck nicht gefunden, setup $ROWS, config $DECKS; another deck works at once in the same session"
 
 step "11 unreadable counts (fake): never nothing due"
 dbg SET_SOURCE --es source fake --es scenario counts_unreadable

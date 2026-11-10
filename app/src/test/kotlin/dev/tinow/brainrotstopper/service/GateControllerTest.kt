@@ -19,12 +19,16 @@ import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import java.io.IOException
 import org.junit.After
 import org.junit.Test
 
 private const val INSTA = "com.instagram.android"
 private const val LAUNCHER = "com.google.android.apps.nexuslauncher"
 private const val LOCK_CLS = "dev.tinow.brainrotstopper.lock.LockActivity"
+private const val MAIN_CLS = "dev.tinow.brainrotstopper.MainActivity"
 
 /** Controller in virtual time with fakes: the lock "appears" only when the test calls the beacon. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,8 +38,17 @@ class GateControllerTest {
         @Volatile override var simulateLaunchBlock = false
     }
 
-    private class Rig(val test: TestScope, blocked: Set<String> = setOf(INSTA)) {
+    private class Rig(val test: TestScope, blocked: Set<String> = setOf(INSTA), failingReads: Int = 0) {
         val settings = MutableStateFlow(Settings(blockedPackages = blocked))
+        private var failsLeft = failingReads
+        /** The first [failingReads] collections throw like a DataStore read error. */
+        private val settingsFlow = flow {
+            if (failsLeft > 0) {
+                failsLeft--
+                throw IOException("read failed")
+            }
+            emitAll(settings)
+        }
         val runtime = MutableStateFlow(Runtime())
         var protectedNow = ProtectedSets()
         val launcher = FakeLockLauncher()
@@ -45,11 +58,11 @@ class GateControllerTest {
         val time = object : TimeSource {
             override fun now() = TimeSnapshot(elapsedMs = 1_000_000L + test.currentTime, wallMs = 1_700_000_000_000L + test.currentTime, bootCount = 7)
         }
-        val tracker = ForegroundTracker(LOCK_CLS)
+        val tracker = ForegroundTracker(LOCK_CLS, MAIN_CLS)
         val controller = GateController(
             scope = test.backgroundScope,
             timeSource = time,
-            settings = settings,
+            settings = settingsFlow,
             runtime = runtime,
             protectedProvider = { protectedNow },
             launcher = launcher,
@@ -74,6 +87,29 @@ class GateControllerTest {
         assertThat(rig.launcher.starts).hasSize(1)
         assertThat(rig.launcher.homeCount).isEqualTo(0)
         assertThat(rig.controller.state).isEqualTo(GateState.LockVisible(INSTA))
+    }
+
+    @Test fun `a store read error does not leave the gate without a snapshot`() = runTest {
+        val rig = Rig(this, failingReads = 3).also { it.begin() }
+        rig.controller.onAccessibilityEvent(INSTA, "A")
+        advanceTimeBy(4_000) // retries after 0.5 + 1 + 2 s
+        assertThat(rig.launcher.starts.firstOrNull()).isEqualTo(FakeLockLauncher.Start(INSTA, false))
+        assertThat(rig.logs.count { it.startsWith("snapshot flow failed") }).isEqualTo(3)
+    }
+
+    @Test fun `settings opened from the lock do not bring the lock back`() = runTest {
+        val rig = Rig(this).also { it.begin() }
+        rig.controller.onAccessibilityEvent(INSTA, "A")
+        runCurrent()
+        LockUiBeacon.resumed(INSTA)
+        runCurrent()
+        // "$ ./einstellungen": the main screen reports itself first, the lock stops afterwards
+        rig.controller.onAccessibilityEvent("dev.tinow.brainrotstopper", MAIN_CLS)
+        runCurrent()
+        LockUiBeacon.gone()
+        advanceTimeBy(5_000)
+        assertThat(rig.launcher.starts).hasSize(1)
+        assertThat(rig.controller.state).isEqualTo(GateState.Free)
     }
 
     @Test fun `unblocked app and the lock's own events do nothing`() = runTest {

@@ -181,6 +181,21 @@ class StoreRepositoriesTest {
         assertThat(day.answered).isEqualTo(0)
     }
 
+    @Test fun failingStatsWriteKeepsTheCommittedGrant() = blocking {
+        // stats.json is a directory: every read and write of the statistics fails with an IOException
+        val statsFile = File(dir, "stats.json").apply { mkdirs() }
+        val stats = StatsRepository(statsFile, scope())
+        val errors = mutableListOf<Exception>()
+        val repo = RuntimeRepository(File(dir, "runtime.json"), scope(), stats) { errors += it }
+        val settings = Settings(requiredCorrect = 1)
+        repo.apply(t(0)) { RuntimeOps.attach(it, "a", settings, t(0)) { "s" } }
+        repo.update { RuntimeOps.setPending(it, PendingAnswer("x", 1, 0, Ease.GOOD, 100, null), t(10)) }
+        val info = repo.apply(t(50)) { RuntimeOps.commitAnswer(it, t(50)) }
+        assertThat(info.unlocked).isTrue()
+        assertThat(repo.current().grants.keys).containsExactly("a")
+        assertThat(errors).hasSize(2) // attach and commit, neither of them failed
+    }
+
     @Test fun commitAnswerWithUnlockIsOneAtomicWriteAndRecordsStats() = blocking {
         val stats = StatsRepository(File(dir, "stats.json"), scope())
         val repo = RuntimeRepository(File(dir, "runtime.json"), scope(), stats)

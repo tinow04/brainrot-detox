@@ -42,7 +42,9 @@ class AppContainer(val app: Application) {
 
     val stats: StatsRepository by lazy { StatsRepository(app.dataStoreFile("stats.json"), ioScope) }
 
-    val runtime: RuntimeRepository by lazy { RuntimeRepository(app.dataStoreFile("runtime.json"), ioScope, stats) }
+    val runtime: RuntimeRepository by lazy {
+        RuntimeRepository(app.dataStoreFile("runtime.json"), ioScope, stats) { AppLog.w("BS/Store", "stats write failed: ${it.javaClass.simpleName}") }
+    }
 
     val settings: SettingsRepository by lazy {
         SettingsRepository(

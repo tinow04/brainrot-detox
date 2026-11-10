@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # E2E-6 "Umgehungsmatrix" (M6-T3) with the fake card source against dummy/dummy2: back, home, recents (switch back and
 # swipe away), a notification of the blocked app, rotation, split screen, picture-in-picture, screen off/on after the
-# grant ran out, fast switching between two blocked apps, start spam (breaker sends it home, the next open locks, never a grant),
+# grant ran out and while a card shows, fast switching between two blocked apps, start spam (breaker sends it home, the next open locks, never a grant),
 # double taps (rate guard), an event flood and a slow starting target. Prints the matrix "vector -> result" at the end;
 # no crash or ANR of the app in the dropbox, diag counters before/after.
 # Usage: scripts/e2e/e2e6_bypass.sh [--install] [outdir]   (default outdir design/screenshots/m6-t3)
@@ -162,6 +162,22 @@ ms="$(lock_for "$DUMMY" 6)"
 row "Bildschirm aus/an nach Ablauf" blockiert "Sperre ${ms} ms nach dem Entsperren"
 ok "screen on after the grant: lock after $ms ms"
 close_lock; dbg SET_SHORT_DURATION --es seconds off
+
+step "8b screen off and on while a card shows: the lock stays, card and progress stay"
+fresh
+"$ADB" logcat -c; start_app "$DUMMY"; lock_for "$DUMMY" >/dev/null
+tap_main; wait_phase "Question 0/5" 8; sleep 1
+"$ADB" logcat -c
+sh_ input keyevent KEYCODE_SLEEP; sleep 4
+sh_ input keyevent KEYCODE_WAKEUP; sleep 0.5; sh_ wm dismiss-keyguard
+wait_focus LockActivity 5 >/dev/null || fail "no lock after screen on (focus: $(focus_now))"
+sleep 1.5
+# the gate starts the stopped lock again; the activity keeps its quiz instead of falling back to the intro (M6-T6)
+"$ADB" logcat -d -s BS/Quiz </dev/null | grep -q ' phase Intro' && fail "screen off reset the quiz to the intro"
+"$ADB" logcat -d -s BS/Svc </dev/null | grep -q 'lock-restart kept phase=Question' || fail "lock restart did not keep the card"
+row "Bildschirm aus/an mit offener Karte" blockiert "Sperre bleibt vorn, Karte und Fortschritt bleiben (kein Intro)"
+ok "screen off during a card: lock in front, same card, no intro"
+close_lock
 
 step "9 fast switching between two blocked apps"
 fresh

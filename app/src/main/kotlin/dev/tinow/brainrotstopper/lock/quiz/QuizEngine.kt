@@ -283,6 +283,9 @@ class QuizEngine(
             log("quiz load failed: ${e.javaClass.simpleName}")
             QueueDecision.Error(AnkiError.Unexpected(e.javaClass.simpleName))
         }
+        if (decision is QueueDecision.Error && decision.error == AnkiError.DeckMissing) {
+            runCatching { runtime.update { RuntimeOps.markDeckMissing(it) } }
+        }
         dispatch(QuizEvent.NextResult(seq, decision, now()))
     }
 

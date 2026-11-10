@@ -7,8 +7,9 @@ import dev.tinow.brainrotstopper.domain.gate.ProtectedPackages
  * ignored. Only transient overlay packages are ignored (they show a window above another app and send no event for
  * the app below when they close, measured in M0-S2); every other package, also an unknown one, is a normal app.
  * Only the package counts, never the class: a cold start reports a starting-window FrameLayout of the target package.
+ * The one exception is our own package: the lock's windows never count, the main screen ([mainActivityClass]) always.
  */
-class ForegroundTracker(private val lockActivityClass: String) {
+class ForegroundTracker(private val lockActivityClass: String, private val mainActivityClass: String? = null) {
     sealed interface Result {
         /** The event says nothing about the app in front. */
         data object Ignored : Result
@@ -28,7 +29,12 @@ class ForegroundTracker(private val lockActivityClass: String) {
 
     fun onEvent(pkg: String, cls: String?): Result {
         if (pkg in IGNORED || pkg in ignoredDynamic) return Result.Ignored
-        if (pkg == ProtectedPackages.OWN_PACKAGE && (cls == lockActivityClass || lockActive)) return Result.Ignored
+        if (pkg == ProtectedPackages.OWN_PACKAGE) {
+            // The main screen opened from the lock ("$ ./einstellungen") must replace the blocked app as foreground,
+            // otherwise the lock-gone re-evaluate sees the stale target and locks again over the settings.
+            val main = mainActivityClass != null && cls == mainActivityClass
+            if (cls == lockActivityClass || (lockActive && !main)) return Result.Ignored
+        }
         current = pkg
         return Result.Foreground(pkg)
     }

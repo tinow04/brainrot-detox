@@ -75,6 +75,9 @@ object RuntimeOps {
     fun setPending(rt: Runtime, pending: PendingAnswer, now: TimeSnapshot): Runtime =
         rt.copy(session = rt.session?.copy(pending = pending, lastActiveElapsed = now.elapsedMs))
 
+    /** AnkiDroid does not know the session's deck: the next attach takes the deck from the settings (SessionPolicy). */
+    fun markDeckMissing(rt: Runtime): Runtime = rt.copy(session = rt.session?.copy(deckMissing = true))
+
     /** Drops a pending answer without counting it (no `answerVerify`, or the user retried). */
     fun discardPending(rt: Runtime): Runtime = rt.copy(session = rt.session?.copy(pending = null))
 

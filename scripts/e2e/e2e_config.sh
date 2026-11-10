@@ -158,8 +158,10 @@ tap_main; wait_phase "Error .*error=DeckMissing" 10; sleep 1
 shot 6-error-deck
 sh_ input tap 540 1977   # main action of an error screen with emergency button
 wait_focus MainActivity 5 >/dev/null || fail "config not opened (focus: $(focus_now))"
+# the gate must take the main screen as foreground; before M6-T6 the lock came back 0.3 s later (stale target)
+focus_stays MainActivity 2 >/dev/null || fail "lock came back over the config tab (focus: $(focus_now))"
 wait_log BS/Config "decks " 10
-ok "error screen action opened MainActivity on the config tab"
+ok "error screen action opened MainActivity on the config tab, the lock stays away"
 
 step "7 AnkiDroid error in config -> [ FEHLER ] + \$ ./setup"
 dbg SET_SOURCE --es source fake --es scenario error-permission
