@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M6-T7: AnkiDroid-Sync nach Freigabe)
+- M6-T6 committet und gepusht (`19cfde1`, `3ce4dfa`). Gemessen: `DO_SYNC` holt AnkiDroid ca. 0,5 s nach vorn, das Gate wertet es als geschuetzt, danach Ziel-App mit gueltiger Freigabe ohne Sperre. Gebaut: `AnkiSyncTrigger`/`AnkiSyncPolicy`, Senden aus dem Dienst 1,5 s nach Verlassen des Freigabe-Screens, hoechstens alle 3 h, Schalter B2 (Standard an, vom User zu bestaetigen). Neues `scripts/e2e/e2e9_sync.sh` (5 Pruefungen, zweimal gruen). Nebenfund behoben: veraltetes "Sperre sichtbar" nach Ack ohne Resume liess die Ziel-App durch -> Ack und Sichtbarkeit getrennt. Regression e2e1, e2e3 (grant, session), e2e6, e2e8 gruen; e2e8 brauchte einen Skript-Fix (Pruefung las das volle `dumpsys window`, das die Inset-Zeile nicht mehr enthaelt; auch mit M6-T5-Code rot, App korrekt), dazu `dumpsys | grep -q`-Faelle in e2e5/e2e8 entschaerft. Naechster Schritt: M7.
+
 ## 2026-11-10 (M6-T6: Review-Befunde und Doku)
 - M6-T5 committet und gepusht (`10d8407`, `1668a38`). Review selbst und nacheinander (ohne Subagenten): 5 Befunde, alle behoben und belegt (Liste in gotchas.md). Zwei davon waren echte Sackgassen fuer den Nutzer (`$ ./einstellungen` auf DeckMissing), einer ein fail-open-Pfad (Store-Lesefehler). Neue Pruefungen: e2e6 Schritt 8b (Bildschirm aus mit Karte), e2e7 Fall 10 (neues Deck gilt sofort), e2e_config Schritt 6 (`focus_stays`). Mockup-Abgleich unveraendert (SSIM >= 0,908). Naechster Schritt: M6-T7 (optionaler AnkiDroid-Sync), dann M7.
 

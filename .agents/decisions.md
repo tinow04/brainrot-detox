@@ -236,6 +236,24 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Optionen:** (a) akzeptieren (Standard); (b) bei Ablauf einer Freigabe pruefen, ob die App eine PiP-Task hat, und sie dann per `GLOBAL_ACTION_HOME` bzw. Sperre in den Vordergrund holen: braucht Fensterinformationen (`AccessibilityService.getWindows()` mit `canRetrieveWindowContent=true` bzw. `flagRetrieveInteractiveWindows`), also mehr Einblick als heute; (c) die Freigabe beim Wechsel in PiP sofort beenden (gleiche Voraussetzung). PiP der gesperrten App OHNE Freigabe ist nicht moeglich, weil die Sperre vorher kommt.
 
+## 2026-11-10 – AnkiDroid-Sync nach Freigabe, Standard an (M6-T7)
+
+**Entscheidung:** Nach einer QUIZ- oder NOTHING_DUE-Freigabe sendet die App beim Verlassen des Freigabe-Screens 1,5 s spaeter `com.ichi2.anki.DO_SYNC`, hoechstens alle 3 h, aus dem Bedienungshilfe-Dienst. Schalter in B2 (Box `sync`), **Standard an**. Nach dem Notausgang kein Sync. Ein nicht gesendeter Anstoss (Dienst aus, Sperre vorn, AnkiDroid fehlt) wird nicht gestempelt, die naechste Freigabe versucht es wieder.
+
+**Warum:** User-Wunsch (Lernstand vom Desktop kommt sonst erst mit AnkiDroids Auto-Sync aufs Handy). Gemessen (e2e9, zweimal gruen): AnkiDroid steht ca. 0,5 s vorn (519-535 ms), danach ist die Ziel-App ohne Sperre wieder vorn; genau ein Intent pro Freigabe, innerhalb von 3 h keiner. Der Dienst-Kontext darf aus dem Hintergrund starten (wie die Sperre); die Sperr-Activity ist zu dem Zeitpunkt schon beendet. 1,5 s Verzoegerung, damit die Ziel-App zuerst vorn ist. Standard an, weil der User es wollte; ohne Sync-Konto in AnkiDroid bleibt nur das kurze Aufblitzen alle 3 h.
+
+**Restrisiko:** Zeigt AnkiDroid beim Sync einen Dialog (z. B. Konflikt, Komplett-Sync noetig), bleibt AnkiDroid vorn statt der Ziel-App (AnkiDroid ist geschuetzt, kein Umgehungsweg). Erfolg des Syncs selbst ist nicht pruefbar (kein Konto im Emulator, AnkiDroid meldet nichts zurueck).
+
+**Verworfen:** Sync vor dem Start der Ziel-App aus der Sperre heraus (DeckPicker liefe verdeckt, `DoSyncDialog` braucht ihn im Vordergrund); periodischer Sync ohne Freigabe (stoert beliebige Apps); eigener Sync-Client (decisions.md 2026-11-10, Server nur fuer Bilder).
+
+## 2026-11-10 – Launch-Ack und Sichtbarkeit der Sperre getrennt (M6-T7)
+
+**Entscheidung:** `LockActivity.onCreate`/`onNewIntent` melden nur `LockUiBeacon.acked(pkg)` (Start angekommen, Ack-Ueberwachung endet); als sichtbar zaehlt die Sperre nur nach `onResume` (`resumed`), bis `onStop` (`gone`).
+
+**Warum:** Gefunden beim ersten e2e9-Lauf: das Gate stand auf `LockVisible` mit `lockUi=dummy`, waehrend die Dummy-App ohne Sperre vorn war; Events der Ziel-App aenderten nichts (`env.lockVisible == pkg`). Ursache: `onNewIntent`/`attach` meldeten `resumed`, ohne dass die Activity danach sicher nach vorn kam, und ohne Start gibt es kein `onStop`/`gone`. Jetzt startet ein Event der Ziel-App ohne echte sichtbare Sperre wieder eine (Throttle/Ack wie gehabt). Der Ack bleibt fuer den Bildschirm-aus-Fall noetig (Start kommt an, `onResume` erst nach dem Aufwachen).
+
+**Verworfen:** Ack nur aus `onResume` (bei ausgeschaltetem Bildschirm Retry und LaunchFailed/GoHome); Events der Ziel-App bei sichtbarer Sperre immer als Neustart werten (Starting-Window-Events des Kaltstarts wuerden doppelt starten).
+
 ## 2026-11-10 – Review M6-T6: fuenf Befunde behoben, Restrisiken bestaetigt
 
 **Entscheidung:** (1) `ForegroundTracker` nimmt die `MainActivity` des Eigenpakets immer als Vordergrund, auch bei `lockActive`. (2) Startet das Gate eine durch Bildschirm-aus gestoppte Sperre fuer dasselbe Paket neu, haengt `LockActivity.onNewIntent` nicht neu an (Karte, Fortschritt, Notausgang-Countdown bleiben). Echtes Verlassen (Home, Recents, andere App) fuehrt weiter ueber Attach ins Intro mit `$ ./weiter`. (3) Der Snapshot-Flow im `GateController` startet nach einem Lesefehler der Stores neu (`retryWhen`, 0,5 bis 5 s). (4) Ein Fehler beim Statistik-Schreiben nach einem Runtime-Commit wird nur geloggt (`BS/Store`). (5) Meldet AnkiDroid das eingefrorene Deck als fehlend, uebernimmt die laufende Sitzung beim naechsten Attach das Deck aus den Settings (`QuizSession.deckMissing`). `required` und Dauer bleiben eingefroren.
