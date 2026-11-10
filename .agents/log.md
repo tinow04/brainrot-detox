@@ -2,6 +2,15 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M6-T5: Plattform-Details und Zeit)
+- M6-T4 committet und gepusht (`aaed813`, `a9c213c`, `4d0f4de`, `3d36e7c`). Neu `scripts/e2e/e2e8_platform.sh` (10 Pruefungen, zweimal gruen, Belege `design/screenshots/m6-t5/`), keine Code-Aenderung noetig. Belege:
+  - Predictive Back (Gestennavigation, targetSdk 36): Sperre auf Intro und Karte -> Home, Phase Closed, Ziel-App nicht sichtbar. **Befund:** Die Sperre ist immersiv (`BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`), der erste Rand-Swipe zeigt nur die Leisten, erst der zweite ist Zurueck (Android-Verhalten, akzeptiert). Haupt-App: Zurueck auf der Setup-Route -> Tabs, `onboardingDismissed` gesetzt, App bleibt offen.
+  - Edge-to-Edge: alle geloggten Knoepfe zwischen den Leisten, in Gesten- (Leiste ab y=2361) und 3-Tasten-Navigation (ab y=2298); Statusleiste bis y=142. Sperre (A1, A2, A3, A5, Fehler) blendet beide Leisten aus und nutzt den ganzen Schirm; Tabs apps/config/stats und Setup liegen ueber der Leiste (`3-three-*`).
+  - Hell/Dunkel zur Laufzeit: Sperre behaelt die Karte (kein `phase Loading`); Haupt-App bleibt auf dem Tab, die Decks laden beim Resume neu (so gebaut, `LifecycleResumeEffect`). Schriftgroesse 1,3 waehrend der Antwortseite und im Statistik-Tab: kein Zustandsverlust (`5-*`).
+  - `SET_WALL_OFFSET_MS` +1 d, -1 d, +1 h: Freigabe bleibt gueltig, Restzeit nur nach elapsed (899956 -> 887260 ms). Statistik: Tag 20767 -> 20768, heute startet leer, beide Tage bleiben, zurueck auf 20767 mit eigenem Zaehler (`7-stats-next-day`).
+  - StrictMode (`detectBlockedBackgroundActivityLaunch`) und BAL: keine Zeile der App ueber den ganzen Lauf (Mitschnitt per Probe-Zeile geprueft).
+  Naechster Schritt: M6-T6 (Review-Befunde und Doku).
+
 ## 2026-11-10 (M6-T4: Fehlerfall-Matrix)
 - M6-T3 committet und gepusht (`3465f56`, `4235ddf`, `5c5d23b`); PiP-Entscheidung offen (Standard: akzeptieren). Neu `scripts/e2e/e2e7_errors.sh` (16 Pruefungen, viermal gruen) und `.agents/test-checklist.md`: 15 Fehlerfaelle, 11 davon gegen echtes AnkiDroid (inkl. Deinstallation, frische Installation per `pm clear` mit Sicherung, SIGSTOP). Zwei echte Fehler behoben: Timeout griff bei haengendem AnkiDroid nicht, Renderer-Absturz haette den Dienst beendet. Regression: `check.sh`, e2e2 (echte Antworten ueber den neuen Gateway-Pfad) und e2e_config gruen; dafuer `anki-due.sh` (Neukarten-Limit des Tages erreicht) und Deck-Auswahl nach Namen in e2e_config. Naechster Schritt: M6-T5 (Plattform-Details und Zeit).
 
