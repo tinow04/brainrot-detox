@@ -24,6 +24,8 @@ import dev.tinow.brainrotstopper.data.system.PermissionStatusReader
 import dev.tinow.brainrotstopper.di.AppContainer
 import dev.tinow.brainrotstopper.domain.permission.Protection
 import dev.tinow.brainrotstopper.ui.Strings
+import dev.tinow.brainrotstopper.ui.apps.AppsScreen
+import dev.tinow.brainrotstopper.ui.apps.AppsViewModel
 import dev.tinow.brainrotstopper.ui.banner.BannerState
 import dev.tinow.brainrotstopper.ui.components.BsText
 import dev.tinow.brainrotstopper.ui.setup.SetupAction
@@ -40,10 +42,16 @@ private const val ROUTE_APPS = "apps"
 
 /**
  * Main shell: setup as start route on the first start while a mandatory step is open, otherwise the three tabs with the
- * protection banner on top (architecture.md 6). The tab contents are placeholders until M5.
+ * protection banner on top (architecture.md 6). Config and stats are placeholders until M5-T2/T3.
  */
 @Composable
-fun MainApp(container: AppContainer, reader: PermissionStatusReader, setup: SetupViewModel, initialRoute: String? = null) {
+fun MainApp(
+    container: AppContainer,
+    reader: PermissionStatusReader,
+    setup: SetupViewModel,
+    apps: AppsViewModel,
+    initialRoute: String? = null,
+) {
     val context = LocalContext.current
     val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
@@ -131,15 +139,27 @@ fun MainApp(container: AppContainer, reader: PermissionStatusReader, setup: Setu
                 setupIncomplete = Protection.ankiSteps(permissions, probe).open,
             )
             LaunchedEffect(banner) { AppLog.i("BS/Setup", "banner ${banner?.name ?: "none"}") }
+            // installed apps change while we are in the background: reload on every resume of the apps tab
+            LifecycleResumeEffect(tab) {
+                if (tab == MainTab.Apps) apps.refresh()
+                onPauseOrDispose { }
+            }
             MainScaffold(tab, { route = it.name }, banner, { route = ROUTE_SETUP }) {
-                ScreenTitle(
-                    when (tab) {
-                        MainTab.Apps -> Strings.TITLE_APPS
-                        MainTab.Config -> Strings.TITLE_CONFIG
-                        MainTab.Stats -> Strings.TITLE_STATS
-                    },
-                )
-                BsText(Strings.TAB_SOON, BsTheme.type.body, BsTheme.colors.dim)
+                when (tab) {
+                    MainTab.Apps -> {
+                        val ui by apps.ui.collectAsStateWithLifecycle()
+                        val sections = ui.sections
+                        if (sections == null) {
+                            ScreenTitle(Strings.TITLE_APPS)
+                        } else {
+                            AppsScreen(sections.blocked, sections.others, ui.query, apps::search, { item, on -> apps.toggle(item.pkg, on) })
+                        }
+                    }
+                    MainTab.Config, MainTab.Stats -> {
+                        ScreenTitle(if (tab == MainTab.Config) Strings.TITLE_CONFIG else Strings.TITLE_STATS)
+                        BsText(Strings.TAB_SOON, BsTheme.type.body, BsTheme.colors.dim)
+                    }
+                }
             }
         }
     }

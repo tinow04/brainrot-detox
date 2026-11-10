@@ -37,12 +37,14 @@ fun AppsScreen(
             BsSearchField(query, onQuery, Strings.SEARCH_PLACEHOLDER, Strings.SEARCH_PROMPT, Modifier.padding(bottom = BsDims.S16), description = "apps suchen")
         }
         item { BsSep(Strings.sepBlocked(blocked.size), Modifier.padding(bottom = BsDims.S16)) }
-        if (blocked.isEmpty()) {
-            item { BsText(if (query.isEmpty()) Strings.EMPTY_BLOCKED else Strings.EMPTY_SEARCH, t.body, c.dim, Modifier.padding(vertical = BsDims.S12)) }
+        // "keine treffer" only once and only when the search found nothing at all (not under an empty blocked section
+        // while the hits are listed below it)
+        if (blocked.isEmpty() && query.isEmpty()) {
+            item { BsText(Strings.EMPTY_BLOCKED, t.body, c.dim, Modifier.padding(vertical = BsDims.S12)) }
         }
         items(blocked, key = { it.pkg }) { AppRow(it.label, it.blocked, { on -> onToggle(it, on) }) }
         item { BsSep(Strings.SEP_ALL_APPS, Modifier.padding(top = BsDims.S16, bottom = BsDims.S16)) }
-        if (others.isEmpty() && query.isNotEmpty()) {
+        if (blocked.isEmpty() && others.isEmpty() && query.isNotEmpty()) {
             item { BsText(Strings.EMPTY_SEARCH, t.body, c.dim, Modifier.fillMaxWidth().padding(vertical = BsDims.S12)) }
         }
         items(others, key = { it.pkg }) { AppRow(it.label, it.blocked, { on -> onToggle(it, on) }) }
