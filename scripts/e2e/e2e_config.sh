@@ -48,7 +48,6 @@ tap_main()     { sh_ input tap 540 2123; }
 tap_good()     { sh_ input tap 293 2224; }
 
 setting() { state_json | python3 -c "import sys,json; d=json.load(sys.stdin)['settings']; print($1)"; }
-sess() { state_json | python3 -c "import sys,json; d=json.load(sys.stdin); print($1)"; }
 both() { shot "$1"; sh_ cmd uimode night yes; sleep 1.5; shot "$1-dark"; sh_ cmd uimode night no; sleep 1.5; }
 log_has() { "$ADB" logcat -d -s "$1:I" </dev/null | grep -q -- "$2"; }
 wait_log() { # wait_log <tag> <text> [seconds]
@@ -60,15 +59,6 @@ open_config() { # fresh task (new view model), waits for the deck answer of this
   sh_ am start -W -f 0x10008000 -n "$OWN/.MainActivity" --es route config >/dev/null
   wait_log BS/Config "decks " 10
   sleep 1
-}
-last_phase() { { "$ADB" logcat -d -s BS/Quiz </dev/null | grep " phase " || true; } | tail -1 | sed 's/.* phase //' | tr -d '\r'; }
-wait_phase() {
-  local end=$(( $(date +%s) + ${2:-12} )) v
-  while :; do
-    v="$(last_phase)"; [[ "$v" =~ ^$1 ]] && return 0
-    [ "$(date +%s)" -ge "$end" ] && fail "phase: want '$1', got '$v'"
-    sleep 0.3
-  done
 }
 replace_text() { # focus is in a text field: delete what is there, type $1, close the keyboard
   sh_ input keyevent KEYCODE_MOVE_END

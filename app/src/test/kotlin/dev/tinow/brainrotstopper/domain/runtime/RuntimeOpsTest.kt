@@ -52,6 +52,30 @@ class RuntimeOpsTest {
         for (i in 1..5) rt = attach(rt, "a", i * 9_000L).also { assertThat(it.delta.isEmpty).isTrue() }.runtime
     }
 
+    @Test fun leavingRestartsTheDebounceWindow() {
+        // long quiz: attach at 0, the lock is left at 60 s, back 5 s later -> same episode
+        val first = attach(Runtime(), "a", 0)
+        val left = RuntimeOps.leave(first.runtime, "a", t(60_000))
+        assertThat(left.delta.isEmpty).isTrue()
+        val back = attach(left.runtime, "a", 65_000)
+        assertThat(back.delta.isEmpty).isTrue()
+        assertThat(back.info.newEpisode).isFalse()
+        // without the leave it would be a new block and an abort
+        assertThat(attach(first.runtime, "a", 65_000).delta).isEqualTo(StatsDelta(blocks = 1, aborted = 1, perApp = mapOf("a" to 1)))
+        // 10 s after leaving: new episode
+        assertThat(attach(left.runtime, "a", 60_000 + Constants.BLOCK_DEBOUNCE_MS).delta)
+            .isEqualTo(StatsDelta(blocks = 1, aborted = 1, perApp = mapOf("a" to 1)))
+    }
+
+    @Test fun leaveIgnoresOtherPackageOtherBootClosedEpisodeAndTimeGoingBack() {
+        val rt = attach(Runtime(), "a", 10_000).runtime
+        assertThat(RuntimeOps.leave(rt, "b", t(20_000)).runtime).isEqualTo(rt)
+        assertThat(RuntimeOps.leave(rt, "a", t(20_000, boot = 2)).runtime).isEqualTo(rt)
+        assertThat(RuntimeOps.leave(rt, "a", t(5_000)).runtime).isEqualTo(rt)
+        val cancelled = RuntimeOps.cancel(rt).runtime
+        assertThat(RuntimeOps.leave(cancelled, "a", t(20_000)).runtime).isEqualTo(cancelled)
+    }
+
     @Test fun attachAfterDebounceWithoutCloseCountsNewBlockAndAbortsTheOld() {
         val first = attach(Runtime(), "a", 0)
         val second = attach(first.runtime, "a", Constants.BLOCK_DEBOUNCE_MS)

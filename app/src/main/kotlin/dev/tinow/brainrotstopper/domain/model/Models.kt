@@ -94,6 +94,7 @@ data class QuizSession(
 data class Episode(
     val pkg: String,
     val openedElapsed: Long,
+    /** Last time the lock of this episode was seen: its attach, or leaving it (RuntimeOps.leave); start of the 10 s debounce. */
     val lastAttachElapsed: Long,
     val bootCount: Int,
 )

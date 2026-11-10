@@ -240,6 +240,22 @@ class QuizEngineTest {
         assertThat(second.view.value.intro?.resumed).isTrue()
     }
 
+    @Test fun `leaving after a long quiz and coming back at once is the same block`() = runTest {
+        val r = rig()
+        val e = r.engine()
+        begin(e)
+        good(r, e, 2)
+        r.time.advance(60_000)   // a long time on the cards
+        e.setVisible(false)      // home
+        runCurrent()
+        r.time.advance(3_000)
+        e.attach(pkg)            // back within 10 s after leaving
+        runCurrent()
+        assertThat(r.day?.blocks).isEqualTo(1)
+        assertThat(r.day?.aborted ?: 0).isEqualTo(0)
+        assertThat(e.view.value.intro?.correct).isEqualTo(2)
+    }
+
     @Test fun `switching to another blocked app keeps the progress`() = runTest {
         val r = rig()
         val e = r.engine()

@@ -127,6 +127,10 @@ class QuizEngine(
     private var emergencyState: EmergencyState? = null
     private var pollWaitingSeq: Int? = null
 
+    /** Target of the last attach (for [setVisible]); null before the first attach. */
+    @Volatile
+    private var attachedPkg: String? = null
+
     // ------------------------------------------------------------------ UI API
 
     /** The lock came up for [pkg]: resume check, episode and session bookkeeping, then the intro (stored state only). */
@@ -150,10 +154,16 @@ class QuizEngine(
         return EmergencyPolicy.button(since, emergencyState, time.now(), ctx.emergencyEnabled)
     }
 
-    /** The lock screen went to the background: the waiting screen stops polling AnkiDroid until it is back. */
+    /**
+     * The lock screen went to the background: the waiting screen stops polling AnkiDroid until it is back, and the open
+     * episode remembers when the lock was last seen (statistics debounce, RuntimeOps.leave).
+     */
     fun setVisible(value: Boolean) {
         visible = value
-        if (!value) return
+        if (!value) {
+            attachedPkg?.let { pkg -> scope.launch { runCatching { val t = time.now(); runtime.apply(t) { RuntimeOps.leave(it, pkg, t) } } } }
+            return
+        }
         val seq = synchronized(monitor) { pollWaitingSeq.also { pollWaitingSeq = null } } ?: return
         dispatch(QuizEvent.PollDue(seq))
     }
@@ -209,6 +219,7 @@ class QuizEngine(
     // ------------------------------------------------------------------ attach
 
     private suspend fun doAttach(pkg: String) {
+        attachedPkg = pkg
         val cfg = settings()
         val rt = runtime.current()
         emergencyState = rt.emergency

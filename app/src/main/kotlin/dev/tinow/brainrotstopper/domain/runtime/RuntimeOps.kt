@@ -53,6 +53,19 @@ object RuntimeOps {
         return Applied(base.copy(episode = episode, session = resolution.session), delta, AttachInfo(resolution, null, !sameEpisode))
     }
 
+    /**
+     * The lock screen of [pkg] went to the background (home, recents, another app) while its episode is still open: the
+     * debounce window restarts now, so coming back within [Constants.BLOCK_DEBOUNCE_MS] after LEAVING is the same episode
+     * (not only within 10 s after the lock first came up; a long quiz would otherwise count a new block and an abort).
+     */
+    fun leave(rt: Runtime, pkg: String, now: TimeSnapshot): Applied<Unit> {
+        val ep = rt.episode
+        if (ep == null || ep.pkg != pkg || ep.bootCount != now.bootCount || now.elapsedMs < ep.lastAttachElapsed) {
+            return Applied(rt, StatsDelta(), Unit)
+        }
+        return Applied(rt.copy(episode = ep.copy(lastAttachElapsed = now.elapsedMs)), StatsDelta(), Unit)
+    }
+
     /** Cancel / back / gesture outside the unlocked screen: the episode counts as aborted, the session stays. */
     fun cancel(rt: Runtime): Applied<Unit> =
         if (rt.episode == null) Applied(rt, StatsDelta(), Unit)
