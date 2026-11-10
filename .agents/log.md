@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M5-T2: Einstellungs-Tab B2)
+- M5-T1 committet (`0c79fbc`, `b41e63d`, nicht gepusht); M6-T7 (optional `DO_SYNC`) und Entscheidung "Server nur fuer Bilder" eingetragen; `emu-start.sh --window` fuer manuelles Testen. Neu: `ui/config/ConfigModel` + `ConfigViewModel`, `data/media/MediaHealthCheck`, Route `config`, Sperrfehler DeckMissing oeffnet Config, `SET_MEDIA ... off`, `scripts/e2e/e2e_config.sh` (13 Pruefungen, Belege `design/screenshots/m5-t2/`). 403 JVM-, 67 instrumentierte Tests, `check.sh` gruen. Naechster Schritt: M5-T3 (StatsScreen B3). T2 nicht committet.
+
 ## 2026-11-10 (M5-T1: Apps-Tab B1)
 - M4-T7 committet und alles gepusht (`origin/main` = `3349979`). Neu: `data/system/PackageCatalog`, `ui/apps/AppsModel` + `AppsViewModel`, B1 in `MainApp` verdrahtet, `AppsModelTest`, `PackageCatalogTest`, `scripts/e2e/e2e_apps.sh` (7 Pruefungen, Belege `design/screenshots/m5-t1/`). 390 JVM-, 67 instrumentierte Tests, `check.sh` gruen (B1 SSIM 0,937). Fund: `am instrument` und `check.sh` hinterlassen den Bedienungshilfe-Dienst als crashed bzw. aus (gotchas.md). Naechster Schritt: M5-T2 (ConfigScreen B2). T1 nicht committet.
 

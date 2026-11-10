@@ -212,6 +212,14 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-10 – Einstellungs-Tab B2 (M5-T2)
+
+**Entscheidung:** (1) `$ ./test` prueft auch das Token: nach `GET /healthz` (ohne Token) ein GET auf eine nie vorhandene Datei mit Token; 404 = Token ok, 401/403 = abgelehnt. (2) URL/Token werden 400 ms nach dem letzten Tastendruck gespeichert (kein Speichern-Button); Logs nennen nur `set`/`empty`. (3) Stepper, Dauer und Deck werden sofort gespeichert und gelten ab der naechsten NEUEN Session (die laufende behaelt ihre eingefrorenen Werte, wie bisher); ein Hinweis steht am Ende des Screens. (4) Ist das gewaehlte Deck nicht mehr in der Liste, bleibt die Einstellung stehen (kein stilles Umschalten auf `alle decks`), Config zeigt es rot, die Sperre meldet DeckMissing. (5) Die Box `bilder` ist immer sichtbar (unterhalb des Mockup-Bereichs).
+
+**Warum:** (1) healthz allein sagt nichts ueber das Token; ein falsches Token faellt sonst erst als fehlende Bilder auf. (4) Stilles Umschalten wuerde ungefragt ein anderes Deck abfragen. (5) Ohne sichtbare Box gibt es keinen Weg, den Server einzutragen.
+
+**Verworfen:** Token-Pruefung per echtem Bildnamen (die App kennt keinen ohne Karte); Speichern-Button (vergessenes Speichern).
+
 ## 2026-11-10 – Eigener Server nur fuer Bilder, Karten weiter ueber AnkiDroid
 
 **Entscheidung:** Der eigene Anki-Sync-Server bleibt nur Bildquelle. Karten, Scheduling und Antworten laufen weiter ueber die AnkiDroid-API. Gegen veraltete Staende: Auto-Sync in AnkiDroid empfehlen (Setup-Hinweis), optional `DO_SYNC` nach Freigabe (M6-T7).
