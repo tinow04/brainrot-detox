@@ -38,7 +38,13 @@ trap cleanup EXIT
 # config tab, not scrolled
 tap_minus()    { sh_ input tap 653 476; }
 tap_5min()     { sh_ input tap 218 777; }
-tap_deck()     { sh_ input tap 290 $(( 1077 + 126 * $1 )); }   # row n (0 = first) of the deck list
+# tap_deck <name>: the deck row at its logged position (the list is sorted by name; other decks in the emulator
+# collection, e.g. bs-leer from e2e7_errors.sh, shift the rows)
+tap_deck() {
+  local xy; xy="$({ "$ADB" logcat -d -s BS/UI </dev/null | grep -E "btn=$1 x=" || true; } | tail -1 | sed -E 's/.* x=([0-9]+) y=([0-9]+).*/\1 \2/' | tr -d '\r')"
+  [ -n "$xy" ] || fail "deck row '$1' not in the log"
+  sh_ input tap $xy
+}
 # config tab, scrolled to the end (the bilder box is the last box)
 tap_token_s()  { sh_ input tap 540 1607; }
 tap_test_s()   { sh_ input tap 540 1753; }
@@ -79,9 +85,8 @@ dbg SET_BLOCKED --es pkgs "$DUMMY" --es on true
 sh_ am force-stop "$DUMMY"; sh_ input keyevent KEYCODE_HOME; sleep 1
 ok "real source, dummy blocked, defaults"
 # step 4 answers 3 real cards in Default: seed like E2E-2 when few are due
-due="$(sh_ content query --uri content://com.ichi2.anki.flashcards/decks --projection deck_name:deck_count | tr -d '\r' | sed -n 's/.*deck_name=Default, deck_count=\[[0-9]*,\([0-9]*\),\([0-9]*\)\].*/\1 \2/p')"
-read -r rev new <<<"${due:-0 0}"
-if [ $(( rev + new )) -lt 6 ]; then scripts/spike/seed-basic.sh 12 >/dev/null; ok "seeded 12 Basic notes (due before: review $rev, new $new)"; else ok "enough due cards in Default (review $rev, new $new)"; fi
+read -r _ rev _ new <<<"$(scripts/e2e/anki-due.sh 6)"   # seeds, or sets review cards due when the new limit is used up
+ok "due in Default: review $rev, new $new"
 
 step "1 config tab with the real decks"
 open_config
@@ -94,7 +99,7 @@ tap_minus; sleep 0.6; tap_minus; sleep 1
 [ "$(setting "d['requiredCorrect']")" = 3 ] || fail "required: $(setting "d['requiredCorrect']")"
 tap_5min; sleep 1
 [ "$(setting "d['unlockMinutes']")" = 5 ] || fail "minutes: $(setting "d['unlockMinutes']")"
-tap_deck 0; sleep 1
+tap_deck Default; sleep 1
 [ "$(setting "d['deck'].get('deckId')")" = 1 ] || fail "deck: $(setting "d['deck']")"
 shot 2-changed
 ok "settings.json: required 3, 5 min, deck Default (id 1)"
@@ -135,7 +140,7 @@ sh_ input keyevent KEYCODE_HOME; sleep 1
 
 step "5 chosen deck missing (fake source has only deck 1 'Test')"
 open_config
-tap_deck 1; sleep 1   # Leer
+tap_deck Leer; sleep 1
 chosen="$(setting "d['deck'].get('deckId')")"; [ "$chosen" != 1 ] || fail "deck not changed"
 dbg SET_SOURCE --es source fake --es scenario normal
 open_config

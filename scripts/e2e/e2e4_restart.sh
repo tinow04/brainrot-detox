@@ -78,9 +78,8 @@ scripts/a11y-enable.sh
 sh_ cmd uimode night no
 sh_ settings put secure immersive_mode_confirmations confirmed
 sh_ pm grant "$OWN" "$PERM"
-due="$(sh_ content query --uri content://com.ichi2.anki.flashcards/decks --projection deck_name:deck_count | tr -d '\r' | sed -n 's/.*deck_name=Default, deck_count=\[[0-9]*,\([0-9]*\),\([0-9]*\)\].*/\1 \2/p')"
-read -r rev new <<<"${due:-0 0}"
-if [ $(( rev + new )) -lt 8 ]; then scripts/spike/seed-basic.sh 12 >/dev/null; ok "seeded 12 Basic notes (due before: review $rev, new $new)"; fi
+read -r _ rev _ new <<<"$(scripts/e2e/anki-due.sh 8)"   # seeds, or sets review cards due when the new limit is used up
+ok "due in Default: review $rev, new $new"
 dbg RESET --es what all
 dbg SET_SOURCE --es source real --es scenario normal
 dbg SET_BLOCKED --es pkgs "$DUMMY,$DUMMY2" --es on true
