@@ -77,3 +77,20 @@ Quelle der Wahrheit fuer Texte: `ui/Strings.kt`, gepflegt anhand der Mockups (ma
 
 BsSwitch `toggleable(role=Role.Switch)`, BsRadioOption `selectable(role=Role.RadioButton)`, BsSegments als selectableGroup, Buttons mit Role.Button; Zeilen B1 als eine Touch-Flaeche (mergeDescendants, contentDescription `<app>, gesperrt|nicht gesperrt`). Fortschritt `contentDescription = c von N richtig`. BlinkCursor ist aus der Semantik ausgenommen. Alle Touch-Ziele >= 48 dp.
 
+
+## Abweichungsliste (M5-T5, 2026-11-10)
+
+Pruefung: `scripts/gallery-compare.sh` (SSIM, alle 16 >= 0,90), `scripts/check-strings.sh` (Exit 0) und zusaetzlich `tools/color-diff.py <referenz> <ist> <out> [schwelle]` je Ansicht (weichgezeichneter Farbvergleich; findet falsche Textfarben, fehlende Praefixe und verschobene Spalten, die SSIM kaum sieht). Ergebnis SSIM dunkel/hell: a1 0,948/0,949 · a2 0,985/0,985 · a3 0,908/0,914 · a4 0,935/0,935 · a5 0,954/0,955 · b1 0,937/0,937 · b2 0,937/0,937 · b3 0,940/0,940.
+
+**In M5-T5 behoben** (waren unter der SSIM-Schwelle unsichtbar):
+- A4 Box `was zählt`: Schluessel stand ohne `[n]` und farbig; jetzt `[1] nochmal` usw. in Textfarbe, nur `– zählt nicht` / `+ zählt` farbig (a4 0,926 -> 0,935).
+- B2 `richtige karten`: Farbe `dim` -> `muted` wie im Mockup.
+- B3 Ranking: Zahlen rechtsbuendig in der 24-dp-Spalte (`text-align: right`), standen ~9 dp zu weit links.
+- A5 Galerie-Beispiel: zeit `02:41`, streak `13 tage` wie im Mockup (vorher 04:22 / 12).
+
+**Bleibt, begruendet:**
+- B2 `api aktiv · 2 decks gefunden` statt `3`: das Mockup zaehlt `alle decks` mit, die App zaehlt nur echte Decks (Beispiel hat 2). Bewusst.
+- Zeilenmetrik: Compose und Browser runden Zeilenhoehen verschieden; Text, Schalter und Kacheln liegen stellenweise <= 1 dp versetzt (`color-diff` bei Schwelle 14 sichtbar, bei 30 nicht). Ausgleich wo noetig per `trimFirstLine()` (gotchas.md 2026-11-03), der Rest ist unter der Wahrnehmungsgrenze.
+- A3 hat das niedrigste SSIM (0,908): die Schraffur des Bild-Platzhalters liegt um Bruchteile eines Pixels in anderer Phase; feine Diagonalen druecken SSIM, sichtbar ist nichts (`color-diff` Schwelle 30: none).
+- A5 Hero `[ OK ] entsperrt`: Glyphenkanten der 28-sp-Schrift weichen leicht ab (`color-diff` max 33-40 an Einzelbuchstaben), Position und Breite gleich.
+- Screens ohne Mockup (Setup, Banner, Fehler, Waiting, Loading, A4-schwer, A5-Varianten, Intro-Fortsetzung, B1 leer, B2 Medien) werden gegen die Textmatrix geprueft, nicht per SSIM (architecture.md 10.4, `scripts/gallery-extras.sh`).

@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M5-T5: Gesamtabgleich Mockups, M5 abgeschlossen)
+- M5-T4 committet und gepusht (`c7bd288`, `905dda0`). Abgleich aller 16 Ansichten: SSIM alle >= 0,90, Strings ok. Neues `tools/color-diff.py` fand 3 Abweichungen unter der SSIM-Schwelle (A4 Box `was zählt`, B2 Labelfarbe, B3 Ranking-Ausrichtung) plus A5-Beispielwerte; behoben, Abweichungsliste in mockups.md. Naechster Schritt: M6 Haertung.
+
 ## 2026-11-10 (M5-T4: Freigabe- und Session-E2E)
 - M5-T3 committet und alles gepusht (`origin/main` = `64f24d3`). Neu: `scripts/e2e/e2e3_grant.sh` (6) und `e2e3_session.sh` (6), Belege `design/screenshots/m5-t4/`, gemeinsame Helfer in `lib.sh`. Fund und Fix: 10-s-Regel der Statistik zaehlt jetzt ab dem Verlassen der Sperre (`RuntimeOps.leave`, decisions.md). 409 JVM-, 67 instrumentierte Tests, `check.sh` und alle E2E-Regressionen gruen. Naechster Schritt: M5-T5 (Gesamtabgleich Mockups). T4 nicht committet.
 
