@@ -137,7 +137,7 @@ Emulator-Pruefungen:
 Ziel: Alle Umgehungs- und Fehlerszenarien sind im Emulator durchgespielt; Ergebnisse (auch Restluecken) stehen belegt in den Docs; behebbare Luecken sind gefixt.
 Abhaengig von: M5
 
-- [ ] **M6-T1** Neustart und Prozess-Tod - Akzeptanz: Skript Exit 0 bzw. dokumentierte Ausnahmen in gotchas.md
+- [x] (2026-11-10) **M6-T1** Neustart und Prozess-Tod - ERLEDIGT: `scripts/e2e/e2e4_restart.sh` Exit 0 (14 Pruefungen, zweimal gelaufen), Matrix und Befunde in gotchas.md 2026-11-10: kill -9 in jeder Phase ohne Doppelzaehlung (Revlog-Abgleich, inkl. "in AnkiDroid angewendet, nicht verbucht"), install -r, S3-e wiederholt (1,3 s), Reboot (Grant/Session ungueltig, Statistik bleibt), pm clear dokumentiert. Neue Befunde: ActivityManager-Restart-Backoff 1/4/16/64 s bei wiederholten Abstuerzen; Neu-Aktivieren des Dienstes liefert nur in etwa der Haelfte der Versuche ein Ereignis fuer die offene App. Urspruengliche Akzeptanz: Skript Exit 0 bzw. dokumentierte Ausnahmen in gotchas.md
 - [ ] **M6-T2** Dienststatus und Selbstsabotage - Akzeptanz: Banner erscheint binnen 2 s; Blockliste nach Korruption unveraendert wirksam
 - [ ] **M6-T3** Umgehungsmatrix - Akzeptanz: Matrix 'Vektor -> blockiert/umgangen/akzeptiert' mit Beleg in gotchas.md; Kein ANR/Crash in logcat, Diag.errorCount nachvollziehbar
 - [ ] **M6-T4** Fehlerfall-Matrix - Akzeptanz: Je Fall Screenshot + Gate-Ergebnis; fail-closed ausser NothingDue-Grant und Notausgang; Matrix in .agents/test-checklist.md

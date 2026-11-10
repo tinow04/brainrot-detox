@@ -212,6 +212,14 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-10 – Restrisiken aus M6-T1 akzeptiert (keine Code-Aenderung)
+
+**Entscheidung:** (1) Der Restart-Backoff des ActivityManagers (1/4/16/64 s nach wiederholten Abstuerzen) bleibt ohne Gegenmassnahme; Gegenmittel ist, Abstuerze zu vermeiden (Handler fangen Exceptions, `Diag.errorCount`). (2) `pm clear` bzw. "Speicher loeschen" in den Einstellungen schaltet den Schutz komplett ab (Dienst deaktiviert, Blockliste leer); das gilt als bewusste Selbstsabotage wie Deinstallieren und wird nicht abgefangen. (3) Neu-Aktivieren des Dienstes bei bereits offener gesperrter App sperrt nicht verlaesslich sofort (3 von 6 Versuchen erst beim naechsten Fensterwechsel) (bekannte Luecke, `canRetrieveWindowContent` bleibt false).
+
+**Warum:** Alle drei liegen ausserhalb dessen, was eine App ohne Device-Admin/Fensterinhalte kontrollieren kann; die Gegenmittel (Device-Admin, Fensterinhalte lesen, Home erzwingen bei jedem Verbinden) waeren invasiver als der Nutzen. In der Praxis aktiviert man den Dienst in den Einstellungen, nicht aus der gesperrten App heraus.
+
+**Verworfen:** Beim Verbinden immer `GLOBAL_ACTION_HOME` (wirft den Nutzer auch aus freien Apps); `canRetrieveWindowContent=true` nur fuer den Start (gleiche Berechtigung, groesserer Einblick).
+
 ## 2026-11-10 – 10-s-Regel der Statistik zaehlt ab dem Verlassen der Sperre (M5-T4)
 
 **Entscheidung:** Verlaesst man die Sperre bei offener Episode (Home, andere App), setzt `RuntimeOps.leave` `lastAttachElapsed` auf jetzt. Zurueckkommen binnen 10 s danach ist dieselbe Episode (kein neuer Block, kein Abbruch). Feldname bleibt (Kompatibilitaet von `runtime.json`).

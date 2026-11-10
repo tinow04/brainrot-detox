@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M6-T1: Neustart und Prozess-Tod)
+- M5-T5 committet und gepusht (`a0ef9b1`, `fd9cf9d`). Neues `scripts/e2e/e2e4_restart.sh` (14 Pruefungen, echte AnkiDroid, inkl. Reboot und pm clear), zweimal gruen. Befunde: ActivityManager-Restart-Backoff 1/4/16/64 s; Neu-Aktivieren liefert nur manchmal (3/6) ein Ereignis fuer die offene App; pm clear schaltet alles ab. Als Restrisiken in decisions.md, Matrix in gotchas.md. Keine Code-Aenderung noetig. Zwischendurch wurde der Emulator vom cgroup-Limit (7 GB) per OOM beendet (nach ca. 2 h mit Reboots, gotchas.md), Neustart, danach zwei gruene Laeufe in Folge. Naechster Schritt: M6-T2 (Dienststatus und Selbstsabotage).
+
 ## 2026-11-10 (M5-T5: Gesamtabgleich Mockups, M5 abgeschlossen)
 - M5-T4 committet und gepusht (`c7bd288`, `905dda0`). Abgleich aller 16 Ansichten: SSIM alle >= 0,90, Strings ok. Neues `tools/color-diff.py` fand 3 Abweichungen unter der SSIM-Schwelle (A4 Box `was zählt`, B2 Labelfarbe, B3 Ranking-Ausrichtung) plus A5-Beispielwerte; behoben, Abweichungsliste in mockups.md. Naechster Schritt: M6 Haertung.
 
