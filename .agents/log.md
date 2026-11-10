@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M6-T6: Review-Befunde und Doku)
+- M6-T5 committet und gepusht (`10d8407`, `1668a38`). Review selbst und nacheinander (ohne Subagenten): 5 Befunde, alle behoben und belegt (Liste in gotchas.md). Zwei davon waren echte Sackgassen fuer den Nutzer (`$ ./einstellungen` auf DeckMissing), einer ein fail-open-Pfad (Store-Lesefehler). Neue Pruefungen: e2e6 Schritt 8b (Bildschirm aus mit Karte), e2e7 Fall 10 (neues Deck gilt sofort), e2e_config Schritt 6 (`focus_stays`). Mockup-Abgleich unveraendert (SSIM >= 0,908). Naechster Schritt: M6-T7 (optionaler AnkiDroid-Sync), dann M7.
+
 ## 2026-11-10 (M6-T5: Plattform-Details und Zeit)
 - M6-T4 committet und gepusht (`aaed813`, `a9c213c`, `4d0f4de`, `3d36e7c`). Neu `scripts/e2e/e2e8_platform.sh` (10 Pruefungen, zweimal gruen, Belege `design/screenshots/m6-t5/`), keine Code-Aenderung noetig. Belege:
   - Predictive Back (Gestennavigation, targetSdk 36): Sperre auf Intro und Karte -> Home, Phase Closed, Ziel-App nicht sichtbar. **Befund:** Die Sperre ist immersiv (`BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`), der erste Rand-Swipe zeigt nur die Leisten, erst der zweite ist Zurueck (Android-Verhalten, akzeptiert). Haupt-App: Zurueck auf der Setup-Route -> Tabs, `onboardingDismissed` gesetzt, App bleibt offen.
