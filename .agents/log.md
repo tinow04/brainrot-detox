@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M5-T4: Freigabe- und Session-E2E)
+- M5-T3 committet und alles gepusht (`origin/main` = `64f24d3`). Neu: `scripts/e2e/e2e3_grant.sh` (6) und `e2e3_session.sh` (6), Belege `design/screenshots/m5-t4/`, gemeinsame Helfer in `lib.sh`. Fund und Fix: 10-s-Regel der Statistik zaehlt jetzt ab dem Verlassen der Sperre (`RuntimeOps.leave`, decisions.md). 409 JVM-, 67 instrumentierte Tests, `check.sh` und alle E2E-Regressionen gruen. Naechster Schritt: M5-T5 (Gesamtabgleich Mockups). T4 nicht committet.
+
 ## 2026-11-10 (M5-T3: Statistik-Tab B3)
 - M5-T2 committet und alles gepusht (`origin/main` = `f91b151`). Neu: `ui/stats/StatsModel` + `StatsViewModel`, `debug/seed/StatsSeedScreen` (Galerie b3 ueber den echten Weg), Seed-Tabelle korrigiert, Route `stats`, `scripts/e2e/e2e_stats.sh` (4 Pruefungen, Belege `design/screenshots/m5-t3/`). 406 JVM-, 67 instrumentierte Tests, `check.sh` gruen (b3 SSIM unveraendert 0,937). Naechster Schritt: M5-T4 (Freigabe- und Session-E2E). T3 nicht committet.
 

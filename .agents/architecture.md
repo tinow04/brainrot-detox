@@ -139,12 +139,13 @@ DataStore (JSON, kotlinx-serialization), Dateien in `files/datastore/`, alle mit
 
 ### Statistik: Ereignis -> Zaehler (verbindlich, kein Widerspruch)
 
-Episode = ein zusammenhaengender Sperr-Durchlauf eines Zielpakets. Episode oeffnet bei `attach(pkg)`, wenn keine offene Episode fuer pkg existiert ODER `now - episode.lastAttachElapsed >= BLOCK_DEBOUNCE_MS` (10 s) ODER bootCount anders. Jedes `attach` setzt `lastAttachElapsed`.
+Episode = ein zusammenhaengender Sperr-Durchlauf eines Zielpakets. Episode oeffnet bei `attach(pkg)`, wenn keine offene Episode fuer pkg existiert ODER `now - episode.lastAttachElapsed >= BLOCK_DEBOUNCE_MS` (10 s) ODER bootCount anders. Jedes `attach` setzt `lastAttachElapsed`. `lastAttachElapsed` wird auch beim Verlassen der Sperre gesetzt (M5-T4).
 
 | Ereignis | Wirkung |
 |---|---|
 | attach: neue Episode | `blocks+1` und `perApp[pkg]+1` (Tag = heute). War eine fruehere Episode noch offen (weder Unlock noch Cancel), schliesst sie als abgebrochen: `aborted+1` |
-| attach innerhalb 10 s, gleiche Episode (z. B. onNewIntent, Resume) | keine Zaehlung |
+| attach innerhalb 10 s, gleiche Episode (z. B. onNewIntent, Resume, oder Zurueckkommen binnen 10 s nach dem Verlassen der Sperre) | keine Zaehlung |
+| Sperre geht in den Hintergrund (Home, andere App) bei offener Episode | `lastAttachElapsed = now` (`RuntimeOps.leave`, M5-T4): die 10 s zaehlen ab dem Verlassen |
 | Retarget auf anderes Paket | neue Episode fuer das neue Paket (`blocks+1`), alte Episode `aborted+1` |
 | Cancel/Zurueck/Geste (ausser Unlocked) | Episode schliesst: `aborted+1` (nur wenn Episode offen) |
 | Antwort gespeichert | `answered+1`; bei Ease>=3 `correct+1`; Session `activeMs += takenMs`; bei Ease<=2 `wrong+1`, `lastWrongElapsed` |

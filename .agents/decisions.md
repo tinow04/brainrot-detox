@@ -212,6 +212,14 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-10 – 10-s-Regel der Statistik zaehlt ab dem Verlassen der Sperre (M5-T4)
+
+**Entscheidung:** Verlaesst man die Sperre bei offener Episode (Home, andere App), setzt `RuntimeOps.leave` `lastAttachElapsed` auf jetzt. Zurueckkommen binnen 10 s danach ist dieselbe Episode (kein neuer Block, kein Abbruch). Feldname bleibt (Kompatibilitaet von `runtime.json`).
+
+**Warum:** Vorher liefen die 10 s ab dem Erscheinen der Sperre. Wer 30 s Karten beantwortet, kurz rausgeht und sofort zurueckkommt, bekam einen zweiten Block und einen Abbruch, und der Abbruch erhoehte "zeit gespart" um 5 min. Gefunden durch `e2e3_session.sh`.
+
+**Verworfen:** Debounce verlaengern (verdeckt das Problem nur); Abbruch beim Verlassen sofort zaehlen (Home ist kein bewusstes Abbrechen, das ist der Button).
+
 ## 2026-11-10 – Statistik-Tab B3 (M5-T3)
 
 **Entscheidung:** (1) Die Galerie-Ansicht b3 (Mockup-Abgleich) entsteht ueber denselben Weg wie der echte Tab (Seed -> StatsAggregator -> StatsModel) statt aus handgeschriebenen Werten. (2) Balkenhoehen kommen aus dem Aggregator (`ChartBar.heightDp`, 2 dp fuer 0); ohne Angabe rechnet die Komponente wie bisher. (3) Leeres Ranking zeigt `noch nichts gesperrt`. (4) "Heute" wird bei jedem Resume des Tabs neu bestimmt, nicht per Timer.
