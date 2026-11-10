@@ -78,8 +78,10 @@ class DebugControlReceiver : BroadcastReceiver() {
             }
             "FAKE_PERMISSIONS" -> flags.permissionOverride = i.getStringExtra("state")?.takeIf { it in setOf("off", "unbound", "restricted", "ok") }
             "SET_MEDIA" -> {
-                // --es url <base url> --es token <token>; missing extras keep the value, empty strings switch the feature off
-                c.settings.update { it.copy(mediaBaseUrl = i.getStringExtra("url") ?: it.mediaBaseUrl, mediaToken = i.getStringExtra("token") ?: it.mediaToken) }
+                // --es url <base url> --es token <token>; missing extras keep the value, `off` clears it (an empty --es is
+                // lost on the way through `adb shell`, gotchas.md)
+                fun v(key: String, old: String) = i.getStringExtra(key)?.let { if (it == "off") "" else it } ?: old
+                c.settings.update { it.copy(mediaBaseUrl = v("url", it.mediaBaseUrl), mediaToken = v("token", it.mediaToken)) }
             }
             "SET_WALL_OFFSET_MS" -> flags.wallOffsetMs = i.getStringExtra("ms")?.toLongOrNull() ?: 0L
             "SEED_STATS" -> {

@@ -21,7 +21,7 @@ start_server() {
   for _ in $(seq 1 30); do curl -sf "http://127.0.0.1:$PORT/healthz" >/dev/null && return 0; sleep 0.1; done
   fail "fake server did not start"
 }
-cleanup() { stop_server; dbg RESET --es what media >/dev/null 2>&1 || true; dbg SET_MEDIA --es url "" --es token "" >/dev/null 2>&1 || true
+cleanup() { stop_server; dbg RESET --es what media >/dev/null 2>&1 || true; dbg SET_MEDIA --es url off --es token off >/dev/null 2>&1 || true
   "$ADB" shell cmd uimode night no >/dev/null 2>&1 || true; rm -rf "$WORK"; }
 trap cleanup EXIT
 
@@ -112,7 +112,7 @@ if "$ADB" logcat -d 2>/dev/null | grep -qE 'bild ä|bild%20'; then fail "file na
 ok "token and file names absent from logcat"
 
 step "7 media off (empty URL): nothing is requested"
-dbg SET_MEDIA --es url "" --es token ""
+dbg SET_MEDIA --es url off --es token off
 dbg RESET --es what media
 : > "$SRV_LOG"
 n="$(probe card-image-q-net blue m7-feature-off)"

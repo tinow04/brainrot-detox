@@ -114,7 +114,10 @@ class LockActivity : ComponentActivity() {
             ErrorTarget.AppInfo ->
                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null))
             ErrorTarget.AnkiDroid -> packageManager.getLaunchIntentForPackage(ANKIDROID_PACKAGE)
-            ErrorTarget.Settings -> packageManager.getLaunchIntentForPackage(packageName)
+            // "deck missing": straight to the config tab, where the deck is chosen again
+            ErrorTarget.Settings -> Intent(this, dev.tinow.brainrotstopper.MainActivity::class.java)
+                .putExtra(dev.tinow.brainrotstopper.MainActivity.EXTRA_ROUTE, "config")
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
         } ?: return
         startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }

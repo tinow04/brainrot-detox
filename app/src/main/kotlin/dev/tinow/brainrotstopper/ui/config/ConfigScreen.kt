@@ -26,15 +26,22 @@ import dev.tinow.brainrotstopper.ui.main.ScreenTitle
 import dev.tinow.brainrotstopper.ui.theme.BsDims
 import dev.tinow.brainrotstopper.ui.theme.BsTheme
 
-data class DeckItem(val name: String?, val due: Int) {
+/** One radio row; [id] null = `alle decks`. */
+data class DeckItem(val name: String?, val due: Int, val id: Long? = null) {
     val label get() = if (name == null) Strings.ALL_DECKS else name
 }
 
-enum class MediaCheck { Unknown, Ok, Failed }
+/** State line of the `bilder` box: Off = no URL/token, Untested = saved but `$ ./test` not run since. */
+enum class MediaCheck { Off, Untested, Checking, Ok, Failed, TokenRejected, Invalid }
 
 /** Optional `bilder` box (media server, architecture 5a). The token is masked and never logged. */
 data class MediaConfig(val url: String, val token: String, val check: MediaCheck)
 
+/**
+ * [ankiConnected] false with [ankiReason] = AnkiDroid failed (reason text, setup link, no deck list); [ankiReason] null while
+ * the first check runs. [missingDeck] = the chosen deck is not in the list any more (name snapshot). [hints] = dim lines at
+ * the end of the screen (below the mockup area).
+ */
 data class ConfigState(
     val required: Int,
     val durations: List<Int>,
@@ -43,6 +50,9 @@ data class ConfigState(
     val deckIndex: Int,
     val ankiConnected: Boolean,
     val media: MediaConfig? = null,
+    val ankiReason: String? = null,
+    val missingDeck: String? = null,
+    val hints: List<String> = emptyList(),
 )
 
 /** B2: settings. Everything is stateless; the host owns the values. */
@@ -55,6 +65,7 @@ fun ConfigScreen(
     onMediaUrl: (String) -> Unit = {},
     onMediaToken: (String) -> Unit = {},
     onMediaTest: () -> Unit = {},
+    onSetup: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val c = BsTheme.colors
@@ -71,16 +82,36 @@ fun ConfigScreen(
             BsSegments(state.durations.map(Strings::minuten), state.durationIndex, onDuration)
         }
         BsBox(Strings.BOX_DECK) {
-            state.decks.forEachIndexed { i, d ->
-                BsRadioOption(i == state.deckIndex, d.label, Strings.due(d.due), { onDeck(i) }, divider = i != state.decks.lastIndex)
+            when {
+                state.ankiConnected -> {
+                    state.missingDeck?.let { BsText(Strings.deckMissing(it), t.label, c.red, Modifier.padding(bottom = BsDims.S8)) }
+                    state.decks.forEachIndexed { i, d ->
+                        BsRadioOption(i == state.deckIndex, d.label, Strings.due(d.due), { onDeck(i) }, divider = i != state.decks.lastIndex)
+                    }
+                }
+                state.ankiReason == null -> BsText(Strings.ANKI_CONNECTING, t.body, c.dim)
+                else -> BsText(Strings.DECKS_UNAVAILABLE, t.body, c.dim)
             }
         }
         BsBox(Strings.BOX_ANKIDROID) {
+            val waiting = !state.ankiConnected && state.ankiReason == null
             Row(horizontalArrangement = Arrangement.spacedBy(BsDims.S12), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                BsTag(if (state.ankiConnected) Strings.TAG_OK else Strings.TAG_ERROR, if (state.ankiConnected) BsTagKind.Ok else BsTagKind.Fail)
-                BsText(Strings.ANKI_OK.takeIf { state.ankiConnected } ?: Strings.ERR_NOT_AVAILABLE.title.substringAfter("] "), t.body, c.text)
+                when {
+                    state.ankiConnected -> BsTag(Strings.TAG_OK, BsTagKind.Ok)
+                    waiting -> BsTag(Strings.TAG_WAIT, BsTagKind.Info)
+                    else -> BsTag(Strings.TAG_ERROR, BsTagKind.Fail)
+                }
+                BsText(
+                    when {
+                        state.ankiConnected -> Strings.ANKI_OK
+                        waiting -> Strings.ANKI_CONNECTING
+                        else -> state.ankiReason ?: ""
+                    },
+                    t.body, c.text,
+                )
             }
             if (state.ankiConnected) BsText(Strings.ankiConnected(state.decks.count { it.name != null }), t.label, c.dim, Modifier.padding(top = BsDims.S4))
+            if (!state.ankiConnected && !waiting) BsButton(Strings.BTN_SETUP, onSetup, Modifier.padding(top = BsDims.S12), style = BsButtonStyle.Ghost)
         }
         state.media?.let { m ->
             BsBox(Strings.BOX_MEDIA) {
@@ -89,11 +120,20 @@ fun ConfigScreen(
                     BsSearchField(m.token, onMediaToken, "", Strings.MEDIA_TOKEN, description = Strings.MEDIA_TOKEN, password = true)
                     BsButton(Strings.BTN_MEDIA_TEST, onMediaTest, style = BsButtonStyle.Ghost)
                     when (m.check) {
-                        MediaCheck.Unknown -> BsText(Strings.MEDIA_OFF, t.label, c.dim)
+                        MediaCheck.Off -> BsText(Strings.MEDIA_OFF, t.label, c.dim)
+                        MediaCheck.Untested -> BsText(Strings.MEDIA_UNTESTED, t.label, c.dim)
+                        MediaCheck.Checking -> BsText(Strings.MEDIA_CHECKING, t.label, c.dim)
                         MediaCheck.Ok -> BsText(Strings.TAG_OK + " " + Strings.MEDIA_OK, t.label, c.green)
                         MediaCheck.Failed -> BsText(Strings.TAG_ERROR + " " + Strings.MEDIA_FAIL, t.label, c.red)
+                        MediaCheck.TokenRejected -> BsText(Strings.TAG_ERROR + " " + Strings.MEDIA_TOKEN_BAD, t.label, c.red)
+                        MediaCheck.Invalid -> BsText(Strings.TAG_ERROR + " " + Strings.MEDIA_INVALID, t.label, c.red)
                     }
                 }
+            }
+        }
+        if (state.hints.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(BsDims.S4)) {
+                state.hints.forEach { BsText(it, t.label, c.dim) }
             }
         }
     }

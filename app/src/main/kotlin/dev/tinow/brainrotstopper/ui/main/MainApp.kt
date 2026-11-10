@@ -27,6 +27,8 @@ import dev.tinow.brainrotstopper.ui.Strings
 import dev.tinow.brainrotstopper.ui.apps.AppsScreen
 import dev.tinow.brainrotstopper.ui.apps.AppsViewModel
 import dev.tinow.brainrotstopper.ui.banner.BannerState
+import dev.tinow.brainrotstopper.ui.config.ConfigScreen
+import dev.tinow.brainrotstopper.ui.config.ConfigViewModel
 import dev.tinow.brainrotstopper.ui.components.BsText
 import dev.tinow.brainrotstopper.ui.setup.SetupAction
 import dev.tinow.brainrotstopper.ui.setup.SetupActions
@@ -39,10 +41,11 @@ import kotlinx.coroutines.launch
 
 private const val ROUTE_SETUP = "setup"
 private const val ROUTE_APPS = "apps"
+private const val ROUTE_CONFIG = "config"
 
 /**
  * Main shell: setup as start route on the first start while a mandatory step is open, otherwise the three tabs with the
- * protection banner on top (architecture.md 6). Config and stats are placeholders until M5-T2/T3.
+ * protection banner on top (architecture.md 6). Stats is a placeholder until M5-T3.
  */
 @Composable
 fun MainApp(
@@ -50,6 +53,7 @@ fun MainApp(
     reader: PermissionStatusReader,
     setup: SetupViewModel,
     apps: AppsViewModel,
+    config: ConfigViewModel,
     initialRoute: String? = null,
 ) {
     val context = LocalContext.current
@@ -82,6 +86,7 @@ fun MainApp(
             route = when {
                 initialRoute == ROUTE_SETUP -> ROUTE_SETUP
                 initialRoute == ROUTE_APPS -> MainTab.Apps.name
+                initialRoute == ROUTE_CONFIG -> MainTab.Config.name
                 Protection.startOnSetup(s.onboardingDismissed, permissions, probe) -> ROUTE_SETUP
                 else -> MainTab.Apps.name
             }
@@ -139,9 +144,13 @@ fun MainApp(
                 setupIncomplete = Protection.ankiSteps(permissions, probe).open,
             )
             LaunchedEffect(banner) { AppLog.i("BS/Setup", "banner ${banner?.name ?: "none"}") }
-            // installed apps change while we are in the background: reload on every resume of the apps tab
+            // installed apps and AnkiDroid decks change while we are in the background: reload on every resume of the tab
             LifecycleResumeEffect(tab) {
-                if (tab == MainTab.Apps) apps.refresh()
+                when (tab) {
+                    MainTab.Apps -> apps.refresh()
+                    MainTab.Config -> config.refresh()
+                    MainTab.Stats -> Unit
+                }
                 onPauseOrDispose { }
             }
             MainScaffold(tab, { route = it.name }, banner, { route = ROUTE_SETUP }) {
@@ -155,8 +164,26 @@ fun MainApp(
                             AppsScreen(sections.blocked, sections.others, ui.query, apps::search, { item, on -> apps.toggle(item.pkg, on) })
                         }
                     }
-                    MainTab.Config, MainTab.Stats -> {
-                        ScreenTitle(if (tab == MainTab.Config) Strings.TITLE_CONFIG else Strings.TITLE_STATS)
+                    MainTab.Config -> {
+                        val state by config.ui.collectAsStateWithLifecycle()
+                        val s = state
+                        if (s == null) {
+                            ScreenTitle(Strings.TITLE_CONFIG)
+                        } else {
+                            ConfigScreen(
+                                s,
+                                onRequired = config::setRequired,
+                                onDuration = config::setDuration,
+                                onDeck = config::setDeck,
+                                onMediaUrl = config::setMediaUrl,
+                                onMediaToken = config::setMediaToken,
+                                onMediaTest = config::testMedia,
+                                onSetup = { route = ROUTE_SETUP },
+                            )
+                        }
+                    }
+                    MainTab.Stats -> {
+                        ScreenTitle(Strings.TITLE_STATS)
                         BsText(Strings.TAB_SOON, BsTheme.type.body, BsTheme.colors.dim)
                     }
                 }

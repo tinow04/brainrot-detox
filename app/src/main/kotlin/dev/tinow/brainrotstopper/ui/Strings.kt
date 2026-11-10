@@ -248,4 +248,16 @@ object Strings {
     const val MEDIA_OK = "bilder-server erreichbar"
     const val MEDIA_FAIL = "bilder-server nicht erreichbar"
     const val MEDIA_OFF = "aus (platzhalter statt bild)"
+    const val MEDIA_UNTESTED = "gespeichert, nicht getestet"
+    const val MEDIA_CHECKING = "prüfe ..."
+    const val MEDIA_TOKEN_BAD = "token abgelehnt"
+    const val MEDIA_INVALID = "url ungültig (https://host)"
+
+    // ---- B2 config: states beyond the mockup (M5-T2)
+    const val BTN_SETUP = "\$ ./setup"
+    const val ANKI_CONNECTING = "verbinde ..."
+    const val DECKS_UNAVAILABLE = "decks nicht lesbar, siehe ankidroid unten."
+    fun deckMissing(name: String) = "gewähltes deck fehlt: $name"
+    const val CONFIG_HINT_NEXT = "änderungen gelten ab der nächsten neuen sperre."
+    const val CONFIG_HINT_DECK = "beim abfragen wählt ankidroid das deck kurz aus, danach wieder das vorherige."
 }
