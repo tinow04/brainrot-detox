@@ -172,6 +172,11 @@ class QuizEngine(
     internal fun dispatch(event: QuizEvent) {
         val effects = synchronized(monitor) {
             val (next, effects) = QuizReducer.reduce(state, event, ctx)
+            // Phase changes for scripts and diagnosis (no card content): `phase Question 2/5 answered=3`, `phase Error ... error=Unreachable`.
+            if (next.phase != state.phase || next.error != state.error || event is QuizEvent.Attach) {
+                val error = next.error?.let { " error=${it.javaClass.simpleName}" }.orEmpty()
+                log("phase ${next.phase} ${next.correct}/${next.required} answered=${next.answered}$error")
+            }
             state = next
             publish()
             effects

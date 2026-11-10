@@ -136,7 +136,7 @@ object Strings {
 
     // ---- errors (title, text, main action)
     data class ErrorTexts(val title: String, val text: String, val action: String)
-    val ERR_NOT_AVAILABLE = ErrorTexts("[ FEHLER ] ankidroid nicht erreichbar", "nicht installiert oder die api ist aus.", "\$ ./erneut")
+    val ERR_NOT_AVAILABLE = ErrorTexts("[ FEHLER ] ankidroid nicht erreichbar", "nicht installiert, api aus oder kein speicherzugriff.", "\$ ./erneut")
     val ERR_PERMISSION = ErrorTexts("[ FEHLER ] berechtigung fehlt", "die app darf ankidroid nicht lesen.", "\$ ./app-info")
     val ERR_STORAGE = ErrorTexts("[ FEHLER ] ankidroid nicht eingerichtet", "ankidroid einmal öffnen und einrichten.", "\$ ./ankidroid oeffnen")
     val ERR_UNREACHABLE = ErrorTexts("[ FEHLER ] keine antwort von ankidroid", "timeout oder ankidroid nicht bereit.", "\$ ./erneut")
