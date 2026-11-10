@@ -212,6 +212,22 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-10 – Doppeltipp-Schutz fuer [abbrechen] auf der Frage (M6-T3)
+
+**Entscheidung:** Ein Tipp auf `abbrechen` im Frage-Screen kommt als eigenes Ereignis `QuizEvent.CancelTap(now)` und wird verworfen, solange die Karte kuerzer als `RATE_GUARD_MS` (600 ms) sichtbar ist. Die Zurueck-Taste/-Geste (`Cancel`) bleibt ungeschuetzt und bricht immer ab. Tests: `QuizReducerTest.cancelTapInsideRateGuardOfANewCardIsDropped`, `backCancelIsNeverGuarded`.
+
+**Warum:** Ein Doppeltipp auf `[3] gut` zaehlte zwar nur einmal, der zweite Tipp landete aber auf `abbrechen` der naechsten Karte (gleiche Bildschirmposition) und beendete die Sperre unbeabsichtigt (E2E-6 Schritt 11). Nicht sicherheitsrelevant (Abbrechen gibt nichts frei), aber aergerlich: die Episode zaehlt als abgebrochen.
+
+**Verworfen:** `abbrechen` verschieben (Mockup-Abweichung); Guard auch fuer Zurueck (bewusste Geste, kein Fehltipp).
+
+## 2026-11-10 – Bild-im-Bild als Restrisiko (M6-T3, offen fuer den User)
+
+**Befund:** Ist eine gesperrte App bei laufender Freigabe im Bild-im-Bild-Modus (PiP), bleibt das PiP-Fenster nach Ablauf der Freigabe sichtbar und bedienbar (z. B. ein Video laeuft weiter). Das Gate sieht nur den Launcher als Vordergrund; erst wenn die App ins Vollbild zurueckkehrt, kommt die Sperre (ca. 460 ms). Nach architecture.md Abschnitt 6 kein gravierender Fall (keine Vollbild-Nutzung ohne Sperre).
+
+**Vorlaeufige Entscheidung:** Als Restrisiko dokumentiert, keine Code-Aenderung. Der User entscheidet (todo.md, Offene Entscheidungen).
+
+**Optionen:** (a) akzeptieren (Standard); (b) bei Ablauf einer Freigabe pruefen, ob die App eine PiP-Task hat, und sie dann per `GLOBAL_ACTION_HOME` bzw. Sperre in den Vordergrund holen: braucht Fensterinformationen (`AccessibilityService.getWindows()` mit `canRetrieveWindowContent=true` bzw. `flagRetrieveInteractiveWindows`), also mehr Einblick als heute; (c) die Freigabe beim Wechsel in PiP sofort beenden (gleiche Voraussetzung). PiP der gesperrten App OHNE Freigabe ist nicht moeglich, weil die Sperre vorher kommt.
+
 ## 2026-11-10 – Banner "einstellungen beschädigt" wird per Tipp quittiert (M6-T2)
 
 **Entscheidung:** Ein Tipp auf das Banner `[ FEHLER ] einstellungen beschädigt - blockliste prüfen` oeffnet den Tab apps (die Blockliste) und loescht `diag.settingsCorrupted`. Alle anderen Banner fuehren weiter zum Setup. Dazu zwei Setup-Hinweise: Advanced Protection (nur solange der Dienst nicht aktiv ist, Wortlaut "kann", da unverifiziert) und die System-Erinnerung an die Bedienungshilfe (immer, mit "die app sieht nur, welche app vorne ist").

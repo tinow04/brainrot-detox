@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M6-T3: Umgehungsmatrix)
+- M6-T2 committet und gepusht (`d268f26`, `5ab6d7b`). Neu `scripts/e2e/e2e6_bypass.sh` (15 Pruefungen, gruen, Belege `design/screenshots/m6-t3/`): 14 Vektoren, 13 blockiert, PiP nach Ablauf der Freigabe umgangen (Restrisiko, offene Entscheidung fuer den User). Fix: Doppeltipp auf eine Bewertung landete auf `abbrechen` der naechsten Karte -> `QuizEvent.CancelTap` mit Rate-Guard. Testapp postet per Extra `notify` eine Benachrichtigung. Naechster Schritt: M6-T4 (Fehlerfall-Matrix).
+
 ## 2026-11-10 (M6-T2: Dienststatus und Selbstsabotage)
 - M6-T1 committet und gepusht (`3dceb06`, `4fc069a`). Neu `scripts/e2e/e2e5_service_status.sh` (9 Pruefungen, gruen). Fixes: Korruptions-Banner wird per Tipp quittiert (Flag wurde nie geloescht), Setup-Hinweise Advanced Protection und System-Erinnerung. Echter Zustand "aktiviert, aber nicht gebunden" reproduzierbar (Komponente aus/an). Naechster Schritt: M6-T3 (Umgehungsmatrix).
 
