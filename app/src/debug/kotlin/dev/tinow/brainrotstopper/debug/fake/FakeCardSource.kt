@@ -99,6 +99,9 @@ class FakeCardSource(cards: List<RenderedCard> = emptyList()) : CardSource {
     }
 
     companion object {
+        /** Marks the poison card of scenario `poison_card` (an HTML comment, invisible in either renderer). */
+        const val POISON_MARKER = "<!--bs-poison-->"
+
         /** [n] distinct basic cards (note ids 100 up) built from the fixtures. */
         fun cards(n: Int): List<RenderedCard> {
             val pool = listOf("html", "cloze", "type", "image", "audio", "colors")
@@ -121,6 +124,10 @@ class FakeCardSource(cards: List<RenderedCard> = emptyList()) : CardSource {
             "error-bad" -> failing(AnkiError.BadData)
             "answer-lost" -> FakeCardSource(cards(30)).also { it.answerApplies = false }
             "no-intervals" -> FakeCardSource(cards(30)).also { it.intervals = null }
+            // first card crashes the WebView renderer (DebugFlags.crashesRenderer); the lock must fall back to plain text
+            "poison_card" -> FakeCardSource(cards(30).mapIndexed { i, c -> if (i == 0) c.copy(question = c.question + POISON_MARKER, answer = c.answer + POISON_MARKER) else c })
+            // nothing in the queue and the counts cannot be read: must not count as "nothing due" (no grant)
+            "counts_unreadable" -> FakeCardSource().also { f -> listOf("deckCounts", "listDecks").forEach { f.failing[it] = AnkiError.BadData } }
             else -> FakeCardSource(cards(30))
         }
 

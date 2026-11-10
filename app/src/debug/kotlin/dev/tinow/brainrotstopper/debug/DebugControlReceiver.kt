@@ -9,6 +9,7 @@ import dev.tinow.brainrotstopper.debug.seed.StatsSeed
 import dev.tinow.brainrotstopper.di.AppContainer
 import dev.tinow.brainrotstopper.domain.gate.GrantPolicy
 import dev.tinow.brainrotstopper.domain.model.BsJson
+import dev.tinow.brainrotstopper.domain.model.DeckSelection
 import dev.tinow.brainrotstopper.domain.model.GrantKind
 import dev.tinow.brainrotstopper.domain.model.Runtime
 import dev.tinow.brainrotstopper.domain.model.Settings
@@ -49,6 +50,11 @@ class DebugControlReceiver : BroadcastReceiver() {
                 val pkgs = csv(i.getStringExtra("pkgs"))
                 val on = i.getStringExtra("on") != "false"
                 c.settings.update { it.copy(blockedPackages = if (on) it.blockedPackages + pkgs else it.blockedPackages - pkgs) }
+            }
+            "SET_DECK" -> { // --es id <deck id>|all [--es name <snapshot>]: also a deck that does not exist (DeckMissing, M6-T4)
+                val id = i.getStringExtra("id") ?: run { Log.w(TAG, "SET_DECK needs --es id"); return }
+                val deck = if (id == "all") DeckSelection.All else DeckSelection.Single(id.toLongOrNull() ?: run { Log.w(TAG, "SET_DECK: bad id"); return }, i.getStringExtra("name") ?: "deck $id")
+                c.settings.update { it.copy(deck = deck) }
             }
             "GRANT_NOW" -> {
                 val pkg = i.getStringExtra("pkg") ?: run { Log.w(TAG, "GRANT_NOW needs --es pkg"); return }

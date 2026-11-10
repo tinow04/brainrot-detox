@@ -6,15 +6,18 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
+import dev.tinow.brainrotstopper.BrainrotApp
 import dev.tinow.brainrotstopper.data.anki.CardDocument
 import dev.tinow.brainrotstopper.data.anki.CardHtml
 import dev.tinow.brainrotstopper.data.anki.CardSide
 import dev.tinow.brainrotstopper.data.anki.CardStyle
 import dev.tinow.brainrotstopper.debug.fake.CardFixtures
+import dev.tinow.brainrotstopper.hooks.DebugFlags
 import dev.tinow.brainrotstopper.lock.render.CardView
 import dev.tinow.brainrotstopper.lock.render.RendererSelector
 import dev.tinow.brainrotstopper.ui.theme.BsTheme
@@ -163,6 +166,25 @@ class CardRenderingTest {
     @Test fun plainRendererShowsTheCard() {
         show(doc("html", dark), plain = true)
         rule.onNodeWithTag("card-plain").assertIsDisplayed()
+    }
+
+    /** M6-T4: a card that crashes the renderer process must not kill the app (this test runs in the app process). */
+    @Test fun crashedRendererSwitchesTheShownCardToPlainText() {
+        RendererSelector.reset()
+        val container = (InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as BrainrotApp).container
+        val before = container.debugFlags
+        container.debugFlags = object : DebugFlags {
+            override fun crashesRenderer(html: String) = true
+        }
+        try {
+            show(doc("html", dark), plain = false)
+            rule.waitUntil(10_000) { rule.onAllNodes(hasTestTag("card-plain")).fetchSemanticsNodes().isNotEmpty() }
+            rule.onNodeWithTag("card-plain").assertIsDisplayed()
+            assertThat(RendererSelector.webViewUsable()).isFalse()
+        } finally {
+            container.debugFlags = before
+            RendererSelector.reset()
+        }
     }
 
     @Test fun brokenWebViewFallsBackToPlainText() {

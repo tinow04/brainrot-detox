@@ -29,6 +29,9 @@ interface DebugFlags {
     /** Replaces the observed permission state: `off`, `unbound`, `restricted` or `ok` (FAKE_PERMISSIONS); null = real. */
     val permissionOverride: String? get() = null
 
+    /** The WebView loads `chrome://crash` instead of this card (fake scenario `poison_card`, M6-T4). */
+    fun crashesRenderer(html: String): Boolean = false
+
     /** `real` or `fake` card source (M4) and the fake scenario. */
     val cardSource: String get() = "real"
     val scenario: String get() = "normal"

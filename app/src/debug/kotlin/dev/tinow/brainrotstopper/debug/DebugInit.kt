@@ -29,6 +29,9 @@ object DebugInit {
 
         override fun gatewayDelayMs(stage: String): Long = if (stage == "answer") answerDelayMs else queryDelayMs
 
+        override fun crashesRenderer(html: String): Boolean =
+            cardSource == "fake" && scenario == "poison_card" && html.contains(dev.tinow.brainrotstopper.debug.fake.FakeCardSource.POISON_MARKER)
+
         fun reset() {
             sessionTtlMsOverride = null; unlockSecondsOverride = null; simulateLaunchBlock = false; throwInHandler = false
             wallOffsetMs = 0; permissionOverride = null; cardSource = "real"; scenario = "normal"; answerDelayMs = 0; queryDelayMs = 0; floodRequest = null

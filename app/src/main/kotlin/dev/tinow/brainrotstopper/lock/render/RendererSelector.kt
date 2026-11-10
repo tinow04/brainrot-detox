@@ -1,22 +1,23 @@
 package dev.tinow.brainrotstopper.lock.render
 
-import java.util.concurrent.atomic.AtomicBoolean
+import androidx.compose.runtime.mutableStateOf
 
 /**
- * Decides between WebView and plain text. A WebView that failed once (missing WebView package, creation exception) is not
- * tried again in this process: the fallback renderer takes over for the rest of the session.
+ * Decides between WebView and plain text. A WebView that failed once (missing WebView package, creation exception, a
+ * card that crashed or killed the renderer process) is not tried again in this process: the fallback renderer takes over
+ * for the rest of the session. Snapshot state, so a card on screen switches to plain text as soon as it is marked.
  */
 object RendererSelector {
-    private val broken = AtomicBoolean(false)
+    private val broken = mutableStateOf(false)
 
-    fun webViewUsable(): Boolean = !broken.get()
+    fun webViewUsable(): Boolean = !broken.value
 
     fun markWebViewBroken() {
-        broken.set(true)
+        broken.value = true
     }
 
     /** Tests only. */
     fun reset() {
-        broken.set(false)
+        broken.value = false
     }
 }
