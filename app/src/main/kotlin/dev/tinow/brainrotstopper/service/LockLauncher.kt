@@ -7,6 +7,9 @@ interface LockLauncher {
 
     /** Sends the user to the home screen (`GLOBAL_ACTION_HOME`). */
     fun goHome()
+
+    /** Asks AnkiDroid to sync (`com.ichi2.anki.DO_SYNC`, M6-T7); false if it could not be started. */
+    fun startAnkiSync(): Boolean = false
 }
 
 /** Counters for the diagnostics block of `runtime.json`; implemented over the RuntimeRepository. */

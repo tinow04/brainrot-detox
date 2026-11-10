@@ -17,6 +17,7 @@ import dev.tinow.brainrotstopper.data.system.SystemTimeSource
 import dev.tinow.brainrotstopper.domain.time.TimeSource
 import dev.tinow.brainrotstopper.hooks.DebugFlags
 import dev.tinow.brainrotstopper.hooks.NoDebugFlags
+import dev.tinow.brainrotstopper.service.AnkiSyncTrigger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -44,6 +45,11 @@ class AppContainer(val app: Application) {
 
     val runtime: RuntimeRepository by lazy {
         RuntimeRepository(app.dataStoreFile("runtime.json"), ioScope, stats) { AppLog.w("BS/Store", "stats write failed: ${it.javaClass.simpleName}") }
+    }
+
+    /** Optional AnkiDroid sync after a grant (M6-T7), sent through the running gate. */
+    val ankiSync: AnkiSyncTrigger by lazy {
+        AnkiSyncTrigger(ioScope, { settings.current() }, runtime, timeSource, { gate }, log = { AppLog.i("BS/Sync", it) })
     }
 
     val settings: SettingsRepository by lazy {

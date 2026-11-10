@@ -97,7 +97,8 @@ sh_ pm disable "$SVC" >/dev/null; sleep 1
 sh_ pm enable "$SVC" >/dev/null; sleep 1
 sh_ settings put secure enabled_accessibility_services "$SVC_FULL"; sh_ settings put secure accessibility_enabled 1; sleep 3
 [ "$(bs_a11y_state)" = enabled ] || fail "state not 'enabled but not bound': $(bs_a11y_state)"
-sh_ dumpsys accessibility | grep -q 'Crashed services:{{dev.tinow.brainrotstopper' || fail "not listed as crashed"
+A11Y="$(sh_ dumpsys accessibility)"   # not piped into grep -q (SIGPIPE under pipefail)
+grep -q 'Crashed services:{{dev.tinow.brainrotstopper' <<<"$A11Y" || fail "not listed as crashed"
 t0="$(now_ms)"; open_main; wait_banner ProtectionOffUnbound 3 >/dev/null; ms=$(( $(now_ms) - t0 ))
 sleep 1; shot 3-unbound
 dummy_locked && fail "dummy locked although the service is not bound"

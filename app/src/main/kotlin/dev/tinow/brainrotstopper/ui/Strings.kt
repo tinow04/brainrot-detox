@@ -261,5 +261,9 @@ object Strings {
     const val DECKS_UNAVAILABLE = "decks nicht lesbar, siehe ankidroid unten."
     fun deckMissing(name: String) = "gewähltes deck fehlt: $name"
     const val CONFIG_HINT_NEXT = "änderungen gelten ab der nächsten neuen sperre."
+    // ---- B2 sync box (M6-T7)
+    const val BOX_SYNC = "sync"
+    const val SYNC_LABEL = "ankidroid-sync nach freigabe"
+    const val SYNC_HINT = "höchstens alle 3 h. ankidroid erscheint kurz; ohne sync-konto in ankidroid passiert nichts."
     const val CONFIG_HINT_DECK = "beim abfragen wählt ankidroid das deck kurz aus, danach wieder das vorherige."
 }

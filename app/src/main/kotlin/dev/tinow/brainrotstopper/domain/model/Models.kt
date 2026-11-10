@@ -37,6 +37,8 @@ data class Settings(
     /** Own media server (architecture.md 5a); empty = off. The token never goes into logs. */
     val mediaBaseUrl: String = "",
     val mediaToken: String = "",
+    /** After a quiz or nothing-due grant, ask AnkiDroid to sync (at most every ANKI_SYNC_MIN_INTERVAL_MS, M6-T7). */
+    val ankiSyncAfterUnlock: Boolean = true,
 ) {
     /** Values outside the allowed ranges fall back to the defaults (a hand-edited file must not weaken the gate unexpectedly). */
     fun sanitized(): Settings = copy(
@@ -112,6 +114,10 @@ data class EmergencyState(
     val lastUsedWall: Long = 0,
 )
 
+/** Last `DO_SYNC` sent to AnkiDroid (M6-T7); same clock rules as [EmergencyState]. */
+@Serializable
+data class SyncStamp(val elapsedMs: Long, val bootCount: Int, val wallMs: Long = 0)
+
 @Serializable
 data class Diag(
     val serviceLastConnectedWall: Long = 0,
@@ -130,6 +136,7 @@ data class Runtime(
     val episode: Episode? = null,
     val emergency: EmergencyState? = null,
     val diag: Diag = Diag(),
+    val ankiSync: SyncStamp? = null,
 )
 
 @Serializable

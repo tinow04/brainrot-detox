@@ -89,6 +89,48 @@ class GateControllerTest {
         assertThat(rig.controller.state).isEqualTo(GateState.LockVisible(INSTA))
     }
 
+    @Test fun `an ack without the lock coming to the front never lets the target through`() = runTest {
+        val rig = Rig(this).also { it.begin() }
+        rig.controller.onAccessibilityEvent(INSTA, "A")
+        runCurrent()
+        LockUiBeacon.acked(INSTA) // onNewIntent reached the activity, but it never resumed
+        advanceTimeBy(5_000)
+        assertThat(rig.launcher.starts).hasSize(1) // the ack ended the watch, no retry
+        rig.controller.onAccessibilityEvent(INSTA, "A") // the target is in front
+        advanceTimeBy(1_000) // before the ack deadline of the new start
+        assertThat(rig.launcher.starts).containsExactly(FakeLockLauncher.Start(INSTA, false), FakeLockLauncher.Start(INSTA, false))
+    }
+
+    @Test fun `an ack shortly before the resume starts nothing twice`() = runTest {
+        val rig = Rig(this).also { it.begin() }
+        rig.controller.onAccessibilityEvent(INSTA, "A")
+        runCurrent()
+        LockUiBeacon.acked(INSTA)
+        runCurrent()
+        rig.controller.onAccessibilityEvent(INSTA, "B") // a late window event of the target
+        runCurrent()
+        LockUiBeacon.resumed(INSTA)
+        advanceTimeBy(5_000)
+        assertThat(rig.launcher.starts).hasSize(1)
+        assertThat(rig.controller.state).isEqualTo(GateState.LockVisible(INSTA))
+    }
+
+    @Test fun `anki sync is only sent while no lock is requested or visible`() = runTest {
+        val rig = Rig(this).also { it.begin() }
+        rig.controller.onAccessibilityEvent(INSTA, "A")
+        runCurrent()
+        assertThat(rig.controller.sendAnkiSync()).isFalse() // lock requested
+        LockUiBeacon.resumed(INSTA)
+        runCurrent()
+        assertThat(rig.controller.sendAnkiSync()).isFalse() // lock visible
+        rig.controller.onAccessibilityEvent(LAUNCHER, "L")
+        runCurrent()
+        LockUiBeacon.gone()
+        advanceTimeBy(1_000)
+        assertThat(rig.controller.sendAnkiSync()).isTrue()
+        assertThat(rig.launcher.syncs).isEqualTo(1)
+    }
+
     @Test fun `a store read error does not leave the gate without a snapshot`() = runTest {
         val rig = Rig(this, failingReads = 3).also { it.begin() }
         rig.controller.onAccessibilityEvent(INSTA, "A")

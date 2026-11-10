@@ -79,7 +79,7 @@ class LockActivity : ComponentActivity() {
         } else {
             attach(intent)
         }
-        targetPkg?.let { LockUiBeacon.resumed(it) }
+        targetPkg?.let { LockUiBeacon.acked(it) }
     }
 
     override fun onResume() {
@@ -104,7 +104,7 @@ class LockActivity : ComponentActivity() {
             return
         }
         targetPkg = pkg
-        LockUiBeacon.resumed(pkg)
+        LockUiBeacon.acked(pkg)
         engine.attach(pkg)
     }
 

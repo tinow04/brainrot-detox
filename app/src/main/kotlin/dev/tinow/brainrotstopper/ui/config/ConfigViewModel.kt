@@ -123,10 +123,12 @@ class ConfigViewModel(
         }
     }
 
+    fun setAnkiSync(on: Boolean) = save("sync") { it.copy(ankiSyncAfterUnlock = on) }
+
     private fun save(what: String, change: (Settings) -> Settings) {
         viewModelScope.launch {
             val s = settings.update(change)
-            log("set $what required=${s.requiredCorrect} minutes=${s.unlockMinutes} deck=${deckLog(s.deck)}")
+            log("set $what required=${s.requiredCorrect} minutes=${s.unlockMinutes} deck=${deckLog(s.deck)} sync=${s.ankiSyncAfterUnlock}")
         }
     }
 
@@ -155,6 +157,7 @@ class ConfigViewModel(
             ankiReason = (d as? DeckLoad.Failed)?.let { QuizEngine.errorTexts(it.error).title.substringAfter("] ") },
             missingDeck = missing,
             hints = listOf(Strings.CONFIG_HINT_NEXT, Strings.CONFIG_HINT_DECK),
+            ankiSync = s.ankiSyncAfterUnlock,
         )
     }
 

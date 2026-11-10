@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.tinow.brainrotstopper.ui.Strings
 import dev.tinow.brainrotstopper.ui.components.BsBox
+import dev.tinow.brainrotstopper.debug.debugBounds
+import dev.tinow.brainrotstopper.ui.components.BsSwitch
 import dev.tinow.brainrotstopper.ui.components.BsButton
 import dev.tinow.brainrotstopper.ui.components.BsButtonStyle
 import dev.tinow.brainrotstopper.ui.components.BsKv
@@ -53,6 +55,8 @@ data class ConfigState(
     val ankiReason: String? = null,
     val missingDeck: String? = null,
     val hints: List<String> = emptyList(),
+    /** AnkiDroid sync after a grant (M6-T7); null = box hidden (gallery). */
+    val ankiSync: Boolean? = null,
 )
 
 /** B2: settings. Everything is stateless; the host owns the values. */
@@ -66,6 +70,7 @@ fun ConfigScreen(
     onMediaToken: (String) -> Unit = {},
     onMediaTest: () -> Unit = {},
     onSetup: () -> Unit = {},
+    onAnkiSync: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val c = BsTheme.colors
@@ -129,6 +134,15 @@ fun ConfigScreen(
                         MediaCheck.Invalid -> BsText(Strings.TAG_ERROR + " " + Strings.MEDIA_INVALID, t.label, c.red)
                     }
                 }
+            }
+        }
+        state.ankiSync?.let { on ->
+            BsBox(Strings.BOX_SYNC) {
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    BsText(Strings.SYNC_LABEL, t.body, c.muted, Modifier.weight(1f))
+                    BsSwitch(on, onAnkiSync, Modifier.debugBounds(Strings.BOX_SYNC))
+                }
+                BsText(Strings.SYNC_HINT, t.label, c.dim, Modifier.padding(top = BsDims.S4))
             }
         }
         if (state.hints.isNotEmpty()) {

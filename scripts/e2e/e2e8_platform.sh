@@ -68,7 +68,11 @@ inside_bars() {
 }
 # inside_lock <shot>: the lock is immersive (both bars hidden by request), so its buttons may use the whole screen
 inside_lock() {
-  sh_ dumpsys window | grep -q 'Requested non-default-visibility types: statusBars navigationBars' || fail "$1: lock does not hide the system bars"
+  # Only `dumpsys window windows` lists the requested inset visibility per window (the full `dumpsys window` carries a
+  # short form of that section). Read first, then grep: `dumpsys | grep -q` under pipefail fails at random (SIGPIPE).
+  local w; w="$(sh_ dumpsys window windows)"
+  awk '/^  Window #/{ lock = ($0 ~ /LockActivity/) } lock && /Requested non-default-visibility types: statusBars navigationBars/{ f = 1 } END { exit !f }' <<<"$w" \
+    || fail "$1: lock does not hide the system bars"
   local h; h="$(sh_ wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | cut -dx -f2)"
   bars; local nav="$NAV_TOP" st="$STATUS_BOTTOM"
   NAV_TOP="$h"; STATUS_BOTTOM=0

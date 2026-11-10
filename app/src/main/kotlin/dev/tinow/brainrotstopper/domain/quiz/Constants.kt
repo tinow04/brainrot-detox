@@ -32,6 +32,11 @@ object Constants {
     const val LOCK_GONE_GRACE_MS = 300L
     const val STATS_RETENTION_DAYS = 400
 
+    /** AnkiDroid sync after a grant (M6-T7): at most this often; AnkiDroid itself drops intent syncs < 2 min apart. */
+    const val ANKI_SYNC_MIN_INTERVAL_MS = 10_800_000L
+    /** Wait after leaving the unlocked screen, so the target app is in front before AnkiDroid flashes up. */
+    const val ANKI_SYNC_DELAY_MS = 1_500L
+
     /** Measured in M0-S1a: `deck_count` learn also counts intraday cards that are not due yet. */
     const val LEARN_COUNT_INCLUDES_PENDING = true
 

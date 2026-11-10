@@ -52,7 +52,7 @@ class GateController(
     private val tracker: ForegroundTracker,
     private val flags: () -> DebugFlags = { NoDebugFlags },
     private val log: (String) -> Unit = {},
-) : LockUiBeacon.Listener {
+) : LockUiBeacon.Listener, AnkiSyncSender {
 
     private sealed interface Cmd {
         data class Event(val pkg: String, val cls: String?) : Cmd
@@ -61,6 +61,7 @@ class GateController(
         data object SettingsChanged : Cmd
         data object Connected : Cmd
         data class LockResumed(val pkg: String) : Cmd
+        data class LockAcked(val pkg: String) : Cmd
         data object LockGone : Cmd
     }
 
@@ -68,6 +69,7 @@ class GateController(
     private val snapshot = MutableStateFlow<GateSnapshot?>(null)
     private val protectedSets = MutableStateFlow<ProtectedSets?>(null)
 
+    @Volatile
     private var model = GateModel()
     private var timerJob: Job? = null
 
@@ -149,6 +151,10 @@ class GateController(
         commands.trySend(Cmd.LockResumed(pkg))
     }
 
+    override fun onLockAcked(pkg: String) {
+        commands.trySend(Cmd.LockAcked(pkg))
+    }
+
     override fun onLockGone() {
         lockVisiblePkg = null
         goneJob?.cancel()
@@ -157,6 +163,13 @@ class GateController(
             delay(Constants.LOCK_GONE_GRACE_MS)
             commands.trySend(Cmd.LockGone)
         }
+    }
+
+    /** Sends `DO_SYNC` only while no lock is requested or visible (a sync must never cover the lock). */
+    override fun sendAnkiSync(): Boolean {
+        val s = model.state
+        if (lockVisiblePkg != null || s is GateState.LockRequested || s is GateState.LockVisible) return false
+        return launcher.startAnkiSync()
     }
 
     /** Re-reads home launcher, input methods and dialer; call after package changes. A change re-evaluates the gate. */
@@ -198,6 +211,8 @@ class GateController(
             Cmd.SettingsChanged -> GateInput.SettingsChanged
             Cmd.Connected -> GateInput.Connected
             is Cmd.LockResumed -> GateInput.LockVisibleChanged(cmd.pkg)
+            // The start arrived (ends the ack watch), but only onResume makes the lock count as visible.
+            is Cmd.LockAcked -> if ((model.state as? GateState.LockRequested)?.pkg == cmd.pkg) GateInput.Ack else return
             Cmd.LockGone -> {
                 if (lockVisiblePkg != null) return // a new lock instance came up in the meantime
                 tracker.lockActive = false

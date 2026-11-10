@@ -91,6 +91,7 @@ class QuizEngineTest {
         val flagsImpl = flags
         val scopes = mutableListOf<CoroutineScope>()
         var imagesSeen = emptyList<String>()
+        var unlockLeft = 0
         var images: suspend (List<String>) -> Map<String, String> = { names -> imagesSeen = names; emptyMap() }
 
         fun scope() = CoroutineScope(SupervisorJob() + StandardTestDispatcher(tests.testScheduler)).also { scopes += it }
@@ -107,6 +108,7 @@ class QuizEngineTest {
             labelOf = { it.substringAfterLast('.') },
             newId = run { var n = 0; { "id-${n++}" } },
             flags = flagsImpl,
+            onUnlockLeft = { unlockLeft++ },
         )
 
         val day get() = store.stats.days[time.now().epochDay]
@@ -498,6 +500,8 @@ class QuizEngineTest {
         assertThat(r.store.rt.grants.getValue(pkg).kind).isEqualTo(GrantKind.NOTHING_DUE)
         assertThat(r.day?.freeUnlocks).isEqualTo(1)
         assertThat(r.day?.unlocks).isEqualTo(0)
+        e.openTarget(); runCurrent()
+        assertThat(r.unlockLeft).isEqualTo(1)
     }
 
     @Test fun `waiting polls every interval and stops while the screen is hidden`() = runTest {
@@ -620,6 +624,8 @@ class QuizEngineTest {
         assertThat(GrantPolicy.isValid(grant, r.time.now())).isTrue()
         assertThat(r.day?.emergencies).isEqualTo(1)
         assertThat(e.emergencyButton()).isEqualTo(EmergencyButton.Hidden)
+        e.openTarget(); runCurrent()
+        assertThat(r.unlockLeft).isEqualTo(0) // no sync after the emergency exit
     }
 
     @Test fun `retrying does not restart the emergency countdown`() = runTest {
@@ -695,6 +701,7 @@ class QuizEngineTest {
         assertThat(r.day?.aborted).isEqualTo(1)
         assertThat(r.store.rt.session?.correct).isEqualTo(2)
         assertThat(r.store.rt.episode).isNull()
+        assertThat(r.unlockLeft).isEqualTo(0)
     }
 
     @Test fun `ratings inside the guard time are dropped`() = runTest {
@@ -728,8 +735,10 @@ class QuizEngineTest {
         r.scope().launchCollect(e, commands)
         begin(e)
         good(r, e, 5)
+        assertThat(r.unlockLeft).isEqualTo(0)
         e.openTarget(); runCurrent()
         assertThat(commands).containsExactly(QuizCommand.StartTarget(pkg))
+        assertThat(r.unlockLeft).isEqualTo(1) // M6-T7: sync request
     }
 
     @Test fun `closing the unlock screen goes home without counting anything`() = runTest {
@@ -741,6 +750,7 @@ class QuizEngineTest {
         good(r, e, 5)
         e.cancel(); runCurrent()
         assertThat(commands).containsExactly(QuizCommand.GoHome)
+        assertThat(r.unlockLeft).isEqualTo(1)
         assertThat(r.day?.aborted).isEqualTo(0)
         assertThat(r.store.rt.grants).containsKey(pkg)
     }

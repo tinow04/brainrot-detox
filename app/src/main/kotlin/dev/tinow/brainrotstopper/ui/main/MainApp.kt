@@ -195,6 +195,7 @@ fun MainApp(
                                 onMediaToken = config::setMediaToken,
                                 onMediaTest = config::testMedia,
                                 onSetup = { route = ROUTE_SETUP },
+                                onAnkiSync = config::setAnkiSync,
                             )
                         }
                     }

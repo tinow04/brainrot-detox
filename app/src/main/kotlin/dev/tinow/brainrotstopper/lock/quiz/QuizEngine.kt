@@ -105,6 +105,8 @@ class QuizEngine(
     private val flags: DebugFlags = NoDebugFlags,
     private val ctx: QuizCtx = QuizCtx(),
     private val log: (String) -> Unit = {},
+    /** The unlocked screen of a quiz or nothing-due grant was left (target opened or closed); M6-T7 sync hook. */
+    private val onUnlockLeft: () -> Unit = {},
 ) {
     private val monitor = Any()
     private var state = QuizState()
@@ -267,9 +269,21 @@ class QuizEngine(
             }
             QuizEffect.DiscardPending -> scope.launch { runCatching { runtime.update { RuntimeOps.discardPending(it) } } }
             QuizEffect.CancelEpisode -> scope.launch { runCatching { runtime.apply(time.now()) { RuntimeOps.cancel(it) } } }
-            QuizEffect.GoHomeAndFinish -> _commands.trySend(QuizCommand.GoHome)
-            is QuizEffect.StartTarget -> _commands.trySend(QuizCommand.StartTarget(effect.pkg))
+            QuizEffect.GoHomeAndFinish -> {
+                unlockLeft()
+                _commands.trySend(QuizCommand.GoHome)
+            }
+            is QuizEffect.StartTarget -> {
+                unlockLeft()
+                _commands.trySend(QuizCommand.StartTarget(effect.pkg))
+            }
         }
+    }
+
+    /** Only after a real quiz or nothing-due grant; the emergency exit means AnkiDroid has a problem anyway. */
+    private fun unlockLeft() {
+        val kind = synchronized(monitor) { state.unlockKind }
+        if (kind == GrantKind.QUIZ || kind == GrantKind.NOTHING_DUE) runCatching(onUnlockLeft)
     }
 
     // -- loading the next card

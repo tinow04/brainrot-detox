@@ -34,6 +34,7 @@ class QuizViewModel(app: BrainrotApp) : ViewModel() {
             },
             flags = c.debugFlags,
             log = { AppLog.i("BS/Quiz", it) },
+            onUnlockLeft = { c.ankiSync.request() },
         )
     }
 

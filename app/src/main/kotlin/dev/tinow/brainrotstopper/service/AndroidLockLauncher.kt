@@ -1,6 +1,7 @@
 package dev.tinow.brainrotstopper.service
 
 import android.accessibilityservice.AccessibilityService
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.SystemClock
 import dev.tinow.brainrotstopper.data.system.AppLog
@@ -22,5 +23,23 @@ class AndroidLockLauncher(private val service: AccessibilityService) : LockLaunc
 
     override fun goHome() {
         service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
+    }
+
+    /**
+     * From the service context like the lock itself: the app may be in the background by now (the lock closed). AnkiDroid
+     * comes up for a moment and closes its deck list again (research.md E1, measured in M6-T7).
+     */
+    override fun startAnkiSync(): Boolean = try {
+        service.startActivity(Intent(ANKI_SYNC_ACTION).setPackage(ANKIDROID).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        true
+    } catch (e: ActivityNotFoundException) {
+        false
+    } catch (e: SecurityException) {
+        false
+    }
+
+    private companion object {
+        const val ANKI_SYNC_ACTION = "com.ichi2.anki.DO_SYNC"
+        const val ANKIDROID = "com.ichi2.anki"
     }
 }

@@ -140,6 +140,7 @@ class DebugControlReceiver : BroadcastReceiver() {
             put("session", rt.session?.let { BsJson.encodeToJsonElement(dev.tinow.brainrotstopper.domain.model.QuizSession.serializer(), it) } ?: JsonNull)
             put("episode", rt.episode?.let { BsJson.encodeToJsonElement(dev.tinow.brainrotstopper.domain.model.Episode.serializer(), it) } ?: JsonNull)
             put("emergency", rt.emergency?.let { BsJson.encodeToJsonElement(dev.tinow.brainrotstopper.domain.model.EmergencyState.serializer(), it) } ?: JsonNull)
+            put("ankiSync", rt.ankiSync?.let { BsJson.encodeToJsonElement(dev.tinow.brainrotstopper.domain.model.SyncStamp.serializer(), it) } ?: JsonNull)
             put("diag", BsJson.encodeToJsonElement(dev.tinow.brainrotstopper.domain.model.Diag.serializer(), rt.diag))
             put("statsDays", stats.days.size)
             put("statsToday", stats.days[now.epochDay]?.let { BsJson.encodeToJsonElement(dev.tinow.brainrotstopper.domain.model.DayStats.serializer(), it) } ?: JsonNull)

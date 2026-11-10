@@ -18,6 +18,15 @@ class FakeLockLauncher : LockLauncher {
     override fun goHome() {
         homeCount++
     }
+
+    var syncs = 0
+        private set
+    var syncResult = true
+
+    override fun startAnkiSync(): Boolean {
+        syncs++
+        return syncResult
+    }
 }
 
 class FakeDiagSink : GateDiagSink {
