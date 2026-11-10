@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M5-T1: Apps-Tab B1)
+- M4-T7 committet und alles gepusht (`origin/main` = `3349979`). Neu: `data/system/PackageCatalog`, `ui/apps/AppsModel` + `AppsViewModel`, B1 in `MainApp` verdrahtet, `AppsModelTest`, `PackageCatalogTest`, `scripts/e2e/e2e_apps.sh` (7 Pruefungen, Belege `design/screenshots/m5-t1/`). 390 JVM-, 67 instrumentierte Tests, `check.sh` gruen (B1 SSIM 0,937). Fund: `am instrument` und `check.sh` hinterlassen den Bedienungshilfe-Dienst als crashed bzw. aus (gotchas.md). Naechster Schritt: M5-T2 (ConfigScreen B2). T1 nicht committet.
+
 ## 2026-11-09 (M4-T7: Contract-Test und E2E-2, M4 abgeschlossen)
 - T6 committet (`b1cc46b`, `8e090db`, nicht gepusht). Neu: `scripts/e2e/e2e2_quiz.sh` (13 Pruefungen gegen echtes AnkiDroid, Belege `design/screenshots/e2e2/`), `.agents/anki-api.md`, Phasen-Log der Engine, Fehlertext NotInstalledOrApiOff mit Speicherzugriff. `AnkiSourceContractTest` 3/3 gruen, revlog +7 mit passenden Eases, 384 JVM-Tests gruen. Emulator wurde einmal vom Kernel per OOM beendet (Rechner voll) und neu gestartet; `pkill -f` mit einem Muster im eigenen Befehl beendet die eigene Shell (Exit 144). Naechster Schritt: M5. T7 nicht committet.
 

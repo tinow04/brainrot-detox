@@ -212,6 +212,22 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-10 – Eigener Server nur fuer Bilder, Karten weiter ueber AnkiDroid
+
+**Entscheidung:** Der eigene Anki-Sync-Server bleibt nur Bildquelle. Karten, Scheduling und Antworten laufen weiter ueber die AnkiDroid-API. Gegen veraltete Staende: Auto-Sync in AnkiDroid empfehlen (Setup-Hinweis), optional `DO_SYNC` nach Freigabe (M6-T7).
+
+**Warum:** Der Sync-Server hat keine Karten-API (kein "naechste Karte"/"beantworten"), nur das Sammlungs-Sync-Protokoll. Direkt damit zu arbeiten hiesse: Sync-Protokoll nachbauen, eigene Sammlungskopie, eigenes Scheduling (FSRS/SM-2) und damit einen zweiten Lernstand auf dem Handy neben AnkiDroid (Konflikte, Komplett-Sync). Ausserdem muss die Sperre offline und ohne Netzlatenz funktionieren. Bilder kommen nur deshalb vom Server, weil die AnkiDroid-API keine Medien herausgibt.
+
+**Verworfen:** App als eigener Sync-Client des Servers (Aufwand, zweiter Lernstand, offline kaputt bzw. per Flugmodus umgehbar).
+
+## 2026-11-10 – Apps-Tab B1 (M5-T1)
+
+**Entscheidung:** (1) `keine treffer` erscheint nur einmal (unter `alle apps`) und nur, wenn die Suche in beiden Abschnitten nichts findet; unter einem leeren `gesperrt · 0` steht bei aktiver Suche nichts. (2) Kein QUERY_ALL_PACKAGES: der MAIN/LAUNCHER-`<queries>`-Eintrag reicht (`PackageCatalogTest`). (3) Ein gesperrtes Paket ohne Launcher-Eintrag (deinstalliert oder nicht sichtbar) zeigt den Paketnamen als Label. (4) Protected-Pakete werden auch dann nicht gelistet, wenn sie in `blockedPackages` stehen. (5) Der Katalog wird bei jedem Resume des Apps-Tabs neu gelesen, kein Package-Broadcast-Receiver in der UI.
+
+**Warum:** (1) Vorher stand bei einer Suche `keine treffer` unter `gesperrt · 0`, obwohl darunter Treffer kamen; der Mockup zeigt keinen Suchzustand. (3) Ein zusaetzlicher Label-Lookup ueber `getApplicationInfo` scheitert an der Paketsichtbarkeit fuer genau diese Pakete. (4) Der Gate sperrt sie nie, ein Schalter waere wirkungslos. (5) Installationen passieren ausserhalb der App; Resume deckt das ab und ist einfacher.
+
+**Verworfen:** QUERY_ALL_PACKAGES (Play-Policy-relevant, nicht noetig); `keine treffer` je Abschnitt (verwirrend).
+
 ## 2026-11-09 – E2E-2 und AnkiDroid-Fehlertext (M4-T7)
 
 **Entscheidung:** (1) Der Sperr-Fehlertext fuer `NotInstalledOrApiOff` nennt alle drei gemessenen Ursachen ("nicht installiert, api aus oder kein speicherzugriff."); es gibt dafuer keinen eigenen Fehlertyp. Die genaue Ursache zeigt das Setup (`ApiOff` vs. `NoData`). (2) Die Engine loggt jede Phase (`BS/Quiz phase ...`, mit Fehlerart, ohne Karteninhalt); E2E-Skripte warten auf diese Zeile statt auf feste Pausen. (3) E2E-2 seedet nur, wenn im Default-Deck weniger als 10 Karten faellig sind, und veraendert den Lernstand der Emulator-Sammlung bewusst (Revlog-Beweis).
