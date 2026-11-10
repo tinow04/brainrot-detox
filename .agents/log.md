@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M6-T2: Dienststatus und Selbstsabotage)
+- M6-T1 committet und gepusht (`3dceb06`, `4fc069a`). Neu `scripts/e2e/e2e5_service_status.sh` (9 Pruefungen, gruen). Fixes: Korruptions-Banner wird per Tipp quittiert (Flag wurde nie geloescht), Setup-Hinweise Advanced Protection und System-Erinnerung. Echter Zustand "aktiviert, aber nicht gebunden" reproduzierbar (Komponente aus/an). Naechster Schritt: M6-T3 (Umgehungsmatrix).
+
 ## 2026-11-10 (M6-T1: Neustart und Prozess-Tod)
 - M5-T5 committet und gepusht (`a0ef9b1`, `fd9cf9d`). Neues `scripts/e2e/e2e4_restart.sh` (14 Pruefungen, echte AnkiDroid, inkl. Reboot und pm clear), zweimal gruen. Befunde: ActivityManager-Restart-Backoff 1/4/16/64 s; Neu-Aktivieren liefert nur manchmal (3/6) ein Ereignis fuer die offene App; pm clear schaltet alles ab. Als Restrisiken in decisions.md, Matrix in gotchas.md. Keine Code-Aenderung noetig. Zwischendurch wurde der Emulator vom cgroup-Limit (7 GB) per OOM beendet (nach ca. 2 h mit Reboots, gotchas.md), Neustart, danach zwei gruene Laeufe in Folge. Naechster Schritt: M6-T2 (Dienststatus und Selbstsabotage).
 

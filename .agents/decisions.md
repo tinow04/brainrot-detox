@@ -212,6 +212,14 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-10 – Banner "einstellungen beschädigt" wird per Tipp quittiert (M6-T2)
+
+**Entscheidung:** Ein Tipp auf das Banner `[ FEHLER ] einstellungen beschädigt - blockliste prüfen` oeffnet den Tab apps (die Blockliste) und loescht `diag.settingsCorrupted`. Alle anderen Banner fuehren weiter zum Setup. Dazu zwei Setup-Hinweise: Advanced Protection (nur solange der Dienst nicht aktiv ist, Wortlaut "kann", da unverifiziert) und die System-Erinnerung an die Bedienungshilfe (immer, mit "die app sieht nur, welche app vorne ist").
+
+**Warum:** Das Flag wurde bisher nie zurueckgesetzt; das rote Banner waere nach einer einzigen Korruption fuer immer geblieben und haette echte Schutz-Banner (die Vorrang haben) nach deren Behebung wieder verdeckt. Der Bannertext fordert genau das Pruefen der Blockliste, also quittiert dieser Schritt.
+
+**Verworfen:** Automatisch quittieren beim naechsten Schreiben der Settings (Nutzer sieht die Meldung evtl. nie); Quittieren beim Oeffnen des Tabs apps ohne Tipp (Start-Tab ist apps, das Banner waere sofort weg).
+
 ## 2026-11-10 – Restrisiken aus M6-T1 akzeptiert (keine Code-Aenderung)
 
 **Entscheidung:** (1) Der Restart-Backoff des ActivityManagers (1/4/16/64 s nach wiederholten Abstuerzen) bleibt ohne Gegenmassnahme; Gegenmittel ist, Abstuerze zu vermeiden (Handler fangen Exceptions, `Diag.errorCount`). (2) `pm clear` bzw. "Speicher loeschen" in den Einstellungen schaltet den Schutz komplett ab (Dienst deaktiviert, Blockliste leer); das gilt als bewusste Selbstsabotage wie Deinstallieren und wird nicht abgefangen. (3) Neu-Aktivieren des Dienstes bei bereits offener gesperrter App sperrt nicht verlaesslich sofort (3 von 6 Versuchen erst beim naechsten Fensterwechsel) (bekannte Luecke, `canRetrieveWindowContent` bleibt false).
