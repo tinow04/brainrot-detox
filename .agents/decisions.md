@@ -212,6 +212,12 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-10 – Statistik-Tab B3 (M5-T3)
+
+**Entscheidung:** (1) Die Galerie-Ansicht b3 (Mockup-Abgleich) entsteht ueber denselben Weg wie der echte Tab (Seed -> StatsAggregator -> StatsModel) statt aus handgeschriebenen Werten. (2) Balkenhoehen kommen aus dem Aggregator (`ChartBar.heightDp`, 2 dp fuer 0); ohne Angabe rechnet die Komponente wie bisher. (3) Leeres Ranking zeigt `noch nichts gesperrt`. (4) "Heute" wird bei jedem Resume des Tabs neu bestimmt, nicht per Timer.
+
+**Warum:** (1) So prueft der SSIM-Abgleich die Abbildung mit; der Test hat sofort einen Fehler im Seed gefunden. (2) Eine Quelle fuer die Regel aus architecture.md 4. (3) Eine leere Box sah wie ein Ladefehler aus. (4) Der Tab ist um Mitternacht selten offen; Resume reicht.
+
 ## 2026-11-10 – Einstellungs-Tab B2 (M5-T2)
 
 **Entscheidung:** (1) `$ ./test` prueft auch das Token: nach `GET /healthz` (ohne Token) ein GET auf eine nie vorhandene Datei mit Token; 404 = Token ok, 401/403 = abgelehnt. (2) URL/Token werden 400 ms nach dem letzten Tastendruck gespeichert (kein Speichern-Button); Logs nennen nur `set`/`empty`. (3) Stepper, Dauer und Deck werden sofort gespeichert und gelten ab der naechsten NEUEN Session (die laufende behaelt ihre eingefrorenen Werte, wie bisher); ein Hinweis steht am Ende des Screens. (4) Ist das gewaehlte Deck nicht mehr in der Liste, bleibt die Einstellung stehen (kein stilles Umschalten auf `alle decks`), Config zeigt es rot, die Sperre meldet DeckMissing. (5) Die Box `bilder` ist immer sichtbar (unterhalb des Mockup-Bereichs).

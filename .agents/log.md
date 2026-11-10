@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M5-T3: Statistik-Tab B3)
+- M5-T2 committet und alles gepusht (`origin/main` = `f91b151`). Neu: `ui/stats/StatsModel` + `StatsViewModel`, `debug/seed/StatsSeedScreen` (Galerie b3 ueber den echten Weg), Seed-Tabelle korrigiert, Route `stats`, `scripts/e2e/e2e_stats.sh` (4 Pruefungen, Belege `design/screenshots/m5-t3/`). 406 JVM-, 67 instrumentierte Tests, `check.sh` gruen (b3 SSIM unveraendert 0,937). Naechster Schritt: M5-T4 (Freigabe- und Session-E2E). T3 nicht committet.
+
 ## 2026-11-10 (M5-T2: Einstellungs-Tab B2)
 - M5-T1 committet (`0c79fbc`, `b41e63d`, nicht gepusht); M6-T7 (optional `DO_SYNC`) und Entscheidung "Server nur fuer Bilder" eingetragen; `emu-start.sh --window` fuer manuelles Testen. Neu: `ui/config/ConfigModel` + `ConfigViewModel`, `data/media/MediaHealthCheck`, Route `config`, Sperrfehler DeckMissing oeffnet Config, `SET_MEDIA ... off`, `scripts/e2e/e2e_config.sh` (13 Pruefungen, Belege `design/screenshots/m5-t2/`). 403 JVM-, 67 instrumentierte Tests, `check.sh` gruen. Naechster Schritt: M5-T3 (StatsScreen B3). T2 nicht committet.
 
