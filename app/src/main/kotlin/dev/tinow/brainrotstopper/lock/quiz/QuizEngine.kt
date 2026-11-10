@@ -144,6 +144,7 @@ class QuizEngine(
     fun rate(ease: Ease) = dispatch(QuizEvent.Rate(ease, now()))
     fun next() = dispatch(QuizEvent.Continue)
     fun cancel() = dispatch(QuizEvent.Cancel)
+    fun cancelTap() = dispatch(QuizEvent.CancelTap(now()))
     fun openTarget() = dispatch(QuizEvent.OpenTarget)
     fun retry() = dispatch(QuizEvent.Retry(now()))
     fun emergency() = dispatch(QuizEvent.Emergency(now()))

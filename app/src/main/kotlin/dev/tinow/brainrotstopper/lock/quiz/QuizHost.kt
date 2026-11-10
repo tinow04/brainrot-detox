@@ -53,7 +53,7 @@ fun QuizHost(view: QuizView, actions: QuizActions, onErrorTarget: (ErrorTarget) 
         Phase.Question -> view.card?.let { card ->
             val style = rememberCardStyle()
             val doc = remember(card, style) { CardHtml.build(card.rendered, CardSide.Question, card.ref.ord, style, card.images) }
-            QuestionScreen(head, q.answered + 1, actions.reveal, actions.cancel) { CardView(doc) }
+            QuestionScreen(head, q.answered + 1, actions.reveal, actions.cancelTap ?: actions.cancel) { CardView(doc) }
         } ?: Blank()
         // While the rating is stored the answer stays on screen (the reducer ignores further taps); recovery has no card.
         Phase.Answer, Phase.SubmitPending -> view.card?.let { card ->
@@ -131,10 +131,12 @@ class QuizActions(
     val retry: () -> Unit,
     val emergency: () -> Unit,
     val emergencyButton: () -> EmergencyButton = { EmergencyButton.Hidden },
+    /** [abbrechen] on the card screen (guarded against the second tap of a double tap); falls back to [cancel]. */
+    val cancelTap: (() -> Unit)? = null,
 ) {
     companion object {
         fun forEngine(e: QuizEngine) =
-            QuizActions(e::start, e::reveal, e::rate, e::next, e::cancel, e::openTarget, e::retry, e::emergency, e::emergencyButton)
+            QuizActions(e::start, e::reveal, e::rate, e::next, e::cancel, e::openTarget, e::retry, e::emergency, e::emergencyButton, e::cancelTap)
     }
 }
 

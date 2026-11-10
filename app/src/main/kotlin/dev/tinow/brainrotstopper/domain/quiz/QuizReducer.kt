@@ -46,6 +46,11 @@ sealed interface QuizEvent {
     data class AnswerFailed(val seq: Int, val error: AnkiError, val now: Long) : QuizEvent
     data object Continue : QuizEvent
     data object Cancel : QuizEvent
+    /**
+     * The [abbrechen] button of the card screen. Inside RATE_GUARD_MS after the card appeared it is ignored: the second
+     * tap of a double tap on a rating lands exactly there (M6-T3). Back and the gesture stay [Cancel].
+     */
+    data class CancelTap(val now: Long) : QuizEvent
     data object OpenTarget : QuizEvent
     data class Retry(val now: Long) : QuizEvent
     data class Emergency(val now: Long) : QuizEvent
@@ -84,6 +89,7 @@ object QuizReducer {
             if (e.seq == s.seq && s.phase == Phase.SubmitPending) s.copy(phase = Phase.Error, error = e.error, errorSince = s.errorSince ?: e.now).none() else s.none()
         QuizEvent.Continue -> if (s.phase == Phase.Feedback) load(s) else s.none()
         QuizEvent.Cancel -> cancel(s)
+        is QuizEvent.CancelTap -> if (s.phase == Phase.Question && e.now - s.shownAt < Constants.RATE_GUARD_MS) s.none() else cancel(s)
         QuizEvent.OpenTarget -> if (s.phase == Phase.Unlocked && s.target != null) s.copy(phase = Phase.Closed, seq = s.seq + 1).with(QuizEffect.StartTarget(s.target)) else s.none()
         is QuizEvent.Retry -> retry(s)
         is QuizEvent.Emergency -> emergency(s, e, ctx)

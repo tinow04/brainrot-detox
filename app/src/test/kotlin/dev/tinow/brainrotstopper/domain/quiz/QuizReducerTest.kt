@@ -169,6 +169,23 @@ class QuizReducerTest {
         assertThat(q.count<QuizEffect.SubmitAnswer>()).isEqualTo(0)
     }
 
+    @Test fun cancelTapInsideRateGuardOfANewCardIsDropped() {
+        // the second tap of a double tap on [3] gut lands on [abbrechen] of the next card (M6-T3)
+        val q = Quiz(); q.toQuestion(); q.advance(Constants.RATE_GUARD_MS - 1)
+        q.send(QuizEvent.CancelTap(q.t))
+        assertThat(q.phase).isEqualTo(Phase.Question)
+        assertThat(q.count<QuizEffect.GoHomeAndFinish>()).isEqualTo(0)
+        q.advance(1); q.send(QuizEvent.CancelTap(q.t))
+        assertThat(q.phase).isEqualTo(Phase.Closed)
+        assertThat(q.count<QuizEffect.CancelEpisode>()).isEqualTo(1)
+    }
+
+    @Test fun backCancelIsNeverGuarded() {
+        val q = Quiz(); q.toQuestion()
+        q.send(QuizEvent.Cancel)
+        assertThat(q.phase).isEqualTo(Phase.Closed)
+    }
+
     @Test fun rateOutsideAnswerPhaseDoesNothing() {
         val q = Quiz(); q.toQuestion(); q.advance(5_000)
         q.send(QuizEvent.Rate(Ease.GOOD, q.t))
