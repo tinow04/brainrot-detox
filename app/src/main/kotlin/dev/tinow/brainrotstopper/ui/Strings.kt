@@ -233,6 +233,8 @@ object Strings {
     const val SETUP_HINT_RESTRICTED = "tipp: lässt sich die bedienungshilfe nicht einschalten, in der app-info über ⋮ eingeschränkte einstellungen zulassen."
     const val SETUP_HINT_RESTART = "hinweis: nach einem neustart des dienstes wird eine schon offene gesperrte app erst beim nächsten fensterwechsel gesperrt."
     const val SETUP_HINT_AUTOSYNC = "tipp: auto-sync in ankidroid einschalten."
+    const val SETUP_HINT_WARNING = "hinweis: android erinnert nach dem einschalten per benachrichtigung an die bedienungshilfe. die app sieht nur, welche app vorne ist, keine inhalte."
+    const val SETUP_HINT_ADVANCED = "hinweis: mit dem erweiterten schutz von android (advanced protection) kann die bedienungshilfe gesperrt sein. dann sperrt die app nichts."
     const val BTN_ALLOW = "\$ ./zugriff erlauben"
     const val BTN_APP_INFO = "\$ ./app-info"
     const val BTN_ACCESSIBILITY = "\$ ./bedienungshilfe"

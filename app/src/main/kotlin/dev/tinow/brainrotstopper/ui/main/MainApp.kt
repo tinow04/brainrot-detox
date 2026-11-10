@@ -158,7 +158,18 @@ fun MainApp(
                 }
                 onPauseOrDispose { }
             }
-            MainScaffold(tab, { route = it.name }, banner, { route = ROUTE_SETUP }) {
+            // "einstellungen beschädigt - blockliste prüfen": the tap opens the block list and acknowledges the message
+            // (the flag would stay forever otherwise); every other banner leads to the setup.
+            val onBanner: () -> Unit = {
+                if (banner == BannerState.SettingsCorrupt) {
+                    route = MainTab.Apps.name
+                    scope.launch { container.runtime.clearSettingsCorrupted() }
+                    AppLog.i("BS/Setup", "banner corrupt acknowledged")
+                } else {
+                    route = ROUTE_SETUP
+                }
+            }
+            MainScaffold(tab, { route = it.name }, banner, onBanner) {
                 when (tab) {
                     MainTab.Apps -> {
                         val ui by apps.ui.collectAsStateWithLifecycle()

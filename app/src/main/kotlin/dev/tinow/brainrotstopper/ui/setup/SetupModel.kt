@@ -31,7 +31,11 @@ object SetupModel {
     }
 
     fun hints(p: PermissionSnapshot): List<String> = buildList {
-        if (Protection.status(p) != ProtectionStatus.Active) add(Strings.SETUP_HINT_RESTRICTED)
+        if (Protection.status(p) != ProtectionStatus.Active) {
+            add(Strings.SETUP_HINT_RESTRICTED)
+            add(Strings.SETUP_HINT_ADVANCED)
+        }
+        add(Strings.SETUP_HINT_WARNING)
         add(Strings.SETUP_HINT_RESTART)
         add(Strings.SETUP_HINT_AUTOSYNC)
     }

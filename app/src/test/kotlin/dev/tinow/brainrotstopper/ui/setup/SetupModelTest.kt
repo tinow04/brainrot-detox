@@ -84,6 +84,14 @@ class SetupModelTest {
         assertThat(items(all.copy(batteryUnrestricted = false))[4].action).isEqualTo(SetupAction.Battery)
     }
 
+    @Test fun `hints name the system warning always and advanced protection while the service is not active`() {
+        assertThat(SetupModel.hints(all)).containsExactly(Strings.SETUP_HINT_WARNING, Strings.SETUP_HINT_RESTART, Strings.SETUP_HINT_AUTOSYNC).inOrder()
+        val off = SetupModel.hints(all.copy(a11yEnabled = false, a11yBound = false))
+        assertThat(off).containsAtLeast(Strings.SETUP_HINT_RESTRICTED, Strings.SETUP_HINT_ADVANCED, Strings.SETUP_HINT_WARNING).inOrder()
+        assertThat(SetupModel.hints(all.copy(a11yBound = false))).contains(Strings.SETUP_HINT_ADVANCED)
+        assertThat(Strings.SETUP_HINT_ADVANCED).contains("advanced protection")
+    }
+
     @Test fun `every action has a button text`() {
         SetupAction.entries.forEach { assertThat(SetupModel.label(it)).startsWith("\$ ./") }
     }
