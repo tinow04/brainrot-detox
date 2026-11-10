@@ -31,6 +31,8 @@ class AnkiContentProviderSource(
     private val capabilities: AnkiCapabilities = AnkiCapabilities(),
     private val firstTimeoutMs: Long = Constants.ANKI_FIRST_TIMEOUT_MS,
     private val timeoutMs: Long = Constants.ANKI_TIMEOUT_MS,
+    /** Failed calls (exception class and mapped error, never card content); production logs to `BS/Anki`. */
+    private val log: (String) -> Unit = {},
 ) : CardSource {
     private val mutex = Mutex()
     private var warm = false
@@ -43,11 +45,12 @@ class AnkiContentProviderSource(
         try {
             withTimeout(limit) { block() }.also { warm = true }
         } catch (e: TimeoutCancellationException) {
+            log("call timed out after $limit ms")
             AnkiResult.Err(AnkiError.Unreachable)
         } catch (e: CancellationException) {
             throw e
         } catch (t: Throwable) {
-            AnkiResult.Err(AnkiErrorMapper.map(t))
+            AnkiResult.Err(AnkiErrorMapper.map(t)).also { log("call failed: ${t.javaClass.simpleName} -> ${it.error}") }
         }
     }
 

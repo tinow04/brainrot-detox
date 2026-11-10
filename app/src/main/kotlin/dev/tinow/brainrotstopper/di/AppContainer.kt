@@ -70,7 +70,7 @@ class AppContainer(val app: Application) {
     var fakeCardSource: ((String) -> CardSource)? = null
 
     private val realCardSource: CardSource by lazy {
-        AnkiContentProviderSource(DelayingGateway(AndroidProviderGateway(app)) { debugFlags.gatewayDelayMs(it) }, AnkiCapabilities())
+        AnkiContentProviderSource(DelayingGateway(AndroidProviderGateway(app)) { debugFlags.gatewayDelayMs(it) }, AnkiCapabilities(), log = { AppLog.w("BS/Anki", it) })
     }
 
     /** The card source for a new lock screen; read per lock so that `SET_SOURCE` takes effect without a restart. */
