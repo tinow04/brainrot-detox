@@ -175,7 +175,7 @@ Recovery (Attach mit pending != null): mit answerVerify: reps pruefen -> angewen
 
 ## 5. AnkiDroid-Integration
 
-`CardSource` (Domain-Interface): `probe()`, `listDecks()`, `deckCounts(deckId)`, `nextCard(sel)`, `render(ref)`, `cardProgress(ref)` (nur bei answerVerify), `answer(ref, ease, takenMs)`. Alle `suspend`, `withContext(Dispatchers.IO)`, serialisiert ueber ein `Mutex` (die schedule-Abfrage mit deckID hat den Nebeneffekt Deck kurz auswaehlen, bei Exception nicht zurueckgesetzt), mit CancellationSignal und Timeout (ANKI_FIRST_TIMEOUT_MS beim ersten Aufruf, sonst ANKI_TIMEOUT_MS). Keine Abfrageschleifen. Zugriff auf AnkiDroid erfolgt nur nach [start] oder aus der Haupt-App (Setup/Config), nie im Intro.
+`CardSource` (Domain-Interface): `probe()`, `listDecks()`, `deckCounts(deckId)`, `nextCard(sel)`, `render(ref)`, `cardProgress(ref)` (nur bei answerVerify), `answer(ref, ease, takenMs)`. Alle `suspend`, `withContext(Dispatchers.IO)`, serialisiert ueber ein `Mutex` (die schedule-Abfrage mit deckID hat den Nebeneffekt Deck kurz auswaehlen, bei Exception nicht zurueckgesetzt), mit CancellationSignal und Timeout (ANKI_FIRST_TIMEOUT_MS beim ersten Aufruf, sonst ANKI_TIMEOUT_MS). Der blockierende Binder-Aufruf laeuft losgeloest vom Aufrufer (`AndroidProviderGateway.awaitDetached`), sonst wirkt der Timeout bei haengendem AnkiDroid nicht (M6-T4). Keine Abfrageschleifen. Zugriff auf AnkiDroid erfolgt nur nach [start] oder aus der Haupt-App (Setup/Config), nie im Intro.
 
 Konstanten (Quelle: FlashCardsContract.kt @ Tag v2.25.3, Kopfzeile/Lizenz vor Uebernahme lesen, nichts 1:1 kopieren; Ease.kt und AddContentApi.kt NICHT kopieren): Authority `com.ichi2.anki.flashcards`, Permission `com.ichi2.anki.permission.READ_WRITE_DATABASE`, Pfade decks, decks/<id>, schedule, notes/<nid>/cards/<ord>; Spalten decks: deck_id, deck_name, deck_count (JSON [learn, review, new]), options, deck_dyn, deck_desc; schedule (Query selection `limit=?, deckID=?`, limit=1): note_id, ord, button_count, next_review_times, media_files; schedule (Update): note_id, ord, answer_ease, time_taken. Spalten fuer Frage/Antwort, Modell-CSS und reps legt Spike S1a fest (Datei+Zeile im KDoc). Ease: AGAIN=1, HARD=2, GOOD=3, EASY=4, counts = value>=3.
 
@@ -282,7 +282,8 @@ Aufruf: `adb shell am broadcast -n dev.tinow.brainrotstopper/.debug.DebugControl
 | GRANT_NOW | pkg, minutes (Default Einstellung) | Grant kind=QUIZ schreiben |
 | RESET | what = all, grants, session, stats, settings | Zustand zuruecksetzen |
 | DUMP_STATE | - | loggt eine Zeile `BSState {json}` (now-Snapshot, Blockliste, Grants inkl. remainingMs, Session, Episode, Diag, Flags) |
-| SET_SOURCE | source = fake, real; scenario | CardSource umschalten; Fake-Szenario (normal, poison_card, counts_unreadable, timeout, empty, waiting, api_off) |
+| SET_DECK | id = Deck-Id oder all; name (Snapshot) | Deckauswahl setzen, auch ein nicht existierendes Deck (DeckMissing, M6-T4) |
+| SET_SOURCE | source = fake, real; scenario | CardSource umschalten; Fake-Szenario (normal, empty, waiting, error-permission, error-notinstalled, error-storage, error-unreachable, error-deck, error-bad, answer-lost, no-intervals, poison_card, counts_unreadable; Timeout und API aus werden am echten AnkiDroid erzeugt, M6-T4) |
 | SET_SHORT_DURATION | seconds | ueberschreibt Freigabedauer (Debug) |
 | SET_TTL_MS | ms | ueberschreibt SESSION_TTL_MS |
 | SIMULATE_LAUNCH_BLOCK | on | LockLauncher startet nicht (Test Watchdog -> HOME) |

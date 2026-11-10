@@ -212,6 +212,14 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-10 – Provider-Aufrufe losgeloest, Renderer-Absturz faellt auf Klartext (M6-T4)
+
+**Entscheidung:** (1) `AndroidProviderGateway` fuehrt jeden `query`/`update` in einem eigenen Scope (`SupervisorJob` + IO) aus und wartet nur darauf; wird der Aufrufer abgebrochen (Timeout der Quelle), kehrt er sofort zurueck, ruft `CancellationSignal.cancel()` und verwirft das spaete Ergebnis. (2) `onRenderProcessGone` wird behandelt (`true`), die WebView gilt fuer den Rest des Prozesses als kaputt, alle Karten kommen als Klartext und bleiben bewertbar. (3) Fehlgeschlagene Provider-Aufrufe werden mit Exception-Klasse und Ergebnis geloggt (`BS/Anki`, keine Karteninhalte).
+
+**Warum:** (1) Ein haengendes AnkiDroid hielt die Ladeanzeige ohne Fehlerscreen und damit ohne Notausgang fest; der Timeout war wirkungslos (gotchas.md M6-T4). Ein spaet doch angewendetes `update` deckt die Write-ahead-Pipeline ab (Verify ueber `reps`, wie "angewendet, aber Fehler gemeldet"). (2) Ohne Behandlung beendet Android den App-Prozess und damit den Bedienungshilfe-Dienst; eine einzige kaputte Karte waere ein Umgehungsweg. Ein Renderer, der einmal stirbt, wird nicht erneut versucht (einfach, Klartext ist der vorgesehene Fallback).
+
+**Verworfen:** Thread per `interrupt()` abbrechen (Binder-Aufrufe reagieren nicht darauf); WebView nur fuer die eine Karte abschalten (Giftkarte koennte den Renderer bei jeder Wiederholung erneut toeten, mehr Zustand fuer einen seltenen Fall).
+
 ## 2026-11-10 – Doppeltipp-Schutz fuer [abbrechen] auf der Frage (M6-T3)
 
 **Entscheidung:** Ein Tipp auf `abbrechen` im Frage-Screen kommt als eigenes Ereignis `QuizEvent.CancelTap(now)` und wird verworfen, solange die Karte kuerzer als `RATE_GUARD_MS` (600 ms) sichtbar ist. Die Zurueck-Taste/-Geste (`Cancel`) bleibt ungeschuetzt und bricht immer ab. Tests: `QuizReducerTest.cancelTapInsideRateGuardOfANewCardIsDropped`, `backCancelIsNeverGuarded`.

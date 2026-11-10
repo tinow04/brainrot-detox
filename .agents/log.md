@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M6-T4: Fehlerfall-Matrix)
+- M6-T3 committet und gepusht (`3465f56`, `4235ddf`, `5c5d23b`); PiP-Entscheidung offen (Standard: akzeptieren). Neu `scripts/e2e/e2e7_errors.sh` (16 Pruefungen, viermal gruen) und `.agents/test-checklist.md`: 15 Fehlerfaelle, 11 davon gegen echtes AnkiDroid (inkl. Deinstallation, frische Installation per `pm clear` mit Sicherung, SIGSTOP). Zwei echte Fehler behoben: Timeout griff bei haengendem AnkiDroid nicht, Renderer-Absturz haette den Dienst beendet. Regression: `check.sh`, e2e2 (echte Antworten ueber den neuen Gateway-Pfad) und e2e_config gruen; dafuer `anki-due.sh` (Neukarten-Limit des Tages erreicht) und Deck-Auswahl nach Namen in e2e_config. Naechster Schritt: M6-T5 (Plattform-Details und Zeit).
+
 ## 2026-11-10 (M6-T3: Umgehungsmatrix)
 - M6-T2 committet und gepusht (`d268f26`, `5ab6d7b`). Neu `scripts/e2e/e2e6_bypass.sh` (15 Pruefungen, gruen, Belege `design/screenshots/m6-t3/`): 14 Vektoren, 13 blockiert, PiP nach Ablauf der Freigabe umgangen (Restrisiko, offene Entscheidung fuer den User). Fix: Doppeltipp auf eine Bewertung landete auf `abbrechen` der naechsten Karte -> `QuizEvent.CancelTap` mit Rate-Guard. Testapp postet per Extra `notify` eine Benachrichtigung. Naechster Schritt: M6-T4 (Fehlerfall-Matrix).
 
