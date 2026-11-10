@@ -15,6 +15,8 @@ import dev.tinow.brainrotstopper.ui.apps.AppsViewModel
 import android.content.pm.ApplicationInfo
 import dev.tinow.brainrotstopper.data.media.MediaHealthCheck
 import dev.tinow.brainrotstopper.ui.config.ConfigViewModel
+import dev.tinow.brainrotstopper.ui.stats.StatsViewModel
+import android.content.pm.PackageManager
 import dev.tinow.brainrotstopper.ui.main.MainApp
 import dev.tinow.brainrotstopper.ui.setup.SetupViewModel
 import dev.tinow.brainrotstopper.ui.theme.BsTheme
@@ -52,16 +54,36 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // ranking labels: the launcher label, the package name when the app is gone (architecture.md 4)
+    private val stats: StatsViewModel by viewModels {
+        viewModelFactory {
+            initializer {
+                val pm = application.packageManager
+                StatsViewModel(
+                    stats = container.stats.flow,
+                    today = { container.timeSource.now().epochDay },
+                    label = { pkg ->
+                        try {
+                            pm.getApplicationInfo(pkg, 0).loadLabel(pm).toString()
+                        } catch (_: PackageManager.NameNotFoundException) {
+                            pkg
+                        }
+                    },
+                ) { AppLog.i("BS/Stats", it) }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val reader = PermissionStatusReader(this) { container.debugFlags }
         val route = intent?.getStringExtra(EXTRA_ROUTE)
-        setContent { BsTheme { MainApp(container, reader, setup, apps, config, route) } }
+        setContent { BsTheme { MainApp(container, reader, setup, apps, config, stats, route) } }
     }
 
     companion object {
-        /** `--es route setup|apps|config` picks the first screen (scripts, and the lock screen's "deck missing" error). */
+        /** `--es route setup|apps|config|stats` picks the first screen (scripts, and the lock screen's "deck missing" error). */
         const val EXTRA_ROUTE = "route"
     }
 }

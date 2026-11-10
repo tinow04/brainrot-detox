@@ -29,7 +29,7 @@ import dev.tinow.brainrotstopper.ui.banner.BannerState
 import dev.tinow.brainrotstopper.ui.components.BsImagePlaceholder
 import dev.tinow.brainrotstopper.ui.components.BsRichText
 import dev.tinow.brainrotstopper.ui.components.BsText
-import dev.tinow.brainrotstopper.ui.components.ChartBar
+import dev.tinow.brainrotstopper.debug.seed.StatsSeedScreen
 import dev.tinow.brainrotstopper.ui.components.RateKind
 import dev.tinow.brainrotstopper.ui.config.ConfigScreen
 import dev.tinow.brainrotstopper.ui.config.ConfigState
@@ -41,7 +41,6 @@ import dev.tinow.brainrotstopper.ui.main.MainTab
 import dev.tinow.brainrotstopper.ui.setup.SetupRow
 import dev.tinow.brainrotstopper.ui.setup.SetupScreen
 import dev.tinow.brainrotstopper.ui.setup.SetupState
-import dev.tinow.brainrotstopper.ui.stats.RankItem
 import dev.tinow.brainrotstopper.ui.stats.StatsScreen
 import dev.tinow.brainrotstopper.ui.stats.StatsState
 import dev.tinow.brainrotstopper.ui.theme.BsTheme
@@ -74,11 +73,8 @@ object ScreenSamples {
         ankiConnected = true,
     )
 
-    private val stats = StatsState(
-        blockedToday = 14, blockedWeek = 87, streakDays = 12, cards = 412, correct = 354, savedMinutes = 200,
-        bars = listOf(11, 9, 13, 15, 12, 13, 14).zip(Strings.WEEKDAYS.drop(1) + Strings.WEEKDAYS.take(1)).map { ChartBar(it.second, it.first) },
-        ranking = listOf(RankItem("tiktok", 31), RankItem("instagram", 28), RankItem("youtube", 17), RankItem("reddit", 11)),
-    )
+    /** B3 through the real path (seed -> StatsAggregator -> StatsModel) on a Monday, as in the mockup (today = mo). */
+    private val stats: StatsState get() = StatsSeedScreen.state()
 
     @Composable
     private fun CardText(text: String) = BsText(text, BsTheme.type.card, BsTheme.colors.text)

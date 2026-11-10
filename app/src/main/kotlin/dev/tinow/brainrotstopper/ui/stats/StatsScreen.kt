@@ -58,6 +58,7 @@ fun StatsScreen(state: StatsState, modifier: Modifier = Modifier) {
         BsBox(Strings.BOX_CHART) { BsBarChart(state.bars) }
         BsBox(Strings.BOX_RANKING) {
             val max = state.ranking.maxOfOrNull { it.count }?.coerceAtLeast(1) ?: 1
+            if (state.ranking.isEmpty()) BsText(Strings.RANKING_EMPTY, t.body, c.dim)
             state.ranking.forEach { BsRankRow(Strings.appLabel(it.app), it.count.toFloat() / max, it.count) }
         }
     }

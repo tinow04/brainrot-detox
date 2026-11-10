@@ -198,6 +198,7 @@ object Strings {
     const val STAT_FOOTNOTE = "* geschätzt, nicht gemessen"
     const val BOX_CHART = "gesperrt · letzte 7 tage"
     const val BOX_RANKING = "am häufigsten gesperrt"
+    const val RANKING_EMPTY = "noch nichts gesperrt"
     val WEEKDAYS = listOf("mo", "di", "mi", "do", "fr", "sa", "so")
 
     // ---- banner (above all tabs, only when needed)
@@ -231,7 +232,6 @@ object Strings {
     const val SETUP_ACCESSIBILITY_RESTRICTED = "bedienungshilfe blockiert (eingeschränkte einstellungen)"
     const val SETUP_HINT_RESTRICTED = "tipp: lässt sich die bedienungshilfe nicht einschalten, in der app-info über ⋮ eingeschränkte einstellungen zulassen."
     const val SETUP_HINT_RESTART = "hinweis: nach einem neustart des dienstes wird eine schon offene gesperrte app erst beim nächsten fensterwechsel gesperrt."
-    const val TAB_SOON = "kommt in einem späteren meilenstein."
     const val SETUP_HINT_AUTOSYNC = "tipp: auto-sync in ankidroid einschalten."
     const val BTN_ALLOW = "\$ ./zugriff erlauben"
     const val BTN_APP_INFO = "\$ ./app-info"

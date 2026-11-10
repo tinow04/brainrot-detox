@@ -18,7 +18,9 @@ class StatsSeedTest {
         assertThat(Strings.quote(s.correct, s.cards)).isEqualTo("86 %")
         assertThat(s.savedMinutes).isEqualTo(200)
         assertThat(s.bars.map { it.value }).containsExactly(11, 9, 13, 15, 12, 13, 14).inOrder()
-        assertThat(s.ranking).hasSize(4)
+        assertThat(s.ranking.map { it.count }).containsExactly(31, 28, 17, 11).inOrder()
+        // every day's apps add up to its blocks
+        StatsSeed.week(today).days.values.forEach { d -> if (d.perApp.isNotEmpty()) assertThat(d.perApp.values.sum()).isEqualTo(d.blocks) }
     }
 
     @Test fun emptySeedIsEmpty() {

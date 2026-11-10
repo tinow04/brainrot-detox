@@ -182,7 +182,8 @@ fun BsStatTile(value: String, label: String, modifier: Modifier = Modifier) {
     }
 }
 
-data class ChartBar(val label: String, val value: Int)
+/** [heightDp] from StatsAggregator (2 dp for 0); null = computed here from the maximum (gallery samples). */
+data class ChartBar(val label: String, val value: Int, val heightDp: Float? = null)
 
 /** `.chart`: bar chart for the last days; the last bar (today) is emphasised. Bar height = value / max * 90 dp (min 4 dp for values > 0). */
 @Composable
@@ -198,7 +199,7 @@ fun BsBarChart(bars: List<ChartBar>, modifier: Modifier = Modifier) {
     ) {
         bars.forEachIndexed { i, bar ->
             val today = i == bars.lastIndex
-            val h = if (bar.value <= 0) 0.dp else (bar.value.toFloat() / max * 90f).dp.coerceAtLeast(BsDims.ChartBarMin)
+            val h = bar.heightDp?.dp ?: if (bar.value <= 0) 0.dp else (bar.value.toFloat() / max * 90f).dp.coerceAtLeast(BsDims.ChartBarMin)
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(BsDims.S4, Alignment.Bottom)) {
                 BsText(bar.value.toString(), if (today) chartLabel.copy(fontWeight = FontWeight.Bold) else chartLabel.copy(fontWeight = FontWeight.Medium), if (today) c.text else c.muted)
                 Box(Modifier.fillMaxWidth().height(h).background(c.accent.copy(alpha = if (today) 1f else 0.45f), RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)))

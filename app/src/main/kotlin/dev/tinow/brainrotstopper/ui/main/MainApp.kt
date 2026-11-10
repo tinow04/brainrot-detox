@@ -29,6 +29,8 @@ import dev.tinow.brainrotstopper.ui.apps.AppsViewModel
 import dev.tinow.brainrotstopper.ui.banner.BannerState
 import dev.tinow.brainrotstopper.ui.config.ConfigScreen
 import dev.tinow.brainrotstopper.ui.config.ConfigViewModel
+import dev.tinow.brainrotstopper.ui.stats.StatsScreen
+import dev.tinow.brainrotstopper.ui.stats.StatsViewModel
 import dev.tinow.brainrotstopper.ui.components.BsText
 import dev.tinow.brainrotstopper.ui.setup.SetupAction
 import dev.tinow.brainrotstopper.ui.setup.SetupActions
@@ -42,10 +44,11 @@ import kotlinx.coroutines.launch
 private const val ROUTE_SETUP = "setup"
 private const val ROUTE_APPS = "apps"
 private const val ROUTE_CONFIG = "config"
+private const val ROUTE_STATS = "stats"
 
 /**
  * Main shell: setup as start route on the first start while a mandatory step is open, otherwise the three tabs with the
- * protection banner on top (architecture.md 6). Stats is a placeholder until M5-T3.
+ * protection banner on top (architecture.md 6).
  */
 @Composable
 fun MainApp(
@@ -54,6 +57,7 @@ fun MainApp(
     setup: SetupViewModel,
     apps: AppsViewModel,
     config: ConfigViewModel,
+    stats: StatsViewModel,
     initialRoute: String? = null,
 ) {
     val context = LocalContext.current
@@ -87,6 +91,7 @@ fun MainApp(
                 initialRoute == ROUTE_SETUP -> ROUTE_SETUP
                 initialRoute == ROUTE_APPS -> MainTab.Apps.name
                 initialRoute == ROUTE_CONFIG -> MainTab.Config.name
+                initialRoute == ROUTE_STATS -> MainTab.Stats.name
                 Protection.startOnSetup(s.onboardingDismissed, permissions, probe) -> ROUTE_SETUP
                 else -> MainTab.Apps.name
             }
@@ -149,7 +154,7 @@ fun MainApp(
                 when (tab) {
                     MainTab.Apps -> apps.refresh()
                     MainTab.Config -> config.refresh()
-                    MainTab.Stats -> Unit
+                    MainTab.Stats -> stats.refresh()
                 }
                 onPauseOrDispose { }
             }
@@ -183,8 +188,8 @@ fun MainApp(
                         }
                     }
                     MainTab.Stats -> {
-                        ScreenTitle(Strings.TITLE_STATS)
-                        BsText(Strings.TAB_SOON, BsTheme.type.body, BsTheme.colors.dim)
+                        val state by stats.ui.collectAsStateWithLifecycle()
+                        state?.let { StatsScreen(it) } ?: ScreenTitle(Strings.TITLE_STATS)
                     }
                 }
             }
