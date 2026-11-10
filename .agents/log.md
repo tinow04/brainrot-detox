@@ -2,6 +2,9 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-09 (M4-T7: Contract-Test und E2E-2, M4 abgeschlossen)
+- T6 committet (`b1cc46b`, `8e090db`, nicht gepusht). Neu: `scripts/e2e/e2e2_quiz.sh` (13 Pruefungen gegen echtes AnkiDroid, Belege `design/screenshots/e2e2/`), `.agents/anki-api.md`, Phasen-Log der Engine, Fehlertext NotInstalledOrApiOff mit Speicherzugriff. `AnkiSourceContractTest` 3/3 gruen, revlog +7 mit passenden Eases, 384 JVM-Tests gruen. Emulator wurde einmal vom Kernel per OOM beendet (Rechner voll) und neu gestartet; `pkill -f` mit einem Muster im eigenen Befehl beendet die eigene Shell (Exit 144). Naechster Schritt: M5. T7 nicht committet.
+
 ## 2026-11-09 (M4-T6: Notausgang)
 - T5 committet und gepusht (`origin/main` = `232aeab`). Neu: `EmergencyPolicy.remainingMs`/`button` + `EmergencyButton`, `EmergencyState.lastUsedWall`, Countdown im Fehlerscreen (Engine fragt, `QuizHost` tickt jede Sekunde), Notausgang auf allen Fehlerscreens, `EmergencyPolicyTest`, `scripts/e2e/e2e_emergency.sh` (6 Pruefungen), Belege `design/screenshots/m4-t6/`. 384 JVM-, 66 instrumentierte Tests, `check.sh`, `e2e_emergency.sh` und `e2e_quiz.sh` gruen. Entscheidung: ein Neustart beendet den Cooldown nicht (Wall-Clock nur nach Neustart zum Verkuerzen), Retry startet den Countdown nicht neu (decisions.md). Naechster Schritt: T7 (Contract/E2E-2, Sperr-Fehlertext fuer null-Cursor). T6 nicht committet.
 

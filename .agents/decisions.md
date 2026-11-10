@@ -211,3 +211,11 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 **Warum:** (1) Akzeptanz T6; sonst waere ein Neustart ein billiger zweiter Notausgang. Nur mit der Laufzeit zu rechnen haette nach einer Nacht mit ausgeschaltetem Handy bis zu 6 h gesperrt, obwohl der Cooldown laengst vorbei ist. Ausnahme vom Grundsatz "Wall-Clock nie fuer Entscheidungen": die Wall-Clock kann den Cooldown nur nach einem Neustart verkuerzen. Wer dafuer die Uhr vorstellt und neu startet, bekommt 5 Minuten; den Dienst abzuschalten ist einfacher und ohnehin nicht verhindert. (2) Sonst wuerde jeder Retry bestraft und der Nutzer wuerde ihn meiden. (3) Auch diese Fehler koennen dauerhaft sein (Giftkarte, AnkiDroid nimmt keine Antworten an).
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
+
+## 2026-11-09 – E2E-2 und AnkiDroid-Fehlertext (M4-T7)
+
+**Entscheidung:** (1) Der Sperr-Fehlertext fuer `NotInstalledOrApiOff` nennt alle drei gemessenen Ursachen ("nicht installiert, api aus oder kein speicherzugriff."); es gibt dafuer keinen eigenen Fehlertyp. Die genaue Ursache zeigt das Setup (`ApiOff` vs. `NoData`). (2) Die Engine loggt jede Phase (`BS/Quiz phase ...`, mit Fehlerart, ohne Karteninhalt); E2E-Skripte warten auf diese Zeile statt auf feste Pausen. (3) E2E-2 seedet nur, wenn im Default-Deck weniger als 10 Karten faellig sind, und veraendert den Lernstand der Emulator-Sammlung bewusst (Revlog-Beweis).
+
+**Warum:** (1) Ein eigener Fehlertyp braeuchte im Sperrscreen eine zusaetzliche Provider-Pruefung; der Nutzer findet die Ursache im Setup ohnehin genauer. Der alte Text schickte ihn bei fehlendem Speicherzugriff in die falsche Einstellung. (2) Echte Karten laden unterschiedlich schnell; feste Pausen machten den Lauf wackelig. Der Log enthaelt keine persoenlichen Daten.
+
+**Verworfen:** Fehlertyp `NoData` im Sperrscreen (mehr Code, gleicher Nutzen); Seed bei jedem Lauf (Sammlung wuchse unbegrenzt).
