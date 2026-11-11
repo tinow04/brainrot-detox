@@ -8,8 +8,22 @@ URI = "content://com.ichi2.anki.flashcards"
 SEP = "\x1f"
 
 
+def emulator_serial():
+    """Only ever an emulator (this seeds AnkiDroid): ANDROID_SERIAL from emu-env.sh, else the first attached emulator."""
+    s = os.environ.get("ANDROID_SERIAL", "")
+    if not s.startswith("emulator-"):
+        out = subprocess.run([ADB, "devices"], capture_output=True, text=True, stdin=subprocess.DEVNULL).stdout
+        s = next((l.split()[0] for l in out.splitlines() if l.startswith("emulator-") and l.split()[1:2] == ["device"]), "")
+    if not s:
+        sys.exit("no emulator attached: refusing (never seeds a phone)")
+    return s
+
+
+SERIAL = emulator_serial()
+
+
 def sh(cmd):
-    return subprocess.run([ADB, "shell", cmd], capture_output=True, text=True, stdin=subprocess.DEVNULL).stdout.replace("\r", "")
+    return subprocess.run([ADB, "-s", SERIAL, "shell", cmd], capture_output=True, text=True, stdin=subprocess.DEVNULL).stdout.replace("\r", "")
 
 
 models = {}

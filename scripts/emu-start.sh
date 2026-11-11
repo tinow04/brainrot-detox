@@ -28,7 +28,7 @@ if "$ADB" get-state >/dev/null 2>&1; then echo "device already attached"; else
   if [ -n "$EMU_CGROUP_MAX" ] && command -v systemd-run >/dev/null 2>&1; then
     LIMIT=(systemd-run --user --scope --quiet -p "MemoryMax=$EMU_CGROUP_MAX" -p MemorySwapMax=0)
   fi
-  nohup "${LIMIT[@]}" "$EMULATOR" -avd "$AVD_NAME" "${WINDOW[@]}" -no-audio -no-snapshot-save -gpu swiftshader_indirect \
+  nohup "${LIMIT[@]}" "$EMULATOR" -avd "$AVD_NAME" -port "${ANDROID_SERIAL#emulator-}" "${WINDOW[@]}" -no-audio -no-snapshot-save -gpu swiftshader_indirect \
     -memory "$EMU_MEMORY_MB" -cores "$EMU_CORES" \
     >"${TMPDIR:-/tmp}/emulator-$AVD_NAME.log" 2>&1 &
   echo "emulator pid $!"

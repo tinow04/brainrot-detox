@@ -14,7 +14,7 @@ source scripts/e2e/lib.sh
 bs_require_device
 BUILD=0; [ "${1:-}" = "--build" ] && { BUILD=1; shift; }
 SHOTS="${1:-design/screenshots/m7-t2}"; mkdir -p "$SHOTS"; SHOTS="$(cd "$SHOTS" && pwd)"
-APK=app/build/outputs/apk/release/app-release.apk
+APK=build/release/brainrot-stopper.apk
 DEBUG_APK=app/build/outputs/apk/debug/app-debug.apk
 PERM=com.ichi2.anki.permission.READ_WRITE_DATABASE
 sh_() { "$ADB" shell "$@" </dev/null; }

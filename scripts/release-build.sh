@@ -5,7 +5,8 @@
 # It is created on the first run. BACK BOTH FILES UP: without them an installed release can only be replaced by
 # uninstalling it first (settings and stats are lost). Debug and release use different keys, so switching between
 # them on one device also needs an uninstall.
-# Usage: scripts/release-build.sh [--no-build]   -> app/build/outputs/apk/release/app-release.apk
+# Usage: scripts/release-build.sh [--no-build]   -> build/release/brainrot-stopper.apk
+# (outside app/build/outputs: Gradle empties that folder on the next release build, check.sh included)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source scripts/emu-env.sh
@@ -13,7 +14,7 @@ KEY_DIR="${BS_RELEASE_KEY_DIR:-$HOME/.config/brainrot-stopper}"
 KS="$KEY_DIR/release.jks"; PASS="$KEY_DIR/release.pass"; ALIAS=brainrot
 BT="$(dirname "$APKSIGNER")"
 OUT_DIR=app/build/outputs/apk/release
-UNSIGNED="$OUT_DIR/app-release-unsigned.apk"; ALIGNED="$OUT_DIR/app-release-aligned.apk"; SIGNED="$OUT_DIR/app-release.apk"
+UNSIGNED="$OUT_DIR/app-release-unsigned.apk"; ALIGNED="$OUT_DIR/app-release-aligned.apk"; SIGNED=build/release/brainrot-stopper.apk; mkdir -p build/release
 
 if [ ! -f "$KS" ]; then
   [ ! -e "$PASS" ] || { echo "$PASS exists but $KS is missing: refusing to create a new key over it" >&2; exit 1; }
