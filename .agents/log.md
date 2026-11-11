@@ -2,6 +2,10 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-11 (Schutz: Skripte nur gegen den Emulator)
+- M7-T3 committet (`958b85d`, nicht gepusht). Auf User-Frage "kann die App was kaputt machen" Befund: App selbst nicht, aber die Testskripte haetten bei nur angeschlossenem Handy AnkiDroid deinstalliert/geleert. Fix in `emu-env.sh` (`ANDROID_SERIAL` nur Emulator, `ro.boot.qemu`-Pruefung), `emu-start.sh -port`, `seed-fixtures.py`; Hinweis in `install.md`. `check.sh` und `e2e1_lock.sh` nach Emulator-Neustart gruen.
+- Naechstes: App aufs Pixel 9 (`install.md` A), Geraete-Checkliste.
+
 ## 2026-11-11 (M7-T3: Vollstaendigkeit, Abschluss M7)
 - M7-T2 committet und gepusht (`04b68f6`, `c599840`). User-Entscheidungen: Sync nach Freigabe bleibt standardmaessig an, PiP (a) akzeptiert.
 - `scripts/check.sh` gruen (SSIM 0,908-0,985). Neu `install.md` (Pixel 9 per USB, Emulator; aus M7-T2 nachgeholt) und Geraete-Checkliste in `test-checklist.md`. Doku-Abgleich: INDEX vollstaendig, Standardwerte (DO_SYNC), `media-server.md` (Token kommt aus den Einstellungen, nicht BuildConfig), Risiken mit Stand, Restliste in `todo.md`.

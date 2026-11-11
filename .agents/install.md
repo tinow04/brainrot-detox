@@ -11,12 +11,13 @@ Voraussetzungen am Handy:
 
 Am Rechner:
 ```bash
-scripts/release-build.sh                      # baut, prueft Manifest, signiert -> app/build/outputs/apk/release/app-release.apk
+scripts/release-build.sh                      # baut, prueft Manifest, signiert -> build/release/brainrot-stopper.apk
 ~/Android/Sdk/platform-tools/adb devices       # Handy muss als "device" erscheinen; laeuft auch der Emulator: -s <seriennummer>
-~/Android/Sdk/platform-tools/adb install app/build/outputs/apk/release/app-release.apk
+~/Android/Sdk/platform-tools/adb install build/release/brainrot-stopper.apk
 ```
 - Der Signaturschluessel liegt in `~/.config/brainrot-stopper/` (`release.jks`, `release.pass`), wird beim ersten Lauf erzeugt und **muss gesichert werden**. Updates: `adb install -r ...` mit demselben Schluessel behaelt alle Daten. Neuer Schluessel oder Wechsel Debug <-> Release geht nur mit Deinstallation (Einstellungen, Statistik, Berechtigungen weg).
 - Ist eine Debug-Version auf dem Handy, vorher `adb uninstall dev.tinow.brainrotstopper`.
+- Die Projektskripte (`scripts/`, ausser `release-build.sh`) sprechen **nur mit dem Emulator** (`emu-env.sh` setzt `ANDROID_SERIAL`); fuers Handy immer `adb` direkt aufrufen. Meldet adb `device 'emulator-5554' not found`, ist `ANDROID_SERIAL` in der Shell gesetzt: `unset ANDROID_SERIAL`.
 
 Erster Start (die App oeffnet den Setup-Screen):
 1. **AnkiDroid-Zugriff erlauben** (Systemdialog). Abgelehnt mit „nicht mehr fragen“: App-Info > Berechtigungen.
