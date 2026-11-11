@@ -2,6 +2,11 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-11 (M7-T3: Vollstaendigkeit, Abschluss M7)
+- M7-T2 committet und gepusht (`04b68f6`, `c599840`). User-Entscheidungen: Sync nach Freigabe bleibt standardmaessig an, PiP (a) akzeptiert.
+- `scripts/check.sh` gruen (SSIM 0,908-0,985). Neu `install.md` (Pixel 9 per USB, Emulator; aus M7-T2 nachgeholt) und Geraete-Checkliste in `test-checklist.md`. Doku-Abgleich: INDEX vollstaendig, Standardwerte (DO_SYNC), `media-server.md` (Token kommt aus den Einstellungen, nicht BuildConfig), Risiken mit Stand, Restliste in `todo.md`.
+- Naechstes: App auf dem Pixel 9 installieren (`install.md` A) und die Geraete-Checkliste durchgehen; Befunde in gotchas.md.
+
 ## 2026-11-11 (M7-T2: Release-Hygiene)
 - M7-T1 committet und gepusht (`7970607`, `3a99a75`). Neu `scripts/release-build.sh`: Release bauen, `check-manifest.sh` (ok), `zipalign`, signieren mit eigenem Schluessel in `~/.config/brainrot-stopper/` (beim ersten Lauf erzeugt, muss gesichert werden). apkanalyzer: nicht debuggable, keine Debug-Komponenten, nur die beiden Stubs, kein Cleartext.
 - Neu `scripts/e2e/e2e10_release.sh` (7 Pruefungen, zweimal gruen): Release statt Debug, Dummy im Apps-Tab sperren, Sperre, echte Karte, gut -> 1/5, Revlog +1 (Ease 3), kein Absturz; danach Debug-Build zurueck.
@@ -99,7 +104,7 @@ Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was 
 - Entscheidungen in `decisions.md` (Breaker schickt die App heim, kein Block bei gueltigem Grant, Statistik als zweite Schreibung u. a.). Offen: Verbraucher der Debug-Flags kommen in M3/M4 (siehe `todo.md`). Nichts committet. Naechster Schritt: M3 (Blocking-Mechanismus, Setup, Haupt-Shell) oder erst committen.
 
 ## 2026-11-03 (Repo-Bereinigung vor dem ersten Push)
-- Historie und Arbeitsbaum auf persönliche Angaben geprüft (keine Secrets/Token gefunden) und per `git filter-branch` bereinigt: echte Server-Hostnamen -> `<basisdomain>`, privater Artifact-Link entfernt, E-Mail aus den Workflow-Skripten entfernt, `/home/tinow/...` -> `<projektordner>`/`~/`, Token-Länge gestrichen. Commit-Hashes haben sich dadurch geändert. Die Autor-Adresse der Commits ist unverändert (GitHub-Noreply-Adresse wurde nicht gewünscht/entschieden).
+- Historie und Arbeitsbaum auf persönliche Angaben geprüft (keine Secrets/Token gefunden) und per `git filter-branch` bereinigt: echte Server-Hostnamen -> `<basisdomain>`, privater Artifact-Link entfernt, E-Mail aus den Workflow-Skripten entfernt, `/home/<user>/...` -> `<projektordner>`/`~/`, Token-Länge gestrichen. Commit-Hashes haben sich dadurch geändert. Die Autor-Adresse der Commits ist unverändert (GitHub-Noreply-Adresse wurde nicht gewünscht/entschieden).
 - Erster Push nach `origin/main` (privates Repo `tinow04/brainrot-detox`). Vor einer Veröffentlichung als öffentliches Repo: Autor-E-Mail der Commits und die Regel in `README.md` erneut prüfen.
 
 ## 2026-11-03 (PC-Freeze durch Emulator + Gradle)

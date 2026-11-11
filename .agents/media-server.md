@@ -2,7 +2,7 @@
 
 Stand: 2026-11-03. Vom Server-Agenten gemeldet und gegen den laufenden Server getestet (200, 304, 206, 401, 405, Pruefsumme eines echten Bildes). Nicht getestet: 429 (kommt aus der Traefik-Konfiguration).
 
-**Das Token steht nicht hier und nicht im Repo.** Es liegt nur beim User (`local.properties` -> `BuildConfig.ANKI_MEDIA_TOKEN`, Datei ist in `.gitignore`).
+**Das Token steht nicht hier und nicht im Repo.** Es liegt nur beim User und wird in der App im Tab einstellungen (Box `bilder`) eingegeben (DataStore, nie geloggt; architecture.md 5a).
 
 ## Was es ist
 - Nur-Lese-nginx ueber dem Medienordner des selbst gehosteten Anki-Sync-Servers. Dateiname = Anki-Medienname. Bestand: 204 Dateien (202 jpg, 2 png), ca. 12 MB.
@@ -24,8 +24,5 @@ Header bei 200: `Cache-Control: private, max-age=86400`, ETag, Last-Modified, Ac
 - Nichts schreiben, nichts unter `anki.<basisdomain>/sync/...` aufrufen (gehoert Anki).
 - Schnelltest: `curl -sSI https://anki-media.<basisdomain>/healthz`.
 
-## Folgen fuer den Plan (noch einzuarbeiten)
-- Manifest: `INTERNET` ergaenzen, `network_security_config` nur fuer `anki-media.<basisdomain>`, kein Cleartext; Plan-Aussage "kein INTERNET" streichen.
-- Token in der APK ist auslesbar. Fuer ein privates Einzelgeraet akzeptabel, Token bei Verlust auf dem Server rotieren.
-- Rendering: Karten-WebView bleibt ohne Netz/JS. Bilder vorher laden und ueber `shouldInterceptRequest` aus dem Cache liefern (oder `src` auf lokale Dateien umschreiben). Netzfehler/404 -> Platzhalter `[ bild: x ]`, Karte bleibt bewertbar, fail-closed unveraendert.
-- Offene Voraussetzung: AnkiDroid muss mit **demselben** Server syncen wie der Desktop, sonst fehlen neue Karten/Bilder oder es gibt Sync-Konflikte mit AnkiWeb.
+## Umsetzung (Stand 2026-11-11)
+Umgesetzt in M4-T3b, Details in `architecture.md` Abschnitt 5a: `INTERNET` in der Allowlist, Release ohne Cleartext, Abruf per `HttpURLConnection` (kein OkHttp) nur zum konfigurierten Host ohne Redirects, Bilder vorab geladen und in die WebView ohne Netz/JS eingebettet, 404/Netzfehler -> Platzhalter `[ bild: x ]`, Karte bleibt bewertbar. Voraussetzung bleibt: AnkiDroid synct mit **demselben** Server wie der Desktop.

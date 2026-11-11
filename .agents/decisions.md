@@ -238,15 +238,15 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** `abbrechen` verschieben (Mockup-Abweichung); Guard auch fuer Zurueck (bewusste Geste, kein Fehltipp).
 
-## 2026-11-10 – Bild-im-Bild als Restrisiko (M6-T3, offen fuer den User)
+## 2026-11-10 – Bild-im-Bild als Restrisiko (M6-T3, vom User am 2026-11-11 entschieden: (a) akzeptieren)
 
 **Befund:** Ist eine gesperrte App bei laufender Freigabe im Bild-im-Bild-Modus (PiP), bleibt das PiP-Fenster nach Ablauf der Freigabe sichtbar und bedienbar (z. B. ein Video laeuft weiter). Das Gate sieht nur den Launcher als Vordergrund; erst wenn die App ins Vollbild zurueckkehrt, kommt die Sperre (ca. 460 ms). Nach architecture.md Abschnitt 6 kein gravierender Fall (keine Vollbild-Nutzung ohne Sperre).
 
-**Vorlaeufige Entscheidung:** Als Restrisiko dokumentiert, keine Code-Aenderung. Der User entscheidet (todo.md, Offene Entscheidungen).
+**Entscheidung (User, 2026-11-11):** Option (a), als Restrisiko akzeptiert, keine Code-Aenderung. Die Bedienungshilfe bekommt keinen Fenster-Einblick dafuer.
 
 **Optionen:** (a) akzeptieren (Standard); (b) bei Ablauf einer Freigabe pruefen, ob die App eine PiP-Task hat, und sie dann per `GLOBAL_ACTION_HOME` bzw. Sperre in den Vordergrund holen: braucht Fensterinformationen (`AccessibilityService.getWindows()` mit `canRetrieveWindowContent=true` bzw. `flagRetrieveInteractiveWindows`), also mehr Einblick als heute; (c) die Freigabe beim Wechsel in PiP sofort beenden (gleiche Voraussetzung). PiP der gesperrten App OHNE Freigabe ist nicht moeglich, weil die Sperre vorher kommt.
 
-## 2026-11-10 – AnkiDroid-Sync nach Freigabe, Standard an (M6-T7)
+## 2026-11-10 – AnkiDroid-Sync nach Freigabe, Standard an (M6-T7, vom User am 2026-11-11 bestaetigt)
 
 **Entscheidung:** Nach einer QUIZ- oder NOTHING_DUE-Freigabe sendet die App beim Verlassen des Freigabe-Screens 1,5 s spaeter `com.ichi2.anki.DO_SYNC`, hoechstens alle 3 h, aus dem Bedienungshilfe-Dienst. Schalter in B2 (Box `sync`), **Standard an**. Nach dem Notausgang kein Sync. Ein nicht gesendeter Anstoss (Dienst aus, Sperre vorn, AnkiDroid fehlt) wird nicht gestempelt, die naechste Freigabe versucht es wieder.
 
