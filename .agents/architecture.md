@@ -44,7 +44,7 @@ Gradle: `:app` (applicationId = namespace = dev.tinow.brainrotstopper, kein Debu
 | JVM-Tests, Fixtures unter src/test/resources | | | | ja | |
 | Compose-UI- und DataStore-Tests, Contract-Test | | | | | ja |
 
-check.sh und alle Tests laufen nur gegen die Debug-Variante. `assembleRelease` darf keinen Verweis auf src/debug-Klassen haben (Release-Stubs gleicher FQCN). BuildConfig bleibt aus (`buildFeatures.buildConfig=false`).
+check.sh und alle Tests laufen nur gegen die Debug-Variante. `assembleRelease` darf keinen Verweis auf src/debug-Klassen haben (Release-Stubs gleicher FQCN). BuildConfig bleibt aus (`buildFeatures.buildConfig=false`). Release-Build (M7-T2): `scripts/release-build.sh` = `assembleRelease` (unsigniert, `isMinifyEnabled=false`), `check-manifest.sh`, `zipalign -P 16`, `apksigner` mit eigenem Schluessel ausserhalb des Repos (`~/.config/brainrot-stopper/release.jks` + `release.pass`, ueberschreibbar per `BS_RELEASE_KEY_DIR`); Gradle kennt keine Signierung. Smoke: `scripts/e2e/e2e10_release.sh`.
 
 ### Manifest und Ressourcen
 

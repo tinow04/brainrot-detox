@@ -2,6 +2,11 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-11 (M7-T2: Release-Hygiene)
+- M7-T1 committet und gepusht (`7970607`, `3a99a75`). Neu `scripts/release-build.sh`: Release bauen, `check-manifest.sh` (ok), `zipalign`, signieren mit eigenem Schluessel in `~/.config/brainrot-stopper/` (beim ersten Lauf erzeugt, muss gesichert werden). apkanalyzer: nicht debuggable, keine Debug-Komponenten, nur die beiden Stubs, kein Cleartext.
+- Neu `scripts/e2e/e2e10_release.sh` (7 Pruefungen, zweimal gruen): Release statt Debug, Dummy im Apps-Tab sperren, Sperre, echte Karte, gut -> 1/5, Revlog +1 (Ease 3), kein Absturz; danach Debug-Build zurueck.
+- Naechstes: M7-T3 (Vollstaendigkeit, `check.sh` gruen, ehrliche Restliste); offen fuer den User weiter Sync-Standard und PiP.
+
 ## 2026-11-10 (M7-T1: Regression gegen AnkiDroid 2.26-Alpha)
 - M6-T7 committet und gepusht (`de4838c`, `5820d5e`). Emulator gesichert (Snapshot `m7-pre-alpha` + tar), AnkiDroid v2.26.0alpha13 per `anki-install.sh 2.26.0alpha13` installiert: e2e2_quiz (echtes AnkiDroid, Revlog), e2e_setup, e2e_config, e2e9 gruen, Ergebnis identisch; Quellvergleich bestaetigt unveraenderten Antwortpfad. Snapshot geladen, wieder 2.25.3.
 - Zwei Skriptfehler gefunden und behoben: bestehende Sperre hielt alte Fake-Quelle (`SwitchingCardSource`, e2e9 `fresh` umgestellt); e2e_config tippte nach der Sync-Box daneben (Token-Feld mit `debugBounds`, Taps nach geloggter Position).

@@ -212,6 +212,16 @@ Der User hat alle acht "vom User zu bestaetigen"-Punkte aus `todo.md` mit dem je
 
 **Verworfen:** Restzeit regelmaessig persistieren (zusaetzliche Schreibvorgaenge fuer einen seltenen Fall); nach Neustart stets volle 6 h (zu streng).
 
+## 2026-11-11 – Release: eigener Schluessel ausserhalb des Repos, Signieren per Skript (M7-T2)
+
+**Entscheidung:** Das Release wird nicht in Gradle signiert, sondern von `scripts/release-build.sh` nach `assembleRelease`: `zipalign -P 16`, `apksigner` mit `~/.config/brainrot-stopper/release.jks` (PKCS12, RSA 4096, Alias `brainrot`, 100 Jahre) und Passwortdatei `release.pass` (Modus 600). Der Schluessel wird beim ersten Lauf erzeugt; das Skript erzeugt nie einen neuen, wenn nur einer der beiden Teile fehlt. R8/Minify bleibt aus.
+
+**Warum:** Kein Schluessel und kein Passwort im Repo oder in `local.properties`; `check.sh` und `check-manifest.sh` laufen unveraendert auf `app-release-unsigned.apk`. Der Debug-Schluessel ist pro Rechner und taugt nicht fuer das Handy, auf dem die App dauerhaft laeuft. Minify aus: keine Groessennot, und R8 waere eine neue, im Emulator ungetestete Fehlerquelle (Reflection in kotlinx.serialization/DataStore).
+
+**Folge:** Debug und Release haben verschiedene Signaturen; ein Wechsel auf einem Geraet braucht `pm uninstall` (Einstellungen, Statistik und Freigaben gehen verloren, Bedienungshilfe und AnkiDroid-Berechtigung muessen neu erteilt werden). Geht der Schluessel verloren, gilt dasselbe fuer jedes Update: **`release.jks` und `release.pass` sichern.**
+
+**Verworfen:** `signingConfigs` in `build.gradle.kts` mit Properties-Datei (mehr Gradle-Logik, Passwort im Build-Prozess); Release mit Debug-Schluessel (rechnergebunden); R8 einschalten.
+
 ## 2026-11-10 – Provider-Aufrufe losgeloest, Renderer-Absturz faellt auf Klartext (M6-T4)
 
 **Entscheidung:** (1) `AndroidProviderGateway` fuehrt jeden `query`/`update` in einem eigenen Scope (`SupervisorJob` + IO) aus und wartet nur darauf; wird der Aufrufer abgebrochen (Timeout der Quelle), kehrt er sofort zurueck, ruft `CancellationSignal.cancel()` und verwirft das spaete Ergebnis. (2) `onRenderProcessGone` wird behandelt (`true`), die WebView gilt fuer den Rest des Prozesses als kaputt, alle Karten kommen als Klartext und bleiben bewertbar. (3) Fehlgeschlagene Provider-Aufrufe werden mit Exception-Klasse und Ergebnis geloggt (`BS/Anki`, keine Karteninhalte).
