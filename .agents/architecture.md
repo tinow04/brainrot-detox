@@ -218,7 +218,7 @@ Entscheidung 2026-11-03 (decisions.md): Option S. Schnittstelle des laufenden Se
 - **Voraussetzung ausserhalb der App:** AnkiDroid und Desktop syncen mit demselben Anki-Sync-Server (`media-server.md`), sonst fehlen Bilder (404 = noch nicht gesynct).
 - **Tests:** JVM: `MediaInlinerTest` (Namen mit Leerzeichen/Entities/Sonderzeichen, Pfadangriffe, Fehlerzweige), `HttpMediaFetcherTest` mit lokalem Fake-Server im Test (200/304/401/404/429/Timeout/Redirect/zu gross/falscher Content-Type). Emulator: `scripts/spike/fake-media-server.py` (Bearer-Pruefung, Dateien aus Testordner) auf `10.0.2.2`, Screenshot einer Karte mit Bild und Platzhalter-Fall.
 
-AnkiDroid-Version: Ziel und Test v2.25.3 (variant-abi-AnkiDroid-2.25.3-x86_64.apk, sha256 aus Release-API, apksigner-Fingerprint aus README). Antwortpfad haengt am Legacy path, used by tests (Scheduler.answerCard); Regression gegen 2.26-Alphas in M7. Ob Antworten im Revlog landen und syncen, misst S1a; ein negatives Ergebnis aendert die Architektur nicht (eigene Zaehler), muss aber in gotchas.md und Produktbeschreibung stehen.
+AnkiDroid-Version: Ziel und Test v2.25.3 (variant-abi-AnkiDroid-2.25.3-x86_64.apk, sha256 aus Release-API, apksigner-Fingerprint aus README). Antwortpfad haengt am Legacy path, used by tests (Scheduler.answerCard); Regression gegen 2.26-Alphas in M7: v2.26.0alpha13 identisch, Antwortpfad unveraendert (M7-T1, gotchas.md). Ob Antworten im Revlog landen und syncen, misst S1a; ein negatives Ergebnis aendert die Architektur nicht (eigene Zaehler), muss aber in gotchas.md und Produktbeschreibung stehen.
 
 ## 6. Berechtigungs-Einstieg (Setup-Screen, Terminal-Stil)
 

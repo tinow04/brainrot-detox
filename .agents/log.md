@@ -2,6 +2,11 @@
 
 Neueste oben. Pro Session 2–5 Zeilen: was wurde getan, was ist der Stand, was kommt als Nächstes.
 
+## 2026-11-10 (M7-T1: Regression gegen AnkiDroid 2.26-Alpha)
+- M6-T7 committet und gepusht (`de4838c`, `5820d5e`). Emulator gesichert (Snapshot `m7-pre-alpha` + tar), AnkiDroid v2.26.0alpha13 per `anki-install.sh 2.26.0alpha13` installiert: e2e2_quiz (echtes AnkiDroid, Revlog), e2e_setup, e2e_config, e2e9 gruen, Ergebnis identisch; Quellvergleich bestaetigt unveraenderten Antwortpfad. Snapshot geladen, wieder 2.25.3.
+- Zwei Skriptfehler gefunden und behoben: bestehende Sperre hielt alte Fake-Quelle (`SwitchingCardSource`, e2e9 `fresh` umgestellt); e2e_config tippte nach der Sync-Box daneben (Token-Feld mit `debugBounds`, Taps nach geloggter Position).
+- Naechstes: M7-T2 Release-Hygiene (Release-APK, Manifest-Check, Smoke).
+
 ## 2026-11-10 (M6-T7: AnkiDroid-Sync nach Freigabe)
 - M6-T6 committet und gepusht (`19cfde1`, `3ce4dfa`). Gemessen: `DO_SYNC` holt AnkiDroid ca. 0,5 s nach vorn, das Gate wertet es als geschuetzt, danach Ziel-App mit gueltiger Freigabe ohne Sperre. Gebaut: `AnkiSyncTrigger`/`AnkiSyncPolicy`, Senden aus dem Dienst 1,5 s nach Verlassen des Freigabe-Screens, hoechstens alle 3 h, Schalter B2 (Standard an, vom User zu bestaetigen). Neues `scripts/e2e/e2e9_sync.sh` (5 Pruefungen, zweimal gruen). Nebenfund behoben: veraltetes "Sperre sichtbar" nach Ack ohne Resume liess die Ziel-App durch -> Ack und Sichtbarkeit getrennt. Regression e2e1, e2e3 (grant, session), e2e6, e2e8 gruen; e2e8 brauchte einen Skript-Fix (Pruefung las das volle `dumpsys window`, das die Inset-Zeile nicht mehr enthaelt; auch mit M6-T5-Code rot, App korrekt), dazu `dumpsys | grep -q`-Faelle in e2e5/e2e8 entschaerft. Naechster Schritt: M7.
 
