@@ -46,8 +46,14 @@ tap_deck() {
   sh_ input tap $xy
 }
 # config tab, scrolled to the end (the bilder box is the last box)
-tap_token_s()  { sh_ input tap 540 1607; }
-tap_test_s()   { sh_ input tap 540 1753; }
+# token field and $ ./test at their logged positions (the sync box of M6-T7 moved them; scroll_end waits for the fling)
+tap_logged() { # tap_logged <btn regex> <name>
+  local xy; xy="$({ "$ADB" logcat -d -s BS/UI </dev/null | grep -E "btn=$1 x=" || true; } | tail -1 | sed -E 's/.* x=([0-9]+) y=([0-9]+).*/\1 \2/' | tr -d '\r')"
+  [ -n "$xy" ] || fail "no $2 in the log"
+  sh_ input tap $xy
+}
+tap_token_s()  { tap_logged 'token' 'token field'; }
+tap_test_s()   { tap_logged '\$ \./test' '$ ./test button'; }
 scroll_end()   { sh_ input swipe 540 1800 540 300 300; sleep 0.6; sh_ input swipe 540 1800 540 300 300; sleep 1; }
 # lock screen
 tap_main()     { sh_ input tap 540 2123; }

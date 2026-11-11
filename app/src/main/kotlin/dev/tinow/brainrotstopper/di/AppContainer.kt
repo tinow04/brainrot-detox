@@ -9,6 +9,7 @@ import dev.tinow.brainrotstopper.data.anki.DelayingGateway
 import dev.tinow.brainrotstopper.data.media.MediaImages
 import dev.tinow.brainrotstopper.domain.anki.AnkiCapabilities
 import dev.tinow.brainrotstopper.domain.anki.CardSource
+import dev.tinow.brainrotstopper.domain.anki.SwitchingCardSource
 import dev.tinow.brainrotstopper.data.store.RuntimeRepository
 import dev.tinow.brainrotstopper.data.store.SettingsRepository
 import dev.tinow.brainrotstopper.data.store.StatsRepository
@@ -81,10 +82,14 @@ class AppContainer(val app: Application) {
         AnkiContentProviderSource(DelayingGateway(AndroidProviderGateway(app)) { debugFlags.gatewayDelayMs(it) }, AnkiCapabilities(), log = { AppLog.w("BS/Anki", it) })
     }
 
-    /** The card source for a new lock screen; read per lock so that `SET_SOURCE` takes effect without a restart. */
+    /**
+     * The card source for a new lock screen. Release: the provider. Debug: follows `SET_SOURCE` per call, also in a lock
+     * screen that already exists (a fresh fake per lock as before, replaced when source or scenario change).
+     */
     fun cardSource(): CardSource {
-        val flags = debugFlags
-        if (flags.cardSource == "fake") fakeCardSource?.let { return it(flags.scenario) }
-        return realCardSource
+        val fake = fakeCardSource ?: return realCardSource
+        return SwitchingCardSource({ debugFlags.cardSource to debugFlags.scenario }) { (kind, scenario) ->
+            if (kind == "fake") fake(scenario) else realCardSource
+        }
     }
 }

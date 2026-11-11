@@ -122,7 +122,7 @@ fun ConfigScreen(
             BsBox(Strings.BOX_MEDIA) {
                 Column(verticalArrangement = Arrangement.spacedBy(BsDims.S8)) {
                     BsSearchField(m.url, onMediaUrl, "https://", Strings.MEDIA_URL, description = Strings.MEDIA_URL)
-                    BsSearchField(m.token, onMediaToken, "", Strings.MEDIA_TOKEN, description = Strings.MEDIA_TOKEN, password = true)
+                    BsSearchField(m.token, onMediaToken, "", Strings.MEDIA_TOKEN, description = Strings.MEDIA_TOKEN, password = true, modifier = Modifier.debugBounds(Strings.MEDIA_TOKEN))
                     BsButton(Strings.BTN_MEDIA_TEST, onMediaTest, style = BsButtonStyle.Ghost)
                     when (m.check) {
                         MediaCheck.Off -> BsText(Strings.MEDIA_OFF, t.label, c.dim)

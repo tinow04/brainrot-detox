@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Downloads AnkiDroid v2.25.3 (x86_64) into a fresh dir, verifies sha256 (release API) and signer cert
+# Downloads AnkiDroid (default v2.25.3, or the tag given as $1 without the leading v, e.g. 2.26.0alpha13; x86_64) into a fresh dir, verifies sha256 (release API) and signer cert
 # (README fingerprint), installs it on the emulator. Install BEFORE our own app.
 set -euo pipefail
 source "$(dirname "$0")/emu-env.sh"
-VER=2.25.3
+VER="${1:-2.25.3}"
 NAME="variant-abi-AnkiDroid-$VER-x86_64.apk"
 CERT=2071534f0f4b5e54ae952dd275d70da6e3459ee69909d2ab1b4843c4c5b21a45
 DIR="$(mktemp -d)"

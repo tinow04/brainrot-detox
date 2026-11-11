@@ -28,10 +28,12 @@ tap_good() { sh_ input tap 293 2224; }
 btn_xy() { { "$ADB" logcat -d -s BS/UI </dev/null | grep -E "btn=$1( \([^)]*\))? x=" || true; } | tail -1 | sed -E 's/.* x=([0-9]+) y=([0-9]+).*/\1 \2/' | tr -d '\r'; }
 tap_btn() { local xy; xy="$(btn_xy "$1")"; [ -n "$xy" ] || fail "no button '$1' in the log"; sh_ input tap $xy; }
 fresh() { # fresh <scenario>: clean runtime (no sync stamp), dummy blocked, fake quiz source
-  dbg RESET --es what all
-  dbg SET_BLOCKED --es pkgs "$DUMMY" --es on true
-  dbg SET_SOURCE --es source fake --es scenario "$1"
+  # dummy out of the front first: blocking it while it is in front starts a lock that keeps the old fake source
   sh_ am force-stop "$DUMMY"; sh_ input keyevent KEYCODE_HOME; sleep 1
+  dbg RESET --es what all
+  dbg SET_SOURCE --es source fake --es scenario "$1"
+  dbg SET_BLOCKED --es pkgs "$DUMMY" --es on true
+  sleep 0.5
 }
 # unlock: dummy -> lock -> 5 good (or nothing due) -> unlocked screen
 unlock() {
